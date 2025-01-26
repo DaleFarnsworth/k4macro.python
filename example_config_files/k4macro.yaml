@@ -37,10 +37,10 @@
   fg: black
   # afg: black                # non-existent means same as fg
 
-  # Font used for labels and buttons
-  font_family: Helvetica
-  font_size: 8
-  font_weight: normal
+  # Font used for labels
+  label_font: { family: Helvetica, size: 8, weight: normal }
+  # Font used for buttons
+  button_font: { family: Helvetica, size: 8, weight: normal }
 
 - item: server
   name: k4

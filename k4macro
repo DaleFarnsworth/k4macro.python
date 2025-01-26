@@ -34,7 +34,7 @@ import textwrap
 import yaml
 from optparse import OptionParser
 
-version = '1.0.0'
+version = '1.0.1'
 
 class Default():
 # may be overriden by values in the config file
@@ -42,25 +42,16 @@ class Default():
     abg = 'red'
     fg = 'black'
     afg = None        # None means same as fg
-    font_family = 'Helvetica'
-    font_size = 8
-    font_weight = 'normal'
+    label_font =  { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
+    button_font = { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
 
     def info(info):
-        if 'bg' in info:
-            Default.bg = info['bg']
-        if 'abg' in info:
-            Default.abg = info['abg']
-        if 'fg' in info:
-            Default.fg = info['fg']
-        if 'afg' in info:
-            Default.afg = info['afg']
-        if 'font_family' in info:
-            Default.font_family = info['font_family']
-        if 'font_size' in info:
-            Default.font_size = info['font_size']
-        if 'font_weight' in info:
-            Default.font_weight = info['font_weight']
+        Default.bg = info.get('bg', Default.bg)
+        Default.abg = info.get('abg', Default.abg)
+        Default.fg = info.get('fg', Default.fg)
+        Default.afg = info.get('afg', Default.afg)
+        Default.label_font = info.get('label_font', Default.label_font)
+        Default.button_font = info.get('button_font', Default.button_font)
 
 class Server():
     servers = {}
@@ -129,9 +120,8 @@ class Container():
         self.row = 0
         self.column = 0
 
-        self.font_family = None
-        self.font_size = None
-        self.font_weight = None
+        self.label_font = None
+        self.button_font = None
 
     def next_column(self):
         self.column += 1
@@ -188,9 +178,8 @@ class Page(Container):
     def __init__(self, info):
         super().__init__(info, None)
 
-        self.font_family = info.get('font_family', Default.font_family)
-        self.font_size = info.get('font_size', Default.font_size)
-        self.font_weight = info.get('font_weight', Default.font_weight)
+        self.label_font = info.get('label_font', Default.label_font)
+        self.button_font = info.get('button_font', Default.button_font)
 
         if Page.current_frame != None:
             Page.current_frame.destroy()
@@ -216,11 +205,10 @@ class Group(Container):
         row = info.get('row', container.row)
         columnspan = info.get('columnspan', 1)
         rowspan = info.get('rowspan', 1)
-        self.font_family = info.get('font_family', container.font_family)
-        self.font_size = info.get('font_size', container.font_size)
-        self.font_weight = info.get('font_weight', container.font_weight)
+        self.label_font = info.get('label_font', container.label_font)
+        self.button_font = info.get('button_font', container.button_font)
 
-        font = tkFont.Font(family = self.font_family, size=self.font_size, weight=self.font_weight)
+        font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
 
         if 'label' in info:
             label = info['label']
@@ -262,9 +250,7 @@ class Button(Widget):
         afg = info.get('afg', Default.afg)
         if afg == None:
             afg = fg
-        font_family = info.get('font_family', container.font_family)
-        font_size = info.get('font_size', container.font_size)
-        font_weight = info.get('font_weight', container.font_weight)
+        button_font = info.get('button_font', container.button_font)
 
         width = container.items_width()
         if len(text) > width:
@@ -287,7 +273,7 @@ class Button(Widget):
         if cmd != None:
             command = lambda: Server.sendall(cmd)
 
-        font = tkFont.Font(family=font_family, size=font_size, weight=font_weight)
+        font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
         button = tk.Button(container.frame,
                     bd='4',
