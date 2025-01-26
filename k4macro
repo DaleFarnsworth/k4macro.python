@@ -69,9 +69,22 @@ class Server():
             server = Server.servers[Server.default_server_name]
             server.send(cmd)
         elif isinstance(cmd, dict):
-            for server_name in cmd.keys():
+            Server.send_dict(cmd)
+        elif isinstance(cmd, list):
+            for cmd_dict in cmd:
+                if isinstance(cmd_dict, dict):
+                    Server.send_dict(cmd_dict)
+                else:
+                    print("Unknown server sub-command '%s'" % cmd_dict)
+
+    @staticmethod
+    def send_dict(cmd_dict):
+        for server_name in cmd_dict:
+            if server_name in Server.servers:
                 server = Server.servers[server_name]
-                server.send(cmd[server_name])
+                server.send(cmd_dict[server_name])
+            else:
+                print("Unknown server name '%s'" % server_name)
 
     def __init__(self, info):
         self.name = info['name']

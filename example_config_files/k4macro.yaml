@@ -19,8 +19,8 @@
 #   text: button text
 #   cmd: Either:
 #     a text string to be sent to k4, or
-#     a python 'dict' object containg server name/cmd pairs to be sent
-#     i.e. { k4: k4cmd, s1: s1cmd} would send 'k4cmd' to server k4, and
+#     a python 'list' object containg server name/cmd pairs (python dict objects)
+#     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
 #     then send 's1cmd' to server s1.
 #   directive:
 #     'quit', terminates the program
@@ -120,6 +120,6 @@
         - { item: button, text:    K4D OFF, cmd:  PS0;,  bg:   red1, abg:     green }
 
         #- { item: button, text:       Exit, directive:  quit,  bg:  white, abg:       red }
-        #- { item: button, text: send cmd to 3 servers, cmd: { k4: PS0;, s1: s1cmd, s2: s2cmd},  bg:   red1, abg:     green }
+        #- { item: button, text: send cmd to 3 servers, cmd: [ k4: PC050L;, s1: s1cmd, k4: PS0;, s2: s2cmd],  bg: red1, abg: green }
 
 # vim: set expandtab ts=2 sw=2:
