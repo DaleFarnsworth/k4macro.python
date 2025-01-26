@@ -1,0 +1,358 @@
+#!/usr/bin/env python3
+
+# k4macro provides a set of buttons, each of which when clicked will
+# send a macro string to the Elecraft K4 via TCP/IP.  It is capable of
+# sending string commands to multiple servers, one or more which may
+# be transceivers. These macros can be simple or complex. This program
+# was inspired by K4 Macromaster, but in no way duplicates all of its
+# functions. K4 Macro was initially created by Charles W. Powell, NK8O,
+# but has been heavily modified. Charles has graciously allowed me
+# to continue development and to release it under the GPL.
+#
+# Configuration information is maintained in a separate YAML file named,
+# by default, k4macro.yaml.  Dale, W7DA
+#
+# Copyright (C) 2025  Dale Farnsworth
+#
+#    This program is free software: you can redistribute it and/or modify
+#    it under the terms of the GNU General Public License as published by
+#    the Free Software Foundation, either version 3 of the License, or
+#    (at your option) any later version.
+#
+#    This program is distributed in the hope that it will be useful,
+#    but WITHOUT ANY WARRANTY; without even the implied warranty of
+#    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#    GNU General Public License for more details.
+#
+#    You should have received a copy of the GNU General Public License
+#    along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+import socket
+import tkinter as tk
+import tkinter.font as tkFont
+import textwrap
+import yaml
+from optparse import OptionParser
+
+version = '1.0.0'
+
+class Default():
+# may be overriden by values in the config file
+    bg = 'maroon1'
+    abg = 'red'
+    fg = 'black'
+    afg = None        # None means same as fg
+    font_family = 'Helvetica'
+    font_size = 8
+    font_weight = 'normal'
+
+    def info(info):
+        if 'bg' in info:
+            Default.bg = info['bg']
+        if 'abg' in info:
+            Default.abg = info['abg']
+        if 'fg' in info:
+            Default.fg = info['fg']
+        if 'afg' in info:
+            Default.afg = info['afg']
+        if 'font_family' in info:
+            Default.font_family = info['font_family']
+        if 'font_size' in info:
+            Default.font_size = info['font_size']
+        if 'font_weight' in info:
+            Default.font_weight = info['font_weight']
+
+class Server():
+    servers = {}
+    default_server_name = None
+
+    @staticmethod
+    def info(info):
+        if Server.default_server_name == None:
+            Server.default_server_name = info['name']
+        Server.servers[info['name']] = Server(info)
+
+    @staticmethod
+    def sendall(cmd):
+        if isinstance(cmd, str):
+            server = Server.servers[Server.default_server_name]
+            server.send(cmd)
+        elif isinstance(cmd, dict):
+            for server_name in cmd.keys():
+                server = Server.servers[server_name]
+                server.send(cmd[server_name])
+
+    def __init__(self, info):
+        self.name = info['name']
+        self.address = info['address']
+        self.port = info['port']
+        self.socket = None
+
+    def connect(self):
+        if Options.verbose:
+            print('Connecting to %s, address %s, port %d'
+                  % (self.name, self.address, self.port))
+
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            sock.settimeout(5)
+            sock.connect((self.address, self.port))
+            self.socket = sock
+        except socket.gaierror:
+            print('Address not found: %s' % self.address)
+        except OSError:
+            print('Failed to connect to %s, address %s, port %d'
+                  % (self.name, self.address, self.port))
+
+    def send(self, cmd):
+        tries = 2
+        for i in range(tries):
+            if self.socket == None:
+                self.connect()
+                if self.socket == None:
+                    print("Failed to send command, '%s' to '%s'" % (cmd, self.name))
+                    break
+            try:
+                self.socket.sendall(cmd.encode())
+            except OSError:
+                if i < tries - 1:
+                    self.socket = None
+                    continue
+                print("Failed to send command, '%s' to '%s'" % (cmd, self.name))
+            break
+
+class Container():
+    def __init__(self, info, container):
+        self.info = info
+        self.container = container
+        self.columns = info.get('columns', len(self.info['contains']))
+        self.row = 0
+        self.column = 0
+
+        self.font_family = None
+        self.font_size = None
+        self.font_weight = None
+
+    def next_column(self):
+        self.column += 1
+        if self.column >= self.columns:
+            self.column = 0
+            self.next_row()
+
+    def next_row(self):
+        self.row += 1
+
+    def show_widgets(self):
+        for info in self.info['contains']:
+            widget_type = info['item']
+            if widget_type == 'group':
+                Group(info, self)
+            elif widget_type == 'button':
+                Button(info, self)
+            self.next_column()
+
+    def items_width(self):
+        width = 0
+        for info in self.info['contains']:
+            text = info.get('text', '')
+            if len(text) > width:
+                width = len(text)
+        return width
+
+class Page(Container):
+    infos = {}
+    name_stack = []
+    current_frame = None
+    top = None
+
+    @staticmethod
+    def show(page_name):
+        if page_name in Page.infos:
+            Page.name_stack.append(page_name)
+            Page(Page.infos[page_name])
+        else:
+            print("Page:'%s' not found." % page_name)
+
+    @staticmethod
+    def show_previous():
+        if len(Page.name_stack) < 2:
+            return
+        Page.name_stack.pop()             # pop current page
+        page_name = Page.name_stack.pop()
+        Page.show(page_name)
+
+    @staticmethod
+    def info(info):
+        Page.infos[info['name']] = info
+
+    def __init__(self, info):
+        super().__init__(info, None)
+
+        self.font_family = info.get('font_family', Default.font_family)
+        self.font_size = info.get('font_size', Default.font_size)
+        self.font_weight = info.get('font_weight', Default.font_weight)
+
+        if Page.current_frame != None:
+            Page.current_frame.destroy()
+        self.frame = tk.Frame(Page.top)
+        self.frame.grid()
+        self.show_widgets()
+        Page.current_frame = self.frame
+
+class Group(Container):
+    def __init__(self, info, container):
+        super().__init__(info, container)
+        container = self.container
+        frame = container.frame
+
+        if 'column' in info:
+            column = info['column']
+            if column < container.column:
+                container.next_column()
+            container.column = column
+        else:
+            column = container.column
+
+        row = info.get('row', container.row)
+        columnspan = info.get('columnspan', 1)
+        rowspan = info.get('rowspan', 1)
+        self.font_family = info.get('font_family', container.font_family)
+        self.font_size = info.get('font_size', container.font_size)
+        self.font_weight = info.get('font_weight', container.font_weight)
+
+        font = tkFont.Font(family = self.font_family, size=self.font_size, weight=self.font_weight)
+
+        if 'label' in info:
+            label = info['label']
+            self.frame = tk.LabelFrame(frame,
+                                       text=label,
+                                       font=font,
+                                       labelanchor='nw',
+                                       bd=2,
+                                       relief='raised')
+        else:
+            self.frame  = tk.Frame(frame)
+
+        self.frame.grid(row=row,
+                        column=column,
+                        rowspan=rowspan,
+                        columnspan=columnspan,
+                        sticky='w')
+        self.show_widgets()
+
+class Widget():
+    def __init__(self, info, container):
+        self.info = info
+        self.container = container
+        self.bg = None
+        self.abg = None
+        self.fg = None
+        self.afg = None
+
+class Button(Widget):
+    def __init__(self, info, container):
+        super().__init__(info, container)
+
+        text = info.get('text', '')
+        cmd = info.get('cmd', None)
+        directive = info.get('directive', None)
+        bg = info.get('bg', Default.bg)
+        fg = info.get('fg', Default.fg)
+        abg = info.get('abg', Default.abg)
+        afg = info.get('afg', Default.afg)
+        if afg == None:
+            afg = fg
+        font_family = info.get('font_family', container.font_family)
+        font_size = info.get('font_size', container.font_size)
+        font_weight = info.get('font_weight', container.font_weight)
+
+        width = container.items_width()
+        if len(text) > width:
+            text = textwrap.fill(text, width)
+
+        special_strings = {
+            'quit': quit,
+            'show_previous_page': Page.show_previous,
+        }
+
+        if directive != None:
+            if directive in special_strings:
+                command = special_strings[directive]
+            elif directive.startswith('show_page '):
+                page_name = directive[len('show_page '):]
+                command = lambda: Page.show(page_name)
+            else:
+                print('Unknown directive: ', directive)
+
+        if cmd != None:
+            command = lambda: Server.sendall(cmd)
+
+        font = tkFont.Font(family=font_family, size=font_size, weight=font_weight)
+
+        button = tk.Button(container.frame,
+                    bd='4',
+                    text=text,
+                    font=font,
+                    width=width,
+                    relief='raised',
+                    fg=fg,
+                    bg=bg,
+                    activebackground=abg,
+                    activeforeground=afg,
+                    padx=2,
+                    pady=2,
+                    command=command)
+
+        button.grid(row=container.row, column=container.column, sticky='w')
+
+def read_config(config_file_name):
+    with open(config_file_name) as stream:
+        try:
+            config = yaml.safe_load(stream)
+        except yaml.YAMLError as exc:
+            print(exc)
+
+        for info in config:
+            item = info['item']
+            if item == 'page':
+                Page.info(info)
+            elif item == 'server':
+                Server.info(info)
+            elif item == 'defaults':
+                Default.info(info)
+            else:
+                print("Unexpected top level item '%s' in '%s'." % (item, config_file_name))
+
+class Options():
+    config_file = None
+    verbose = None
+
+    @staticmethod
+    def Parse():
+        parser = OptionParser(version=version)
+        parser.add_option('--config', dest='config_file', default='k4macro.yaml',
+                          help="use config file FILE", metavar="FILE")
+        parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
+                          help="output additional status messages")
+
+        (options, args) = parser.parse_args()
+
+        Options.config_file = options.config_file
+        Options.verbose = options.verbose
+
+def main():
+    Options.Parse()
+
+    top = tk.Tk()
+    Page.top = top
+    top.title('K4 Macro-Python')
+
+    read_config(Options.config_file)
+
+    Page.show('main')
+
+    top.mainloop()
+
+main()
+
+# vim: set expandtab ts=4 sw=4:

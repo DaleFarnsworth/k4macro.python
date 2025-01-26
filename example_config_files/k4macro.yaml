@@ -1,0 +1,125 @@
+---
+
+# page options:
+#   name: The page name (required).
+#     The page named 'main' is the first one displayed.
+#   columns: The number of columns in which contained items will be displayed.
+#   contains: The list of items this page contains
+
+# group options:
+#   label: The label that will be displayed for this group.
+#   row: The row of the container in which this group will be placed.
+#   column: The column of the container in which this group will be placed.
+#   rowspan: The number of rows this group will occupy.
+#   columnspan: The number of columns this group will occupy.
+#   columns: The number of columns in which contained items will be displayed.
+#   contains: The list of items this group contains
+
+# button options:
+#   text: button text
+#   cmd: Either:
+#     a text string to be sent to k4, or
+#     a python 'dict' object containg server name/cmd pairs to be sent
+#     i.e. { k4: k4cmd, s1: s1cmd} would send 'k4cmd' to server k4, and
+#     then send 's1cmd' to server s1.
+#   directive:
+#     'quit', terminates the program
+#     'show_previous_page', displays the previously-displayed page
+#     'show_page XXX', displays page with the name: XXX
+#   fg: foreground color
+#   bg: background color
+#   abg: active background color
+
+- item: defaults
+  # Colors
+  bg: maroon1
+  abg: red
+  fg: black
+  # afg: black                # non-existent means same as fg
+
+  # Font used for labels and buttons
+  font_family: Helvetica
+  font_size: 8
+  font_weight: normal
+
+- item: server
+  name: k4
+  address: K4-SN01251.local   # match your serial number in the string
+  port: 9200
+
+- item: server
+  name: s1
+  address: 192.168.1.24
+  port: 7001
+
+- item: server
+  name: s2
+  address: 192.168.1.24
+  port: 7002
+
+- item: page
+  name: main
+  columns: 2
+  contains:
+    - item: group
+      label: Mode
+      column: 0
+      contains:
+        - { item: button, text:   CW, cmd: MD3;, abg:  green, bg: '#CAFF70' }
+        - { item: button, text:  USB, cmd: MD2;, abg:    red, bg: '#CAFF70' }
+        - { item: button, text:  LSB, cmd: MD1;, abg:    red, bg: '#CAFF70' }
+        - { item: button, text:   AM, cmd: MD5;, abg: yellow, bg: '#CAFF70' }
+        - { item: button, text: DATA, cmd: MD6;, abg:  green, bg: '#CAFF70' }
+
+    - item: group
+      label: Band
+      columns: 1
+      rowspan: 13
+      contains:
+        - { item: button, text: 160 m, cmd: BN00;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  80 m, cmd: BN01;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  60 m, cmd: BN02;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  40 m, cmd: BN03;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  30 m, cmd: BN04;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  20 m, cmd: BN05;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  17 m, cmd: BN06;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  15 m, cmd: BN07;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  12 m, cmd: BN08;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  10 m, cmd: BN09;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:   6 m, cmd: BN10;, abg: yellow, bg: '#E3CF57' }
+
+    - item: group
+      label: Bandwidth
+      column: 0
+      contains:
+        - { item: button, text:   200 Hz, cmd: BW0020;, abg: blue1, bg: '#ADFF2F' }
+        - { item: button, text:   300 Hz, cmd: BW0030;, abg: blue1, bg: '#ADFF2F' }
+        - { item: button, text:   500 Hz, cmd: BW0050;, abg: blue1, bg: '#ADFF2F' }
+        - { item: button, text: 2.3 kHz, cmd: BW0230;, abg: blue1, bg: '#ADFF2F' }
+        - { item: button, text: 3.5 kHz, cmd: BW0350;, abg: blue1, bg: '#ADFF2F' }
+
+    - item: group
+      label: Power
+      column: 0
+      contains:
+        - { item: button, text:   5 watts, cmd: PC050L;, abg:  green }
+        - { item: button, text:  50 watts, cmd: PC050H;, abg: yellow }
+        - { item: button, text: 100 watts, cmd: PC100H;, abg:    red }
+
+    - item: group
+      label: Miscellaneous
+      columns: 3
+      column: 0
+      contains:
+        - { item: button, text:   VFO LOCK, cmd:  LK/;, abg: red }
+        - { item: button, text: Mode VFO A, cmd:  MD+; }
+        - { item: button, text: Mode VFO B, cmd: MD$+; }
+        - { item: button, text:        ATU, cmd: SW40;, abg:    red,  bg:    yellow }
+        - { item: button, text:    band up, cmd:  BN+;, abg: yellow,  bg: '#00FFFF' }
+        - { item: button, text:  band down, cmd:  BN-;, abg: yellow,  bg: '#00FFFF' }
+        - { item: button, text:    K4D OFF, cmd:  PS0;,  bg:   red1, abg:     green }
+
+        #- { item: button, text:       Exit, directive:  quit,  bg:  white, abg:       red }
+        #- { item: button, text: send cmd to 3 servers, cmd: { k4: PS0;, s1: s1cmd, s2: s2cmd},  bg:   red1, abg:     green }
+
+# vim: set expandtab ts=2 sw=2:
