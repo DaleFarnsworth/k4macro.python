@@ -10,3 +10,4 @@ but has been heavily modified. Charles has graciously allowed others
 to continue development under the GPL.
 
 Dale Farnsworth, W7DA
+dale@farnsworth.org
