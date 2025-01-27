@@ -28,13 +28,15 @@
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import socket
+import textwrap
+import time
 import tkinter as tk
 import tkinter.font as tkFont
-import textwrap
 import yaml
+
 from optparse import OptionParser
 
-version = '1.0.1'
+version = '1.0.2'
 
 class Default():
 # may be overriden by values in the config file
@@ -76,6 +78,8 @@ class Server():
                     Server.send_dict(cmd_dict)
                 else:
                     print("Unknown server sub-command '%s'" % cmd_dict)
+        else:
+            print("Unknown cmd '%s'" % cmd)
 
     @staticmethod
     def send_dict(cmd_dict):
@@ -83,6 +87,11 @@ class Server():
             if server_name in Server.servers:
                 server = Server.servers[server_name]
                 server.send(cmd_dict[server_name])
+            elif server_name == 'delay':
+                print('found delay', cmd_dict[server_name])
+                delay = float(cmd_dict[server_name]) / 1000
+                print('sleeping', delay, 'seconds')
+                time.sleep(delay)
             else:
                 print("Unknown server name '%s'" % server_name)
 
@@ -338,6 +347,9 @@ class Options():
 
         Options.config_file = options.config_file
         Options.verbose = options.verbose
+
+        if len(args) != 0:
+            parser.error("Unexpected argument '%s'" % args[0])
 
 def main():
     Options.Parse()
