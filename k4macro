@@ -66,9 +66,13 @@ class Server():
         Server.servers[info['name']] = Server(info)
 
     @staticmethod
+    def default():
+        return Server.servers[Server.default_server_name]
+
+    @staticmethod
     def sendall(cmd):
         if isinstance(cmd, str):
-            server = Server.servers[Server.default_server_name]
+            server = Server.default()
             server.send(cmd)
         elif isinstance(cmd, dict):
             Server.send_dict(cmd)
@@ -154,11 +158,13 @@ class Container():
 
     def show_widgets(self):
         for info in self.info['contains']:
-            widget_type = info['item']
+            widget_type = info['item'].lower()
             if widget_type == 'group':
                 Group(info, self)
             elif widget_type == 'button':
                 Button(info, self)
+            elif widget_type == 'vfo':
+                VFO(info, self)
             self.next_column()
 
     def items_width(self):
@@ -270,7 +276,7 @@ class Button(Widget):
         afg = info.get('afg', Default.afg)
         if afg == None:
             afg = fg
-        button_font = info.get('button_font', container.button_font)
+        button_font = info.get('font', info.get('button_font', container.button_font))
 
         width = container.items_width()
         if len(text) > width:
@@ -310,6 +316,101 @@ class Button(Widget):
                     command=command)
 
         button.grid(row=container.row, column=container.column, sticky='w')
+
+class VFO(Widget):
+    def __init__(self, info, container):
+        super().__init__(info, container)
+
+        self.AorB = info.get('AorB', 'A').upper()
+        self.server = info.get('server', Server.default())
+
+        bg = info.get('bg', Default.bg)
+        fg = info.get('fg', Default.fg)
+        abg = info.get('abg', Default.abg)
+        vfo_font = info.get('font', container.button_font)
+
+        self.increment = .1
+
+        frame = tk.Frame(container.frame)
+
+        font = tkFont.Font(family=vfo_font['family'], size=vfo_font['size'], weight=vfo_font['weight'])
+
+        self.vfo_sb = tk.Spinbox(
+                frame,
+                from_=100,
+                to=54000,
+                wrap=False,
+                command=self.on_vfo_change,
+                increment=self.increment,
+                font=font,
+                width=9,
+                repeatdelay=400,
+                repeatinterval=1,
+                format='%5.3f',
+                justify='right',
+                state='normal',
+                cursor='hand2',
+                fg=fg,
+                bg=bg,
+                )
+
+        self.vfo_sb.grid(row=0, column=0, sticky='w')
+
+        set_font = tkFont.Font(family=vfo_font['family'], size=int(vfo_font['size']/3), weight='bold')
+
+        set_button = tk.Button(frame,
+                    bd='1',
+                    text="S\nE\nT",
+                    font=set_font,
+                    relief='flat',
+                    justify='left',
+                    fg=fg,
+                    bg=bg,
+                    padx=1,
+                    pady=1,
+                    command=self.on_vfo_change)
+
+        set_button.grid(row=0, column=1, sticky='w')
+
+        self.delta_map = { '1 Hz': .001, '10 Hz': .01, '100 Hz': .1, '1 kHz': 1, '10 kHz': 10, '100 kHz': 100, '1 MHz': 1000 }
+
+        self.delta_sb = tk.Spinbox(
+                frame,
+                command=self.on_delta_change,
+                values= tuple(self.delta_map.keys()),
+                font=font,
+                width=7,
+                repeatdelay=400,
+                repeatinterval=1,
+                format='%5.3f',
+                justify='right',
+                state='normal',
+                cursor='hand2',
+                fg=fg,
+                bg=bg,
+                activebackground=abg,
+                )
+        self.delta_sb.delete(0, 'end')
+        self.delta_sb.insert(0, '100 Hz')
+
+        self.delta_sb.grid(row=0, column=2, sticky='w')
+
+        frame.grid(row=container.row, column=container.column, sticky='w')
+
+    def on_vfo_change(self):
+        freq = int(float(self.vfo_sb.get()) * 1000)
+        mod = freq % int(self.increment * 1000)
+        freq -= mod
+        self.vfo_sb.delete(0, 'end')
+        self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
+        Page.top.update()
+        freq11 = "{:011d}".format(freq)
+        cmd = "F{vfo}{freq};".format(vfo=self.AorB, freq=freq11)
+        self.server.send(cmd)
+
+    def on_delta_change(self):
+        self.increment = self.delta_map[self.delta_sb.get()]
+        self.vfo_sb.config(increment=self.increment)
 
 def read_config(config_file_name):
     with open(config_file_name) as stream:

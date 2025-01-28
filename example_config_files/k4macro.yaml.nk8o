@@ -62,6 +62,18 @@
   columns: 2
   contains:
     - item: group
+      contains:
+      - item: group
+        label: VFO A
+        contains:
+          - { item: vfo, AorB: A, bg: white, fg: black }
+
+      - item: group
+        label: VFO B
+        contains:
+          - { item: vfo, AorB: B, bg: white, fg: black }
+
+    - item: group
       label: Mode VFO
       columns: 6
       column: 0
