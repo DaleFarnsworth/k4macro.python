@@ -170,7 +170,7 @@ class Container():
     def items_width(self):
         width = 0
         for info in self.info['contains']:
-            text = info.get('text', '')
+            text = str(info.get('text', ''))
             if len(text) > width:
                 width = len(text)
         return width
@@ -267,7 +267,7 @@ class Button(Widget):
     def __init__(self, info, container):
         super().__init__(info, container)
 
-        text = info.get('text', '')
+        text = str(info.get('text', ''))
         cmd = info.get('cmd', None)
         directive = info.get('directive', None)
         bg = info.get('bg', Default.bg)
@@ -322,7 +322,8 @@ class VFO(Widget):
         super().__init__(info, container)
 
         self.AorB = info.get('AorB', 'A').upper()
-        self.server = info.get('server', Server.default())
+        server_name = info.get('server', Server.default_server_name)
+        self.server = Server.servers[server_name]
 
         bg = info.get('bg', Default.bg)
         fg = info.get('fg', Default.fg)

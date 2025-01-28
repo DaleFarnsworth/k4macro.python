@@ -43,7 +43,7 @@
 
   # Font used for labels
   label_font: { family: Helvetica, size: 8, weight: normal }
-  # Font used for buttons
+  # Font used for buttons, and other controls
   button_font: { family: Helvetica, size: 8, weight: normal }
 
 - item: server
@@ -70,12 +70,12 @@
       - item: group
         label: VFO A
         contains:
-          - { item: vfo, AorB: A, bg: white, fg: black }
+          - { item: vfo, AorB: A, server: k4, bg: white, fg: black }
 
       - item: group
         label: VFO B
         contains:
-          - { item: vfo, AorB: B, bg: white, fg: black }
+          - { item: vfo, AorB: B, server: k4, bg: white, fg: black }
 
     - item: group
       label: Mode
@@ -92,17 +92,17 @@
       columns: 1
       rowspan: 13
       contains:
-        - { item: button, text: 160 m, cmd: BN00;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  80 m, cmd: BN01;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  60 m, cmd: BN02;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  40 m, cmd: BN03;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  30 m, cmd: BN04;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  20 m, cmd: BN05;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  17 m, cmd: BN06;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  15 m, cmd: BN07;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  12 m, cmd: BN08;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  10 m, cmd: BN09;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:   6 m, cmd: BN10;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text: 160, cmd: BN00;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  80, cmd: BN01;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  60, cmd: BN02;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  40, cmd: BN03;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  30, cmd: BN04;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  20, cmd: BN05;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  17, cmd: BN06;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  15, cmd: BN07;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  12, cmd: BN08;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:  10, cmd: BN09;, abg: yellow, bg: '#E3CF57' }
+        - { item: button, text:   6, cmd: BN10;, abg: yellow, bg: '#E3CF57' }
 
     - item: group
       label: Bandwidth
