@@ -88,9 +88,7 @@ class Server():
                 server = Server.servers[server_name]
                 server.send(cmd_dict[server_name])
             elif server_name == 'delay':
-                print('found delay', cmd_dict[server_name])
                 delay = float(cmd_dict[server_name]) / 1000
-                print('sleeping', delay, 'seconds')
                 time.sleep(delay)
             else:
                 print("Unknown server name '%s'" % server_name)
