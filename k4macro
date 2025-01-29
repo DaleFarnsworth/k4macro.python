@@ -160,9 +160,13 @@ class Server():
                 self.add_poll_callback(self.recv_thread, self.receive)
         except socket.gaierror:
             print('Address not found: %s' % self.address)
+            if not Options.debug:
+                cleanup_and_exit()
         except OSError:
             print('Failed to connect to %s, address %s, port %d'
                   % (self.name, self.address, self.port))
+            if not Options.debug:
+                cleanup_and_exit()
 
     def close(self):
         self.stop_threads = True
@@ -398,7 +402,7 @@ class Button(Widget):
             text = textwrap.fill(text, width)
 
         special_strings = {
-            'quit': quit,
+            'quit': cleanup_and_exit,
             'show_previous_page': Page.show_previous,
         }
 
@@ -582,11 +586,11 @@ class Options():
         if len(args) != 0:
             parser.error("Unexpected argument '%s'" % args[0])
 
-def on_closing():
+def cleanup_and_exit():
     for server in Server.servers():
         server.close()
 
-    Page.top.destroy()
+    quit()
 
 def main():
     Options.Parse()
@@ -602,7 +606,7 @@ def main():
     for server in Server.servers():
         server.connect()
 
-    top.protocol("WM_DELETE_WINDOW", on_closing)
+    top.protocol("WM_DELETE_WINDOW", cleanup_and_exit)
 
     top.mainloop()
 
