@@ -40,7 +40,7 @@ import yaml
 
 from optparse import OptionParser
 
-version = '1.0.4'
+version = '1.0.6'
 
 class Default():
 # may be overriden by values in the config file
@@ -156,8 +156,7 @@ class Server():
             self.recv_thread.start()
             if self.type == 'k4':
                 Page.top.after(50, self.poll)
-                #self.send('AI2;AID060;')       # K4 will send updates every 60 mS
-                self.send('AI4;')               # K4 will send updaes immediately
+                self.send('AI2;AID060;')        # request K4 to send updates every 60 mS
                 self.add_poll_callback(self.recv_thread, self.receive)
         except socket.gaierror:
             print('Address not found: %s' % self.address)

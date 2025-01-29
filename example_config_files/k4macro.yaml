@@ -50,7 +50,6 @@
   name: k4
   type: k4
   address: K4-SNxxxxx.local   # match your serial number in the string
-  address: k4
   port: 9200
 
 #- item: server
