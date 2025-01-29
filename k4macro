@@ -51,13 +51,13 @@ class Default():
     label_font =  { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
     button_font = { 'family': 'Helvetica', 'size': 10, 'weight': 'normal' }
 
-    def info(info):
-        Default.bg = info.get('bg', Default.bg)
-        Default.abg = info.get('abg', Default.abg)
-        Default.fg = info.get('fg', Default.fg)
-        Default.afg = info.get('afg', Default.afg)
-        Default.label_font = info.get('label_font', Default.label_font)
-        Default.button_font = info.get('button_font', Default.button_font)
+    def config_info(config_info):
+        Default.bg = config_info.get('bg', Default.bg)
+        Default.abg = config_info.get('abg', Default.abg)
+        Default.fg = config_info.get('fg', Default.fg)
+        Default.afg = config_info.get('afg', Default.afg)
+        Default.label_font = config_info.get('label_font', Default.label_font)
+        Default.button_font = config_info.get('button_font', Default.button_font)
 
 class Server():
     server_dict = {}
@@ -75,10 +75,10 @@ class Server():
         return Server.server_dict.values()
 
     @staticmethod
-    def info(info):
+    def config_info(config_info):
         if Server.default_server_name == None:
-            Server.default_server_name = info['name']
-        Server.server_dict[info['name']] = Server(info)
+            Server.default_server_name = config_info['name']
+        Server.server_dict[config_info['name']] = Server(config_info)
 
     @staticmethod
     def default():
@@ -112,11 +112,11 @@ class Server():
             else:
                 print("Unknown server name '%s'" % server_name)
 
-    def __init__(self, info):
-        self.name = info['name']
-        self.type = info.get('type', '')
-        self.address = info['address']
-        self.port = info['port']
+    def __init__(self, config_info):
+        self.name = config_info['name']
+        self.type = config_info.get('type', '')
+        self.address = config_info['address']
+        self.port = config_info['port']
         self.socket = None
         self.recv_buffer = ''
         self.send_queue = queue.Queue()
@@ -256,10 +256,10 @@ class Server():
         self.response_subscriptions.pop(key, '')
 
 class Container():
-    def __init__(self, info, container):
-        self.info = info
+    def __init__(self, config_info, container):
+        self.config_info = config_info
         self.container = container
-        self.columns = info.get('columns', len(self.info['contains']))
+        self.columns = config_info.get('columns', len(self.config_info['contains']))
         self.row = 0
         self.column = 0
 
@@ -276,35 +276,35 @@ class Container():
         self.row += 1
 
     def show_widgets(self):
-        for info in self.info['contains']:
-            widget_type = info['item'].lower()
+        for config_info in self.config_info['contains']:
+            widget_type = config_info['item'].lower()
             if widget_type == 'group':
-                Group(info, self)
+                Group(config_info, self)
             elif widget_type == 'button':
-                Button(info, self)
+                Button(config_info, self)
             elif widget_type == 'vfo':
-                VFO(info, self)
+                VFO(config_info, self)
             self.next_column()
 
     def items_width(self):
         width = 0
-        for info in self.info['contains']:
-            text = str(info.get('text', ''))
+        for config_info in self.config_info['contains']:
+            text = str(config_info.get('text', ''))
             if len(text) > width:
                 width = len(text)
         return width
 
 class Page(Container):
-    infos = {}
+    config_infos = {}
     name_stack = []
     current_frame = None
     top = None
 
     @staticmethod
     def show(page_name):
-        if page_name in Page.infos:
+        if page_name in Page.config_infos:
             Page.name_stack.append(page_name)
-            Page(Page.infos[page_name])
+            Page(Page.config_infos[page_name])
         else:
             print("Page:'%s' not found." % page_name)
 
@@ -317,14 +317,14 @@ class Page(Container):
         Page.show(page_name)
 
     @staticmethod
-    def info(info):
-        Page.infos[info['name']] = info
+    def config_info(config_info):
+        Page.config_infos[config_info['name']] = config_info
 
-    def __init__(self, info):
-        super().__init__(info, None)
+    def __init__(self, config_info):
+        super().__init__(config_info, None)
 
-        self.label_font = info.get('label_font', Default.label_font)
-        self.button_font = info.get('button_font', Default.button_font)
+        self.label_font = config_info.get('label_font', Default.label_font)
+        self.button_font = config_info.get('button_font', Default.button_font)
 
         if Page.current_frame != None:
             Page.current_frame.destroy()
@@ -334,29 +334,29 @@ class Page(Container):
         Page.current_frame = self.frame
 
 class Group(Container):
-    def __init__(self, info, container):
-        super().__init__(info, container)
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
         container = self.container
         frame = container.frame
 
-        if 'column' in info:
-            column = info['column']
+        if 'column' in config_info:
+            column = config_info['column']
             if column < container.column:
                 container.next_column()
             container.column = column
         else:
             column = container.column
 
-        row = info.get('row', container.row)
-        columnspan = info.get('columnspan', 1)
-        rowspan = info.get('rowspan', 1)
-        self.label_font = info.get('label_font', container.label_font)
-        self.button_font = info.get('button_font', container.button_font)
+        row = config_info.get('row', container.row)
+        columnspan = config_info.get('columnspan', 1)
+        rowspan = config_info.get('rowspan', 1)
+        self.label_font = config_info.get('label_font', container.label_font)
+        self.button_font = config_info.get('button_font', container.button_font)
 
         font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
 
-        if 'label' in info:
-            label = info['label']
+        if 'label' in config_info:
+            label = config_info['label']
             self.frame = tk.LabelFrame(frame,
                                        text=label,
                                        font=font,
@@ -374,8 +374,8 @@ class Group(Container):
         self.show_widgets()
 
 class Widget():
-    def __init__(self, info, container):
-        self.info = info
+    def __init__(self, config_info, container):
+        self.config_info = config_info
         self.container = container
         self.bg = None
         self.abg = None
@@ -383,19 +383,19 @@ class Widget():
         self.afg = None
 
 class Button(Widget):
-    def __init__(self, info, container):
-        super().__init__(info, container)
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
 
-        text = str(info.get('text', ''))
-        cmd = info.get('cmd', None)
-        directive = info.get('directive', None)
-        bg = info.get('bg', Default.bg)
-        fg = info.get('fg', Default.fg)
-        abg = info.get('abg', Default.abg)
-        afg = info.get('afg', Default.afg)
+        text = str(config_info.get('text', ''))
+        cmd = config_info.get('cmd', None)
+        directive = config_info.get('directive', None)
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
+        abg = config_info.get('abg', Default.abg)
+        afg = config_info.get('afg', Default.afg)
         if afg == None:
             afg = fg
-        button_font = info.get('font', info.get('button_font', container.button_font))
+        button_font = config_info.get('font', config_info.get('button_font', container.button_font))
 
         width = container.items_width()
         if len(text) > width:
@@ -437,17 +437,17 @@ class Button(Widget):
         button.grid(row=container.row, column=container.column, sticky='w')
 
 class VFO(Widget):
-    def __init__(self, info, container):
-        super().__init__(info, container)
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
 
-        self.AorB = info.get('AorB', 'A').upper()
-        server_name = info.get('server', Server.default_server_name)
+        self.AorB = config_info.get('AorB', 'A').upper()
+        server_name = config_info.get('server', Server.default_server_name)
         self.server = Server.server(server_name)
 
-        bg = info.get('bg', Default.bg)
-        fg = info.get('fg', Default.fg)
-        abg = info.get('abg', Default.abg)
-        vfo_font = info.get('font', container.button_font)
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
+        abg = config_info.get('abg', Default.abg)
+        vfo_font = config_info.get('font', container.button_font)
 
         self.increment = .1
 
@@ -550,14 +550,14 @@ def read_config(config_file_name):
         except yaml.YAMLError as exc:
             print(exc)
 
-        for info in config:
-            item = info['item']
+        for config_info in config:
+            item = config_info['item']
             if item == 'page':
-                Page.info(info)
+                Page.config_info(config_info)
             elif item == 'server':
-                Server.info(info)
+                Server.config_info(config_info)
             elif item == 'defaults':
-                Default.info(info)
+                Default.config_info(config_info)
             else:
                 print("Unexpected top level item '%s' in '%s'." % (item, config_file_name))
 
