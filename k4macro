@@ -40,7 +40,7 @@ import yaml
 
 from optparse import OptionParser
 
-version = '1.0.6'
+version = '1.0.8'
 
 class Default():
 # may be overriden by values in the config file
@@ -48,6 +48,7 @@ class Default():
     abg = 'red'
     fg = 'black'
     afg = None        # None means same as fg
+    selectcolor = 'red'
     label_font =  { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
     button_font = { 'family': 'Helvetica', 'size': 10, 'weight': 'normal' }
 
@@ -56,6 +57,7 @@ class Default():
         Default.abg = config_info.get('abg', Default.abg)
         Default.fg = config_info.get('fg', Default.fg)
         Default.afg = config_info.get('afg', Default.afg)
+        Default.selectcolor = config_info.get('selectcolor', Default.selectcolor)
         Default.label_font = config_info.get('label_font', Default.label_font)
         Default.button_font = config_info.get('button_font', Default.button_font)
 
@@ -85,22 +87,6 @@ class Server():
         return Server.server(Server.default_server_name)
 
     @staticmethod
-    def sendall(cmd):
-        if isinstance(cmd, str):
-            server = Server.default()
-            server.send(cmd)
-        elif isinstance(cmd, dict):
-            Server.send_dict(cmd)
-        elif isinstance(cmd, list):
-            for cmd_dict in cmd:
-                if isinstance(cmd_dict, dict):
-                    Server.send_dict(cmd_dict)
-                else:
-                    print("Unknown server sub-command '%s'" % cmd_dict)
-        else:
-            print("Unknown cmd '%s'" % cmd)
-
-    @staticmethod
     def send_dict(cmd_dict):
         for server_name in cmd_dict:
             if server_name in Server.server_names():
@@ -110,7 +96,7 @@ class Server():
                 delay = float(cmd_dict[server_name]) / 1000
                 time.sleep(delay)
             else:
-                print("Unknown server name '%s'" % server_name)
+                print("Unknown server name '{name}'".format(name=server_name))
 
     def __init__(self, config_info):
         self.name = config_info['name']
@@ -125,6 +111,7 @@ class Server():
         self.recv_thread = None
         self.stop_threads = False
         self.response_subscriptions = {}
+        self.max_response_key_length = 0
         self.poll_callbacks = {}
 
     def add_poll_callback(self, key, callback):
@@ -141,9 +128,9 @@ class Server():
         Page.top.after(50, self.poll)
 
     def connect(self):
-        if Options.verbose:
-            print('Connecting to %s, address %s, port %d'
-                  % (self.name, self.address, self.port))
+        if Options.verbose > 0:
+            print('Connecting to {name}, address {addr}, port {port}'.format(
+                  name=self.name, addr=self.address, port=self.port))
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -159,13 +146,13 @@ class Server():
                 self.send('AI2;AID060;')        # request K4 to send updates every 60 mS
                 self.add_poll_callback(self.recv_thread, self.receive)
         except socket.gaierror:
-            print('Address not found: %s' % self.address)
-            if not Options.debug:
+            print('Address not found: {addr}'.format(addr=self.address))
+            if not Options.debug > 0:
                 cleanup_and_exit()
         except OSError:
-            print('Failed to connect to %s, address %s, port %d'
-                  % (self.name, self.address, self.port))
-            if not Options.debug:
+            print('Failed to connect to {name}, address {addr}, port {port}'.format(
+                  name=self.name, addr=self.address, port=self.port))
+            if not Options.debug > 0:
                 cleanup_and_exit()
 
     def close(self):
@@ -184,30 +171,51 @@ class Server():
             cmd = self.send_queue.get()
             if self.stop_threads:
                 return
-            if Options.debug:
-                print('sending cmd:', cmd)
             try:
                 self.socket.sendall(cmd.encode())
+                if Options.debug > 0:
+                    print('{name}: sent: {cmd}'.format(name=self.name, cmd=cmd))
             except OSError:
-                print("Failed to send command, '%s' to '%s'" % (cmd, self.name))
+                print("Failed to send command, '{cmd}' to '{name}'".format(cmd=cmd, name=self.name))
+
+    def sendall(self, cmd):
+        if isinstance(cmd, str):
+            self.send(cmd)
+        elif isinstance(cmd, dict):
+            Server.send_dict(cmd)
+        elif isinstance(cmd, list):
+            for cmd_dict in cmd:
+                if isinstance(cmd_dict, dict):
+                    Server.send_dict(cmd_dict)
+                else:
+                    print("Unknown server sub-command 'cmd'".format(cmd=cmd_dict))
+        else:
+            print("Unknown cmd '{cmd}'".format(cmd=cmd))
+
+    def k4_receive(self, response):
+        if len(response) > self.max_response_key_length:
+            beyond_last = self.max_response_key_length + 2
+        else:
+            beyond_last = len(response) + 2
+
+        for end in range(2, beyond_last):
+            func = self.response_subscriptions.get(response[0:end], None)
+            if func != None:
+                func(response)
+                return True
+        return False
 
     def receive(self):
         try:
             responses = self.recv_queue.get_nowait()
             for response in responses:
-                if Options.debug:
-                    print('%s: dequeued response: %s' % (self.name, response))
+                if Options.debug > 1:
+                    print('{name}: dequeued response: {response}'.format(name=self.name, response=response))
                 if self.type == 'k4':
-                    if response[2] == '$':
-                        key = response[0:3]
-                    else:
-                        key = response[0:2]
-                    func = self.response_subscriptions.get(key, None)
-                    if func != None:
-                        func(response)
-                        continue
-                if Options.verbose:
-                    print('%s: unhandled response: %s' % (self.name, response))
+                    if self.k4_receive(response):
+                            continue
+                if Options.debug > 1:
+                    print('{name}: unhandled response: {response}'.format(name=self.name, response=response))
         except queue.Empty:
             pass
 
@@ -224,8 +232,8 @@ class Server():
 
             recv_bytes = self.socket.recv(4096)
             recv_str = recv_bytes.decode()
-            if Options.debug:
-                print('%s: received: %s' % (self.name, recv_str))
+            if Options.debug > 0:
+                print('{name}: received: {str}'.format(name=self.name, str=recv_str))
             if self.type != 'k4':
                 try:
                     self.recv_queue.put(responses)
@@ -246,10 +254,12 @@ class Server():
                     partial_response = ''
 
                 self.recv_queue.put(responses)
-                if Options.debug:
-                    print('%s: queued: %s' % (self.name, responses))
+                if Options.debug > 1:
+                    print('{name}: queued: {responses}'.format(name=self.name, responses=responses))
 
     def subscribe_response(self, key, callback):
+        if len(key) > self.max_response_key_length:
+            self.max_response_key_length = len(key)
         self.response_subscriptions[key] = callback
 
     def unsubscribe_response(self, key):
@@ -282,6 +292,8 @@ class Container():
                 Group(config_info, self)
             elif widget_type == 'button':
                 Button(config_info, self)
+            elif widget_type == 'radiobutton':
+                Radiobutton(config_info, self)
             elif widget_type == 'vfo':
                 VFO(config_info, self)
             self.next_column()
@@ -306,7 +318,7 @@ class Page(Container):
             Page.name_stack.append(page_name)
             Page(Page.config_infos[page_name])
         else:
-            print("Page:'%s' not found." % page_name)
+            print("Page:'{name}' not found.".format(name=page_name))
 
     @staticmethod
     def show_previous():
@@ -397,6 +409,9 @@ class Button(Widget):
             afg = fg
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
 
+        server_name = config_info.get('server', Server.default_server_name)
+        self.server = Server.server(server_name)
+
         width = container.items_width()
         if len(text) > width:
             text = textwrap.fill(text, width)
@@ -416,7 +431,7 @@ class Button(Widget):
                 print('Unknown directive: ', directive)
 
         if cmd != None:
-            command = lambda: Server.sendall(cmd)
+            command = lambda: self.sendall(cmd)
 
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
@@ -435,6 +450,88 @@ class Button(Widget):
                     command=command)
 
         button.grid(row=container.row, column=container.column, sticky='w')
+
+class Radiobutton(Widget):
+    radiobuttons = {}
+    variables = {}
+
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
+
+        text = str(config_info.get('text', ''))
+        self.cmd = config_info.get('cmd', None)
+        indicator = config_info.get('indicator', 1)
+        selectcolor = config_info.get('selectcolor', Default.selectcolor)
+        self.group_id = config_info.get('groupid', None)
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
+        abg = config_info.get('abg', Default.abg)
+        afg = config_info.get('afg', Default.afg)
+        if afg == None:
+            afg = fg
+        button_font = config_info.get('font', config_info.get('button_font', container.button_font))
+
+        server_name = config_info.get('server', Server.default_server_name)
+        self.server = Server.server(server_name)
+
+        if not self.group_id in Radiobutton.radiobuttons:
+            Radiobutton.radiobuttons[self.group_id] = []
+        Radiobutton.radiobuttons[self.group_id].append(self)
+
+        if not self.group_id in Radiobutton.variables:
+            Radiobutton.variables[self.group_id] = tk.StringVar
+        variable = Radiobutton.variables[self.group_id]
+
+        width = container.items_width()
+        if len(text) > width:
+            text = textwrap.fill(text, width)
+
+        font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
+
+        self.button = tk.Radiobutton(container.frame,
+                    bd='4',
+                    text=text,
+                    font=font,
+                    width=width,
+                    relief='raised',
+                    fg=fg,
+                    bg=bg,
+                    activebackground=abg,
+                    activeforeground=afg,
+                    padx=2,
+                    pady=2,
+                    command=self.on_clicked,
+                    indicator=indicator,
+                    selectcolor=selectcolor,
+                    variable=variable,
+                    value=self.cmd)
+
+        self.button.grid(row=container.row, column=container.column, sticky='w')
+
+        if self.server.type == 'k4':
+            key = self.cmd.rstrip(';')
+            self.server.subscribe_response(key, self.on_response_received)
+
+            if self.cmd[2] == '$':
+                request = self.cmd[0:3]
+            else:
+                request = self.cmd[0:2]
+            self.server.send('{request};'.format(request=request))
+
+    def select(self):
+        for radiobutton in Radiobutton.radiobuttons[self.group_id]:
+            if radiobutton.button == self.button:
+                radiobutton.button.select()
+            else:
+                radiobutton.button.deselect()
+
+    def on_clicked(self):
+        self.select()
+        if self.cmd != None:
+            self.server.sendall(self.cmd)
+
+    def on_response_received(self, response):
+        self.select()
 
 class VFO(Widget):
     def __init__(self, config_info, container):
@@ -559,32 +656,32 @@ def read_config(config_file_name):
             elif item == 'defaults':
                 Default.config_info(config_info)
             else:
-                print("Unexpected top level item '%s' in '%s'." % (item, config_file_name))
+                print("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
 
 class Options():
     config_file = None
-    verbose = None
-    debug = None
+    verbose = 0
+    debug = 0
 
     @staticmethod
     def Parse():
         parser = OptionParser(version=version)
         parser.add_option('--config', dest='config_file', default='k4macro.yaml',
                           help="use config file FILE", metavar="FILE")
-        parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
+        parser.add_option('-v', '--verbose', action='count', dest='verbose', default = 0,
                           help="output additional status messages")
-        parser.add_option('--debug', action='store_true', dest='debug',
+        parser.add_option('-d', '--debug', action='count', dest='debug', default=0,
                           help="output debugging messages")
         (options, args) = parser.parse_args()
 
         Options.config_file = options.config_file
         Options.verbose = options.verbose
         Options.debug = options.debug
-        if Options.debug:
-            Options.verbose = True
+        if Options.debug > 0 and Options.verbose == 0:
+            Options.verbose = Options.debug
 
         if len(args) != 0:
-            parser.error("Unexpected argument '%s'" % args[0])
+            parser.error("Unexpected argument '{arg}'".format(arg=args[0]))
 
 def cleanup_and_exit():
     for server in Server.servers():

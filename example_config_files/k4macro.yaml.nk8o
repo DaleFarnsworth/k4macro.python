@@ -36,6 +36,7 @@
   abg: red
   fg: black
   # afg: black                # non-existent means same as fg
+  selectcolor: red            # inherited by radiobutton
 
   # Font used for labels
   label_font: { family: Helvetica, size: 8, weight: normal }
@@ -44,6 +45,7 @@
 
 - item: server
   name: k4
+  type: k4
   address: K4-SNxxxxx.local   # match your serial number in the string
   port: 9200
 
@@ -66,59 +68,70 @@
       - item: group
         label: VFO A
         contains:
-          - { item: vfo, AorB: A, bg: white, fg: black }
+          - { item: vfo, AorB: A, server: k4, bg: white, fg: black }
 
       - item: group
         label: VFO B
         contains:
-          - { item: vfo, AorB: B, bg: white, fg: black }
+          - { item: vfo, AorB: B, server: k4, bg: white, fg: black }
 
     - item: group
       label: Mode VFO
       columns: 6
       column: 0
       contains:
-        - { item: button, text:  A - CW,  cmd: MD3;,  abg:  green, bg: '#CAFF70' }
-        - { item: button, text:  A - USB, cmd: MD2;,  abg:    red, bg: '#CAFF70' }
-        - { item: button, text:  A - LSB, cmd: MD1;,  abg:    red, bg: '#CAFF70' }
-        - { item: button, text:  A - AM,  cmd: MD5;,  abg: yellow, bg: '#CAFF70' }
-        - { item: button, text:  A - FM,  cmd: MD4;,  abg: yellow, bg: '#CAFF70' }
-        - { item: button, text: A - DATA, cmd: MD6;,  abg:  green, bg: '#CAFF70' }
-        - { item: button, text:   B - CW, cmd: MD$3;, abg:  green, bg: '#98F5FF' }
-        - { item: button, text:  B - USB, cmd: MD$2;, abg:    red, bg: '#98F5FF' }
-        - { item: button, text:  B - LSB, cmd: MD$1;, abg:    red, bg: '#98F5FF' }
-        - { item: button, text:   B - AM, cmd: MD$5;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:   B - FM, cmd: MD$4;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text: B - DATA, cmd: MD$6;, abg:  green, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - CW,   cmd: MD3;,  abg:  green, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - USB,  cmd: MD2;,  abg:    red, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - LSB,  cmd: MD1;,  abg:    red, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - AM,   cmd: MD5;,  abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - FM,   cmd: MD4;,  abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - DATA, cmd: MD6;,  abg:  green, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - CW,   cmd: MD$3;, abg:  green, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - USB,  cmd: MD$2;, abg:    red, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - LSB,  cmd: MD$1;, abg:    red, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - AM,   cmd: MD$5;, abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - FM,   cmd: MD$4;, abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - DATA, cmd: MD$6;, abg:  green, bg: '#98F5FF' }
 
     - item: group 
-      label:  VFO A -   VFO B
       columns: 2
-      rows: 10
       rowspan: 12
       contains:
-        - { item: button, text: 160 m, cmd: BN00;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text: 160 m, cmd: BN$00;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  80 m, cmd: BN01;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  80 m, cmd: BN$01;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  60 m, cmd: BN02;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  60 m, cmd: BN$02;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  40 m, cmd: BN03;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  40 m, cmd: BN$03;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  30 m, cmd: BN04;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  30 m, cmd: BN$04;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  20 m, cmd: BN05;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  20 m, cmd: BN$05;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  17 m, cmd: BN06;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  17 m, cmd: BN$06;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  15 m, cmd: BN07;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  15 m, cmd: BN$07;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  12 m, cmd: BN08;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  12 m, cmd: BN$08;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:  10 m, cmd: BN09;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  10 m, cmd: BN$09;, abg: yellow, bg: '#98F5FF' }
-        - { item: button, text:   6 m, cmd: BN10;,  abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:   6 m, cmd: BN$10;, abg: yellow, bg: '#98F5FF' }
+        - item: group 
+          label:  VFO A
+          columns: 1
+          rows: 10
+          rowspan: 12
+          contains:
+            - { item: radiobutton, groupid: bandA, indicator: 0, text: 160 m, cmd: BN00;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  80 m, cmd: BN01;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  60 m, cmd: BN02;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  40 m, cmd: BN03;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  30 m, cmd: BN04;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  20 m, cmd: BN05;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  17 m, cmd: BN06;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  15 m, cmd: BN07;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  12 m, cmd: BN08;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  10 m, cmd: BN09;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:   6 m, cmd: BN10;,  abg: yellow, bg: '#E3CF57' }
+
+        - item: group 
+          label:  VFO B
+          columns: 1
+          rows: 10
+          rowspan: 12
+          contains:
+            - { item: radiobutton, groupid: bandB, indicator: 0, text: 160 m, cmd: BN$00;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  80 m, cmd: BN$01;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  60 m, cmd: BN$02;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  40 m, cmd: BN$03;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  30 m, cmd: BN$04;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  20 m, cmd: BN$05;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  17 m, cmd: BN$06;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  15 m, cmd: BN$07;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  12 m, cmd: BN$08;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  10 m, cmd: BN$09;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:   6 m, cmd: BN$10;, abg: yellow, bg: '#98F5FF' }
 
 
     - item: group 

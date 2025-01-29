@@ -40,10 +40,11 @@
   abg: red
   fg: black
   # afg: black                # non-existent means same as fg
+  selectcolor: red            # inherited by radiobutton
 
   # Font used for labels
   label_font: { family: Helvetica, size: 8, weight: normal }
-  # Font used for buttons, and other controls
+  # Font used for buttons and other controls
   button_font: { family: Helvetica, size: 10, weight: normal }
 
 - item: server
@@ -82,28 +83,28 @@
       label: Mode
       column: 0
       contains:
-        - { item: button, text:   CW, cmd: MD3;, abg:  green, bg: '#CAFF70' }
-        - { item: button, text:  USB, cmd: MD2;, abg:    red, bg: '#CAFF70' }
-        - { item: button, text:  LSB, cmd: MD1;, abg:    red, bg: '#CAFF70' }
-        - { item: button, text:   AM, cmd: MD5;, abg: yellow, bg: '#CAFF70' }
-        - { item: button, text: DATA, cmd: MD6;, abg:  green, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: mode, indicator: 0, text:   CW, cmd: MD3;, abg:  green, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: mode, indicator: 0, text:  USB, cmd: MD2;, abg:    red, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: mode, indicator: 0, text:  LSB, cmd: MD1;, abg:    red, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: mode, indicator: 0, text:   AM, cmd: MD5;, abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: mode, indicator: 0, text: DATA, cmd: MD6;, abg:  green, bg: '#CAFF70' }
 
     - item: group
       label: Band
       columns: 1
       rowspan: 13
       contains:
-        - { item: button, text: 160, cmd: BN00;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  80, cmd: BN01;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  60, cmd: BN02;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  40, cmd: BN03;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  30, cmd: BN04;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  20, cmd: BN05;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  17, cmd: BN06;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  15, cmd: BN07;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  12, cmd: BN08;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:  10, cmd: BN09;, abg: yellow, bg: '#E3CF57' }
-        - { item: button, text:   6, cmd: BN10;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text: 160, cmd: BN00;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  80, cmd: BN01;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  60, cmd: BN02;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  40, cmd: BN03;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  30, cmd: BN04;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  20, cmd: BN05;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  17, cmd: BN06;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  15, cmd: BN07;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  12, cmd: BN08;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:  10, cmd: BN09;, abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: band, indicator: 0, text:   6, cmd: BN10;, abg: yellow, bg: '#E3CF57' }
 
     - item: group
       label: Bandwidth
