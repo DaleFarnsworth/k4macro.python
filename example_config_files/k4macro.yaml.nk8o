@@ -39,8 +39,8 @@
 
   # Font used for labels
   label_font: { family: Helvetica, size: 8, weight: normal }
-  # Font used for buttons
-  button_font: { family: Helvetica, size: 8, weight: normal }
+  # Font used for buttons and other controls
+  button_font: { family: Helvetica, size: 10, weight: normal }
 
 - item: server
   name: k4

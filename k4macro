@@ -49,7 +49,7 @@ class Default():
     fg = 'black'
     afg = None        # None means same as fg
     label_font =  { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
-    button_font = { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
+    button_font = { 'family': 'Helvetica', 'size': 10, 'weight': 'normal' }
 
     def info(info):
         Default.bg = info.get('bg', Default.bg)
