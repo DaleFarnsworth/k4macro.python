@@ -27,8 +27,12 @@
 #    You should have received a copy of the GNU General Public License
 #    along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import ctypes
+import queue
+import select
 import socket
 import textwrap
+import threading
 import time
 import tkinter as tk
 import tkinter.font as tkFont
@@ -56,18 +60,29 @@ class Default():
         Default.button_font = info.get('button_font', Default.button_font)
 
 class Server():
-    servers = {}
+    server_dict = {}
     default_server_name = None
+
+    def server(server_name):
+        return Server.server_dict[server_name]
+
+    @staticmethod
+    def server_names():
+        return Server.server_dict.keys()
+
+    @staticmethod
+    def servers():
+        return Server.server_dict.values()
 
     @staticmethod
     def info(info):
         if Server.default_server_name == None:
             Server.default_server_name = info['name']
-        Server.servers[info['name']] = Server(info)
+        Server.server_dict[info['name']] = Server(info)
 
     @staticmethod
     def default():
-        return Server.servers[Server.default_server_name]
+        return Server.server(Server.default_server_name)
 
     @staticmethod
     def sendall(cmd):
@@ -88,8 +103,8 @@ class Server():
     @staticmethod
     def send_dict(cmd_dict):
         for server_name in cmd_dict:
-            if server_name in Server.servers:
-                server = Server.servers[server_name]
+            if server_name in Server.server_names():
+                server = Server.server_name(server_name)
                 server.send(cmd_dict[server_name])
             elif server_name == 'delay':
                 delay = float(cmd_dict[server_name]) / 1000
@@ -99,9 +114,31 @@ class Server():
 
     def __init__(self, info):
         self.name = info['name']
+        self.type = info.get('type', '')
         self.address = info['address']
         self.port = info['port']
         self.socket = None
+        self.recv_buffer = ''
+        self.send_queue = queue.Queue()
+        self.recv_queue = queue.Queue()
+        self.send_thread = None
+        self.recv_thread = None
+        self.stop_threads = False
+        self.response_subscriptions = {}
+        self.poll_callbacks = {}
+
+    def add_poll_callback(self, key, callback):
+        self.poll_callbacks[key] = callback
+
+    def remove_poll_callback(self, key):
+        self.poll_callbacks.pop(key, '')
+
+    def poll(self):
+        for key in tuple(self.poll_callbacks):
+            callback = self.poll_callbacks.get(key, None)
+            if callback != None:
+                callback()
+        Page.top.after(50, self.poll)
 
     def connect(self):
         if Options.verbose:
@@ -113,28 +150,107 @@ class Server():
             sock.settimeout(5)
             sock.connect((self.address, self.port))
             self.socket = sock
+            self.send_thread = threading.Thread(target=self.send_loop, name=self.name+'.send_thread')
+            self.send_thread.start()
+            self.recv_thread = threading.Thread(target=self.recv_loop, name=self.name+'.recv_thread')
+            self.recv_thread.start()
+            if self.type == 'k4':
+                Page.top.after(50, self.poll)
+                #self.send('AI2;AID060;')       # K4 will send updates every 60 mS
+                self.send('AI4;')               # K4 will send updaes immediately
+                self.add_poll_callback(self.recv_thread, self.receive)
         except socket.gaierror:
             print('Address not found: %s' % self.address)
         except OSError:
             print('Failed to connect to %s, address %s, port %d'
                   % (self.name, self.address, self.port))
 
+    def close(self):
+        self.stop_threads = True
+        self.send_queue.put('shutdown')
+        if self.send_thread != None:
+            self.send_thread.join()
+        if self.recv_thread != None:
+            self.recv_thread.join()
+
     def send(self, cmd):
-        tries = 2
-        for i in range(tries):
-            if self.socket == None:
-                self.connect()
-                if self.socket == None:
-                    print("Failed to send command, '%s' to '%s'" % (cmd, self.name))
-                    break
+            self.send_queue.put(cmd)
+
+    def send_loop(self):
+        while True:
+            cmd = self.send_queue.get()
+            if self.stop_threads:
+                return
+            if Options.debug:
+                print('sending cmd:', cmd)
             try:
                 self.socket.sendall(cmd.encode())
             except OSError:
-                if i < tries - 1:
-                    self.socket = None
-                    continue
                 print("Failed to send command, '%s' to '%s'" % (cmd, self.name))
-            break
+
+    def receive(self):
+        try:
+            responses = self.recv_queue.get_nowait()
+            for response in responses:
+                if Options.debug:
+                    print('%s: dequeued response: %s' % (self.name, response))
+                if self.type == 'k4':
+                    if response[2] == '$':
+                        key = response[0:3]
+                    else:
+                        key = response[0:2]
+                    func = self.response_subscriptions.get(key, None)
+                    if func != None:
+                        func(response)
+                        continue
+                if Options.verbose:
+                    print('%s: unhandled response: %s' % (self.name, response))
+        except queue.Empty:
+            pass
+
+    def recv_loop(self):
+        while True:
+            responses = []
+            readable, writable, in_error = select.select([self.socket.fileno()], [], [self.socket], 1)
+            if self.stop_threads:
+                return
+            if len(in_error) > 0:
+                print("socket error")
+            if len(readable) == 0:
+                continue
+
+            recv_bytes = self.socket.recv(4096)
+            recv_str = recv_bytes.decode()
+            if Options.debug:
+                print('%s: received: %s' % (self.name, recv_str))
+            if self.type != 'k4':
+                try:
+                    self.recv_queue.put(responses)
+                except queue.ShutDown:
+                    continue
+            else:
+                recv_strs = recv_str.split(';')
+                if len(recv_strs) == 0:
+                    continue
+
+                if recv_strs[-1] == '':
+                    partial_response = recv_strs[-1]
+                    responses = recv_strs[0:-1]
+                else:
+                    responses = recv_strs
+                if partial_response != '':
+                    response[0] += partial_response
+                    partial_response = ''
+
+                self.recv_queue.put(responses)
+                if Options.debug:
+                    print('%s: queued: %s' % (self.name, responses))
+
+    def subscribe_response(self, key, callback):
+        self.response_subscriptions[key] = callback
+
+    def unsubscribe_response(self, key):
+        self.response_subscriptions.pop(key, '')
 
 class Container():
     def __init__(self, info, container):
@@ -323,7 +439,7 @@ class VFO(Widget):
 
         self.AorB = info.get('AorB', 'A').upper()
         server_name = info.get('server', Server.default_server_name)
-        self.server = Server.servers[server_name]
+        self.server = Server.server(server_name)
 
         bg = info.get('bg', Default.bg)
         fg = info.get('fg', Default.fg)
@@ -345,7 +461,7 @@ class VFO(Widget):
                 increment=self.increment,
                 font=font,
                 width=9,
-                repeatdelay=400,
+                repeatdelay=300,
                 repeatinterval=1,
                 format='%5.3f',
                 justify='right',
@@ -373,7 +489,7 @@ class VFO(Widget):
 
         set_button.grid(row=0, column=1, sticky='w')
 
-        self.delta_map = { '1 Hz': .001, '10 Hz': .01, '100 Hz': .1, '1 kHz': 1, '10 kHz': 10, '100 kHz': 100, '1 MHz': 1000 }
+        self.delta_map = { '1 Hz': .001, '10 Hz': .01, '100 Hz': .1, '1 kHz': 1, '10 kHz': 10, '100 kHz': 100 }
 
         self.delta_sb = tk.Spinbox(
                 frame,
@@ -381,8 +497,6 @@ class VFO(Widget):
                 values= tuple(self.delta_map.keys()),
                 font=font,
                 width=7,
-                repeatdelay=400,
-                repeatinterval=1,
                 format='%5.3f',
                 justify='right',
                 state='normal',
@@ -398,13 +512,21 @@ class VFO(Widget):
 
         frame.grid(row=container.row, column=container.column, sticky='w')
 
+        self.server.subscribe_response('F{vfo}'.format(vfo=self.AorB), self.on_response_received)
+        self.server.send('F{vfo};'.format(vfo=self.AorB))
+
     def on_vfo_change(self):
         freq = int(float(self.vfo_sb.get()) * 1000)
         mod = freq % int(self.increment * 1000)
         freq -= mod
-        self.vfo_sb.delete(0, 'end')
-        self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
-        Page.top.update()
+        if mod != 0:
+            self.vfo_sb.delete(0, 'end')
+            self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
+        self.server.add_poll_callback(self, self.send_vfo_change)
+
+    def send_vfo_change(self):
+        self.server.remove_poll_callback(self)
+        freq = int(float(self.vfo_sb.get()) * 1000)
         freq11 = "{:011d}".format(freq)
         cmd = "F{vfo}{freq};".format(vfo=self.AorB, freq=freq11)
         self.server.send(cmd)
@@ -412,6 +534,11 @@ class VFO(Widget):
     def on_delta_change(self):
         self.increment = self.delta_map[self.delta_sb.get()]
         self.vfo_sb.config(increment=self.increment)
+
+    def on_response_received(self, response):
+        value  = "{:.3f}".format(float(response[2:]) / 1000)
+        self.vfo_sb.delete(0, 'end')
+        self.vfo_sb.insert(0, value)
 
 def read_config(config_file_name):
     with open(config_file_name) as stream:
@@ -434,6 +561,7 @@ def read_config(config_file_name):
 class Options():
     config_file = None
     verbose = None
+    debug = None
 
     @staticmethod
     def Parse():
@@ -442,14 +570,24 @@ class Options():
                           help="use config file FILE", metavar="FILE")
         parser.add_option('-v', '--verbose', action='store_true', dest='verbose',
                           help="output additional status messages")
-
+        parser.add_option('--debug', action='store_true', dest='debug',
+                          help="output debugging messages")
         (options, args) = parser.parse_args()
 
         Options.config_file = options.config_file
         Options.verbose = options.verbose
+        Options.debug = options.debug
+        if Options.debug:
+            Options.verbose = True
 
         if len(args) != 0:
             parser.error("Unexpected argument '%s'" % args[0])
+
+def on_closing():
+    for server in Server.servers():
+        server.close()
+
+    Page.top.destroy()
 
 def main():
     Options.Parse()
@@ -461,6 +599,11 @@ def main():
     read_config(Options.config_file)
 
     Page.show('main')
+
+    for server in Server.servers():
+        server.connect()
+
+    top.protocol("WM_DELETE_WINDOW", on_closing)
 
     top.mainloop()
 

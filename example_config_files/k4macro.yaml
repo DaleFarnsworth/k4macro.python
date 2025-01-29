@@ -48,18 +48,20 @@
 
 - item: server
   name: k4
+  type: k4
   address: K4-SNxxxxx.local   # match your serial number in the string
+  address: k4
   port: 9200
 
-- item: server
-  name: s1
-  address: 192.168.1.24
-  port: 7001
+#- item: server
+  #name: s1
+  #address: 192.168.1.24
+  #port: 7001
 
-- item: server
-  name: s2
-  address: 192.168.1.24
-  port: 7002
+#- item: server
+  #name: s2
+  #address: 192.168.1.24
+  #port: 7002
 
 - item: page
   name: main
