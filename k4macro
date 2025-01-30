@@ -52,7 +52,7 @@ class Default():
     label_font =  { 'family': 'Helvetica', 'size': 8, 'weight': 'normal' }
     button_font = { 'family': 'Helvetica', 'size': 10, 'weight': 'normal' }
 
-    def config_info(config_info):
+    def __init__(self, config_info):
         Default.bg = config_info.get('bg', Default.bg)
         Default.abg = config_info.get('abg', Default.abg)
         Default.fg = config_info.get('fg', Default.fg)
@@ -75,12 +75,6 @@ class Server():
     @staticmethod
     def servers():
         return Server.server_dict.values()
-
-    @staticmethod
-    def config_info(config_info):
-        if Server.default_server_name == None:
-            Server.default_server_name = config_info['name']
-        Server.server_dict[config_info['name']] = Server(config_info)
 
     @staticmethod
     def default():
@@ -113,6 +107,10 @@ class Server():
         self.response_subscriptions = {}
         self.max_response_key_length = 0
         self.poll_callbacks = {}
+
+        if Server.default_server_name == None:
+            Server.default_server_name = config_info['name']
+        Server.server_dict[self.name] = self
 
     def add_poll_callback(self, key, callback):
         self.poll_callbacks[key] = callback
@@ -317,16 +315,16 @@ class Container():
         return width
 
 class Page(Container):
-    config_infos = {}
+    pages = {}
     name_stack = []
     current_frame = None
     top = None
 
     @staticmethod
     def show(page_name):
-        if page_name in Page.config_infos:
+        if page_name in Page.pages:
             Page.name_stack.append(page_name)
-            Page(Page.config_infos[page_name])
+            Page.pages[page_name].instance_show()
         else:
             print("Page:'{name}' not found.".format(name=page_name))
 
@@ -338,16 +336,17 @@ class Page(Container):
         page_name = Page.name_stack.pop()
         Page.show(page_name)
 
-    @staticmethod
-    def config_info(config_info):
-        Page.config_infos[config_info['name']] = config_info
-
     def __init__(self, config_info):
         super().__init__(config_info, None)
+
+        self.frame = None
+
+        Page.pages[config_info['name']] = self
 
         self.label_font = config_info.get('label_font', Default.label_font)
         self.button_font = config_info.get('button_font', Default.button_font)
 
+    def instance_show(self):
         if Page.current_frame != None:
             Page.current_frame.destroy()
         self.frame = tk.Frame(Page.top)
@@ -661,11 +660,13 @@ def read_config(config_file_name):
         for config_info in config:
             item = config_info['item']
             if item == 'page':
-                Page.config_info(config_info)
+                Page(config_info)
             elif item == 'server':
-                Server.config_info(config_info)
+                Server(config_info)
             elif item == 'defaults':
-                Default.config_info(config_info)
+                Default(config_info)
+            elif item == 'startup':
+                Startup(config_info)
             else:
                 print("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
 
@@ -704,8 +705,9 @@ def main():
     Options.Parse()
 
     top = tk.Tk()
-    Page.top = top
     top.title('K4 Macro-Python')
+    top.protocol("WM_DELETE_WINDOW", cleanup_and_exit)
+    Page.top = top
 
     read_config(Options.config_file)
 
