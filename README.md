@@ -9,5 +9,9 @@ functions. K4 Macro was initially created by Charles W. Powell, NK8O,
 but has been heavily modified. Charles has graciously allowed others
 to continue development under the GPL.
 
+Please send problem reports either: by sending an email, by entering
+an issue on github, or by making a pull request. Problem reports and
+suggesions are greatly appreciated.
+
 Dale Farnsworth, W7DA
 dale@farnsworth.org
