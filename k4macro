@@ -441,7 +441,7 @@ class Button(Widget):
                 print('Unknown directive: ', directive)
 
         if cmd != None:
-            command = lambda: self.sendall(cmd)
+            command = lambda: self.server.sendall(cmd)
 
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
