@@ -63,6 +63,9 @@
   #address: 192.168.1.24
   #port: 7002
 
+- item: startup
+  cmd: TS1;                   # Set test mode
+
 - item: page
   name: main
   columns: 2

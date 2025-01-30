@@ -264,6 +264,25 @@ class Server():
 
     def unsubscribe_response(self, key, callback):
         self.response_subscriptions[key].remove(callback)
+ 
+class Startup():
+    instances = []
+    
+    @staticmethod
+    def send():
+        for instance in Startup.instances:
+            instance.send_cmd()
+
+    def __init__(self, config_info):
+        self.cmd = config_info.get('cmd', None)
+
+        server_name = config_info.get('server', Server.default_server_name)
+        self.server = Server.server(server_name)
+
+        Startup.instances.append(self)
+
+    def send_cmd(self):
+        self.server.sendall(self.cmd)
 
 class Container():
     depth = -1
@@ -716,7 +735,7 @@ def main():
     for server in Server.servers():
         server.connect()
 
-    top.protocol("WM_DELETE_WINDOW", cleanup_and_exit)
+    Startup.send()
 
     top.mainloop()
 
