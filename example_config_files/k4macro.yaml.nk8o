@@ -168,7 +168,6 @@
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   2.3 kHz, cmd: BW0230;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   3.5 kHz, cmd: BW0350;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   4.0 kHz, cmd: BW0400;, abg: yellow, bg: '#98F5FF' }
-# can this group read the bandwidth at startup, like the band indicators and mode selection?
 
     - item: group 
       label: Power
@@ -178,7 +177,6 @@
             - { item: radiobutton, groupid: power, indicator: 0, text:   5 watts, cmd: PC050L;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: power, indicator: 0, text:  50 watts, cmd: PC050H;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: power, indicator: 0, text: 100 watts, cmd: PC100H;, abg: yellow, bg: '#98F5FF' }
-# also this group?   Or can the power be set up as a box like frequency?
 
     - item: group 
       label: ATU control
@@ -188,7 +186,6 @@
             - { item: radiobutton, groupid: atu, indicator: 0, text: ATU bypass,    cmd: AT1;,   abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: atu, indicator: 0, text: ATU auto,      cmd: AT2;,   abg: yellow, bg: '#98F5FF' }
             - { item: button,      groupid: atu,               text: ATU tune,      cmd: SW40;, abg: red,    bg: yellow }
-# The 3rd button needs to be just a press and let it do its thing.  Not sure how to do this in this group
 
     - item: group
       label: Miscellaneous
