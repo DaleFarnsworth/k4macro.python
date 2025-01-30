@@ -40,7 +40,7 @@ import yaml
 
 from optparse import OptionParser
 
-version = '1.0.8'
+version = '1.0.9'
 
 class Default():
 # may be overriden by values in the config file
@@ -266,6 +266,8 @@ class Server():
         self.response_subscriptions.pop(key, '')
 
 class Container():
+    depth = -1
+
     def __init__(self, config_info, container):
         self.config_info = config_info
         self.container = container
@@ -286,9 +288,14 @@ class Container():
         self.row += 1
 
     def show_widgets(self):
+        Container.depth += 1
         for config_info in self.config_info['contains']:
             widget_type = config_info['item'].lower()
             if widget_type == 'group':
+                if Options.debug > 0:
+                    label = config_info.get('label', '')
+                    indent = '    ' * Container.depth
+                    print('{indent}group {label}: row  {row}, column: {column}'.format(indent=indent, label=label, row=self.row, column=self.column))
                 Group(config_info, self)
             elif widget_type == 'button':
                 Button(config_info, self)
@@ -297,6 +304,7 @@ class Container():
             elif widget_type == 'vfo':
                 VFO(config_info, self)
             self.next_column()
+        Container.depth -= 1
 
     def items_width(self):
         width = 0
@@ -354,7 +362,7 @@ class Group(Container):
         if 'column' in config_info:
             column = config_info['column']
             if column < container.column:
-                container.next_column()
+                container.next_row()
             container.column = column
         else:
             column = container.column
