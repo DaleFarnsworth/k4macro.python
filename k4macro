@@ -198,12 +198,12 @@ class Server():
         else:
             beyond_last = len(response) + 2
 
+        found = False
         for end in range(2, beyond_last):
-            func = self.response_subscriptions.get(response[0:end], None)
-            if func != None:
+            for func in self.response_subscriptions.get(response[0:end], []):
                 func(response)
-                return True
-        return False
+                found = True
+        return found
 
     def receive(self):
         try:
@@ -260,10 +260,12 @@ class Server():
     def subscribe_response(self, key, callback):
         if len(key) > self.max_response_key_length:
             self.max_response_key_length = len(key)
-        self.response_subscriptions[key] = callback
+        if not key in self.response_subscriptions:
+            self.response_subscriptions[key] = []
+        self.response_subscriptions[key].append(callback)
 
-    def unsubscribe_response(self, key):
-        self.response_subscriptions.pop(key, '')
+    def unsubscribe_response(self, key, callback):
+        self.response_subscriptions[key].remove(callback)
 
 class Container():
     depth = -1
