@@ -470,6 +470,7 @@ class Radiobutton(Widget):
 
         text = str(config_info.get('text', ''))
         self.cmd = config_info.get('cmd', None)
+        self.response = config_info.get('response', self.cmd)
         indicator = config_info.get('indicator', 1)
         selectcolor = config_info.get('selectcolor', Default.selectcolor)
         self.group_id = config_info.get('groupid', None)
@@ -519,13 +520,13 @@ class Radiobutton(Widget):
         self.button.grid(row=container.row, column=container.column, sticky='w')
 
         if self.server.type == 'k4':
-            key = self.cmd.rstrip(';')
+            key = self.response.rstrip(';')
             self.server.subscribe_response(key, self.on_response_received)
 
-            if self.cmd[2] == '$':
-                request = self.cmd[0:3]
+            if self.response[2] == '$':
+                request = self.response[0:3]
             else:
-                request = self.cmd[0:2]
+                request = self.response[0:2]
             self.server.send('{request};'.format(request=request))
 
     def select(self):
