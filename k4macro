@@ -104,7 +104,7 @@ class Server():
         self.recv_queue = queue.Queue()
         self.send_thread = None
         self.recv_thread = None
-        self.stop_threads = False
+        self.connected = False
         self.response_subscriptions = {}
         self.max_response_key_length = 0
         self.poll_callbacks = {}
@@ -135,6 +135,7 @@ class Server():
         try:
             sock.settimeout(5)
             sock.connect((self.address, self.port))
+            self.connected = True
             self.socket = sock
             self.send_thread = threading.Thread(target=self.send_loop, name=self.name+'.send_thread')
             self.send_thread.start()
@@ -158,7 +159,7 @@ class Server():
                 cleanup_and_exit()
 
     def close(self):
-        self.stop_threads = True
+        self.connected = False
         self.send_queue.put('shutdown')
         if self.send_thread != None:
             self.send_thread.join()
@@ -166,12 +167,14 @@ class Server():
             self.recv_thread.join()
 
     def send(self, cmd):
-            self.send_queue.put(cmd)
+        if not self.connected:
+            print("Failed to send command, '{cmd}' to '{name}'".format(cmd=cmd, name=self.name))
+        self.send_queue.put(cmd)
 
     def send_loop(self):
         while True:
             cmd = self.send_queue.get()
-            if self.stop_threads:
+            if not self.connected:
                 return
             try:
                 self.socket.sendall(cmd.encode())
@@ -228,7 +231,7 @@ class Server():
         while True:
             responses = []
             readable, writable, in_error = select.select([self.socket.fileno()], [], [self.socket], 1)
-            if self.stop_threads:
+            if not self.connected:
                 return
             if len(in_error) > 0:
                 print("socket error")
@@ -236,7 +239,11 @@ class Server():
                 continue
 
             recv_bytes = self.socket.recv(4096)
+            if len(recv_bytes) == 0:
+                self.connected = False
+                return
             recv_str = recv_bytes.decode()
+
             if Options.debug > 0:
                 print('{name}: received: {str}'.format(name=self.name, str=recv_str))
             if self.type != 'k4':
