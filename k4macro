@@ -168,7 +168,7 @@ class Server():
 
     def send(self, cmd):
         if not self.connected:
-            print("Failed to send command, '{cmd}' to '{name}'".format(cmd=cmd, name=self.name))
+            print("Server '{name}' not connected.".format(cmd=cmd, name=self.name))
         self.send_queue.put(cmd)
 
     def send_loop(self):
