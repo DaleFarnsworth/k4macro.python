@@ -1,5 +1,13 @@
 ---
 
+# server options:
+#   name: The name of the server
+#   type: The type of the server
+#     k4 is required for k4 servers to receive responses
+#   address: The ip address of the server
+#   port: The port to connect to
+#   startup: command(s) to be sent to the server on startup.
+
 # page options:
 #   name: The page name (required).
 #     The page named 'main' is the first one displayed.
@@ -46,8 +54,9 @@
 - item: server
   name: k4
   type: k4
-  address: 192.168.1.128   # match your serial number in the string
+  address: 192.168.1.128
   port: 9200
+#  startup: TS1;                   # Set test mode
 
 - item: server
   name: s1
@@ -59,10 +68,7 @@
   address: 192.168.1.24
   port: 7002
 
-#- item: startup
-#  cmd: TS1;                   # Set test mode
-
-- item: page 
+- item: page
   name: main
   columns: 2
   contains:
@@ -96,11 +102,11 @@
         - { item: radiobutton, groupid: modeB, indicator: 0, text: B - FM,   cmd: MD$4;, abg: yellow, bg: '#98F5FF' }
         - { item: radiobutton, groupid: modeB, indicator: 0, text: B - DATA, cmd: MD$6;, abg:  green, bg: '#98F5FF' }
 
-    - item: group 
+    - item: group
       columns: 2
       rowspan: 12
       contains:
-        - item: group 
+        - item: group
           label:  VFO A
           columns: 1
           rows: 10
@@ -119,7 +125,7 @@
             - { item: radiobutton, groupid: bandA, indicator: 0, text:  10 m,  cmd: BN09;,  abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: bandA, indicator: 0, text:   6 m,  cmd: BN10;,  abg: yellow, bg: '#E3CF57' }
 
-        - item: group 
+        - item: group
           label:  VFO B
           columns: 1
           rows: 10
@@ -155,7 +161,7 @@
             - { item: radiobutton, groupid: test, indicator: 0, text: Test mode off, cmd: TS0;,   abg: yellow, bg: '#98F5FF' }
 
 
-    - item: group 
+    - item: group
       label: Bandwidth
       columns: 4
       column: 0
@@ -169,7 +175,7 @@
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   3.5 kHz, cmd: BW0350;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   4.0 kHz, cmd: BW0400;, abg: yellow, bg: '#98F5FF' }
 
-    - item: group 
+    - item: group
       label: Power
       columns: 3
       column: 0
@@ -178,7 +184,7 @@
             - { item: radiobutton, groupid: power, indicator: 0, text:  50 watts, cmd: PC050H;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: power, indicator: 0, text: 100 watts, cmd: PC100H;, abg: yellow, bg: '#98F5FF' }
 
-    - item: group 
+    - item: group
       label: ATU control
       columns: 3
       column: 0

@@ -1,5 +1,13 @@
 ---
 
+# server options:
+#   name: The name of the server
+#   type: The type of the server
+#     k4 is required for k4 servers to receive responses
+#   address: The ip address of the server
+#   port: The port to connect to
+#   startup: command(s) to be sent to the server on startup.
+
 # page options:
 #   name: The page name (required).
 #     The page named 'main' is the first one displayed.
@@ -52,6 +60,7 @@
   type: k4
   address: K4-SNxxxxx.local   # match your serial number in the string
   port: 9200
+  startup: TS1;
 
 #- item: server
   #name: s1
@@ -62,9 +71,6 @@
   #name: s2
   #address: 192.168.1.24
   #port: 7002
-
-- item: startup
-  cmd: TS1;                   # Set test mode
 
 - item: page
   name: main

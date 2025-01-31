@@ -97,6 +97,7 @@ class Server():
         self.type = config_info.get('type', '')
         self.address = config_info['address']
         self.port = config_info['port']
+        self.startup = config_info.get('startup', None)
         self.socket = None
         self.recv_buffer = ''
         self.send_queue = queue.Queue()
@@ -142,6 +143,8 @@ class Server():
             if self.type == 'k4':
                 Page.top.after(50, self.poll)
                 self.send('AI2;AID060;')        # request K4 to send updates every 60 mS
+                if self.startup != None:
+                    self.send(self.startup)     # send user-specified startup commands
                 self.add_poll_callback(self.recv_thread, self.receive)
         except socket.gaierror:
             print('Address not found: {addr}'.format(addr=self.address))
@@ -265,25 +268,6 @@ class Server():
     def unsubscribe_response(self, key, callback):
         self.response_subscriptions[key].remove(callback)
  
-class Startup():
-    instances = []
-    
-    @staticmethod
-    def send():
-        for instance in Startup.instances:
-            instance.send_cmd()
-
-    def __init__(self, config_info):
-        self.cmd = config_info.get('cmd', None)
-
-        server_name = config_info.get('server', Server.default_server_name)
-        self.server = Server.server(server_name)
-
-        Startup.instances.append(self)
-
-    def send_cmd(self):
-        self.server.sendall(self.cmd)
-
 class Container():
     depth = -1
 
@@ -684,8 +668,6 @@ def read_config(config_file_name):
                 Server(config_info)
             elif item == 'defaults':
                 Default(config_info)
-            elif item == 'startup':
-                Startup(config_info)
             else:
                 print("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
 
@@ -735,7 +717,7 @@ def main():
     for server in Server.servers():
         server.connect()
 
-    Startup.send()
+    Page.show('main')
 
     top.mainloop()
 
