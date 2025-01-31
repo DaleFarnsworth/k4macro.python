@@ -142,6 +142,7 @@ class Server():
             self.recv_thread.start()
             if self.type == 'k4':
                 Page.top.after(50, self.poll)
+                self.send('K41;')               # request K4 to respond in advanced mode
                 self.send('AI2;AID060;')        # request K4 to send updates every 60 mS
                 if self.startup != None:
                     self.send(self.startup)     # send user-specified startup commands
@@ -199,8 +200,10 @@ class Server():
         else:
             beyond_last = len(response) + 2
 
+        start = len(cmd_base(response))
+
         found = False
-        for end in range(2, beyond_last):
+        for end in range(start, beyond_last):
             for func in self.response_subscriptions.get(response[0:end], []):
                 func(response)
                 found = True
@@ -213,8 +216,9 @@ class Server():
                 if Options.debug > 1:
                     print('{name}: dequeued response: {response}'.format(name=self.name, response=response))
                 if self.type == 'k4':
+                    response += ';'
                     if self.k4_receive(response):
-                            continue
+                        continue
                 if Options.debug > 1:
                     print('{name}: unhandled response: {response}'.format(name=self.name, response=response))
         except queue.Empty:
@@ -237,7 +241,7 @@ class Server():
                 print('{name}: received: {str}'.format(name=self.name, str=recv_str))
             if self.type != 'k4':
                 try:
-                    self.recv_queue.put(responses)
+                    self.recv_queue.put([recv_str])
                 except queue.ShutDown:
                     continue
             else:
@@ -263,6 +267,8 @@ class Server():
             self.max_response_key_length = len(key)
         if not key in self.response_subscriptions:
             self.response_subscriptions[key] = []
+        if callback in self.response_subscriptions[key]:
+            raise Exception('duplicate subscription for {key}: {callback}'.format(key, callback))
         self.response_subscriptions[key].append(callback)
 
     def unsubscribe_response(self, key, callback):
@@ -464,13 +470,22 @@ class Button(Widget):
         button.grid(row=container.row, column=container.column, sticky='w')
 
 class Radiobutton(Widget):
-    radiobuttons = {}
+    radiobutton_responses = {}
     variables = {}
+    response_callbacks = {}
+
+    @staticmethod
+    def select(group_id, response):
+        for r, b in Radiobutton.radiobutton_responses[group_id].items():
+            if r == response:
+                b.button.select()
+            else:
+                b.button.deselect()
 
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
-        text = str(config_info.get('text', ''))
+        self.text = str(config_info.get('text', ''))
         self.cmd = config_info.get('cmd', None)
         self.response = config_info.get('response', self.cmd)
         indicator = config_info.get('indicator', 1)
@@ -487,23 +502,25 @@ class Radiobutton(Widget):
         server_name = config_info.get('server', Server.default_server_name)
         self.server = Server.server(server_name)
 
-        if not self.group_id in Radiobutton.radiobuttons:
-            Radiobutton.radiobuttons[self.group_id] = []
-        Radiobutton.radiobuttons[self.group_id].append(self)
+        if not self.group_id in Radiobutton.radiobutton_responses:
+            Radiobutton.radiobutton_responses[self.group_id] = {}
+        Radiobutton.radiobutton_responses[self.group_id][self.response] = self
 
         if not self.group_id in Radiobutton.variables:
             Radiobutton.variables[self.group_id] = tk.StringVar
         variable = Radiobutton.variables[self.group_id]
 
         width = container.items_width()
-        if len(text) > width:
-            text = textwrap.fill(text, width)
+        if len(self.text) > width:
+            wrapped_text = textwrap.fill(self.text, width)
+        else:
+            wrapped_text = self.text
 
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
         self.button = tk.Radiobutton(container.frame,
                     bd='4',
-                    text=text,
+                    text=wrapped_text,
                     font=font,
                     width=width,
                     relief='raised',
@@ -522,29 +539,17 @@ class Radiobutton(Widget):
         self.button.grid(row=container.row, column=container.column, sticky='w')
 
         if self.server.type == 'k4':
-            key = self.response.rstrip(';')
-            self.server.subscribe_response(key, self.on_response_received)
-
-            if self.response[2] == '$':
-                request = self.response[0:3]
-            else:
-                request = self.response[0:2]
-            self.server.send('{request};'.format(request=request))
-
-    def select(self):
-        for radiobutton in Radiobutton.radiobuttons[self.group_id]:
-            if radiobutton.button == self.button:
-                radiobutton.button.select()
-            else:
-                radiobutton.button.deselect()
+            group_id = self.group_id
+            if group_id not in Radiobutton.response_callbacks:
+                Radiobutton.response_callbacks[group_id] = lambda response: Radiobutton.select(group_id, response)
+                key = cmd_base(self.response)
+                self.server.subscribe_response(key, Radiobutton.response_callbacks[group_id])
+                self.server.send('{key};'.format(key=key))
 
     def on_clicked(self):
-        self.select()
+        self.select(self.group_id, self.response)
         if self.cmd != None:
             self.server.sendall(self.cmd)
-
-    def on_response_received(self, response):
-        self.select()
 
 class VFO(Widget):
     def __init__(self, config_info, container):
@@ -649,9 +654,16 @@ class VFO(Widget):
         self.vfo_sb.config(increment=self.increment)
 
     def on_response_received(self, response):
-        value  = "{:.3f}".format(float(response[2:]) / 1000)
+        value  = "{:.3f}".format(float(response[2:13]) / 1000)
         self.vfo_sb.delete(0, 'end')
         self.vfo_sb.insert(0, value)
+
+def cmd_base(cmd):
+    if cmd[2] == '$':
+        base = cmd[0:3]
+    else:
+        base = cmd[0:2]
+    return base
 
 def read_config(config_file_name):
     with open(config_file_name) as stream:
@@ -711,8 +723,6 @@ def main():
     Page.top = top
 
     read_config(Options.config_file)
-
-    Page.show('main')
 
     for server in Server.servers():
         server.connect()
