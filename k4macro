@@ -31,6 +31,7 @@ import ctypes
 import queue
 import select
 import socket
+import sys
 import textwrap
 import threading
 import time
@@ -127,9 +128,8 @@ class Server():
         Page.top.after(50, self.poll)
 
     def connect(self):
-        if Options.verbose > 0:
-            print('Connecting to {name}, address {addr}, port {port}'.format(
-                  name=self.name, addr=self.address, port=self.port))
+        vprint1('Connecting to {name}, address {addr}, port {port}'.format(
+              name=self.name, addr=self.address, port=self.port))
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         try:
@@ -178,8 +178,7 @@ class Server():
                 return
             try:
                 self.socket.sendall(cmd.encode())
-                if Options.debug > 0:
-                    print('{name}: sent: {cmd}'.format(name=self.name, cmd=cmd))
+                dprint1('{name}: sent: {cmd}'.format(name=self.name, cmd=cmd))
             except OSError:
                 print("Failed to send command, '{cmd}' to '{name}'".format(cmd=cmd, name=self.name))
 
@@ -216,14 +215,12 @@ class Server():
         try:
             responses = self.recv_queue.get_nowait()
             for response in responses:
-                if Options.debug > 1:
-                    print('{name}: dequeued response: {response}'.format(name=self.name, response=response))
+                dprint2('{name}: dequeued response: {response}'.format(name=self.name, response=response))
                 if self.type == 'k4':
                     response += ';'
                     if self.k4_receive(response):
                         continue
-                if Options.debug > 1:
-                    print('{name}: unhandled response: {response}'.format(name=self.name, response=response))
+                dprint2('{name}: unhandled response: {response}'.format(name=self.name, response=response))
         except queue.Empty:
             pass
 
@@ -243,8 +240,7 @@ class Server():
                 self.connected = False
                 return
 
-            if Options.debug > 0:
-                print('{name}: received: {str}'.format(name=self.name, str=recv_str))
+            dprint1('{name}: received: {str}'.format(name=self.name, str=recv_str))
             if self.type != 'k4':
                 try:
                     self.recv_queue.put([recv_bytes])
@@ -266,8 +262,7 @@ class Server():
                     partial_response = ''
 
                 self.recv_queue.put(responses)
-                if Options.debug > 1:
-                    print('{name}: queued: {responses}'.format(name=self.name, responses=responses))
+                dprint2('{name}: queued: {responses}'.format(name=self.name, responses=responses))
 
     def subscribe_response(self, key, callback):
         if len(key) > self.max_response_key_length:
@@ -311,7 +306,7 @@ class Container():
                 if Options.debug > 0:
                     label = config_info.get('label', '')
                     indent = '    ' * Container.depth
-                    print('{indent}group {label}: row  {row}, column: {column}'.format(indent=indent, label=label, row=self.row, column=self.column))
+                    dprint('{indent}group {label}: row  {row}, column: {column}'.format(indent=indent, label=label, row=self.row, column=self.column))
                 Group(config_info, self)
             elif widget_type == 'button':
                 Button(config_info, self)
@@ -720,6 +715,25 @@ def cleanup_and_exit():
         server.close()
 
     quit()
+
+def dprint(*args, **kwargs):
+    print(*args, file=sys.stderr, **kwargs)
+
+def dprint1(*args, **kwargs):
+    if Options.debug >= 1:
+        print(*args, file=sys.stderr, **kwargs)
+
+def dprint2(*args, **kwargs):
+    if Options.debug >= 2:
+        print(*args, file=sys.stderr, **kwargs)
+
+def vprint1(*args, **kwargs):
+    if Options.verbose >= 1:
+        print(*args, **kwargs)
+
+def vprint2(*args, **kwargs):
+    if Options.verbose >= 2:
+        print(*args, **kwargs)
 
 def main():
     Options.Parse()
