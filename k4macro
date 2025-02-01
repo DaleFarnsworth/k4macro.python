@@ -242,16 +242,16 @@ class Server():
             if len(recv_bytes) == 0:
                 self.connected = False
                 return
-            recv_str = recv_bytes.decode()
 
             if Options.debug > 0:
                 print('{name}: received: {str}'.format(name=self.name, str=recv_str))
             if self.type != 'k4':
                 try:
-                    self.recv_queue.put([recv_str])
+                    self.recv_queue.put([recv_bytes])
                 except queue.ShutDown:
                     continue
             else:
+                recv_str = recv_bytes.decode()
                 recv_strs = recv_str.split(';')
                 if len(recv_strs) == 0:
                     continue
