@@ -1,0 +1,342 @@
+---
+
+# server options:
+#   name: The name of the server
+#   type: The type of the server
+#     k4 is required for k4 servers to receive responses
+#   address: The ip address of the server
+#   port: The port to connect to
+#   startup: command(s) to be sent to the server on startup.
+
+# page options:
+#   name: The page name (required).
+#     The page named 'main' is the first one displayed.
+#   columns: The number of columns in which contained items will be displayed.
+#   contains: The list of items this page contains
+
+# group options:
+#   label: The label that will be displayed for this group.
+#   row: The row of the container in which this group will be placed.
+#   column: The column of the container in which this group will be placed.
+#   rowspan: The number of rows this group will occupy.
+#   columnspan: The number of columns this group will occupy.
+#   columns: The number of columns in which contained items will be displayed.
+#   contains: The list of items this group contains
+
+# button options:
+#   text: button text
+#   cmd: Either:
+#     a text string to be sent to k4, or
+#     a python 'list' object containg server name/cmd pairs (python dict objects)
+#     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
+#     then send 's1cmd' to server s1.
+#   directive:
+#     'quit', terminates the program
+#     'show_previous_page', displays the previously-displayed page
+#     'show_page XXX', displays page with the name: XXX
+#   fg: foreground color
+#   bg: background color
+#   abg: active background color
+
+#==============================================================================#
+#==============================================================================#
+#                                                                              #
+#   This YAML scipt file contains macros for the Elecraft                      #
+#   K4(D) transceiver.                                                         # #                                                                              #
+#   This YAML script is as is and constructed for my personal use.             #
+#   You may use this script at your own risk and reponsibility as              #
+#   I will not accept any claimes or what soever.                              #
+#   You are free to act i.a.w. the rules and rights as are stated in           #
+#   the attached document titled COPYING. In which is stated the               #
+#   GNU GENERAL PUBLIC LICENSE (Version 3, 29 June 2007).                      #
+#                                                                              #
+#   Dont forget to put you SN in into line 81!!!                               #
+#                                                                              #
+#   I hope this script will be of use to you as it is to me.                   #
+#   73, Will -KX4UI-                                                           #
+#                                                                              #
+#   Thanks to the original developer:                                          #
+#   https://github.com/DaleFarnsworth/k4macro.python/tree/main                 #
+#                                                                              #
+#==============================================================================#
+#==============================================================================#
+
+- item: defaults
+  # Colors
+  #bg: maroon1
+  bg: gray
+  abg: red
+  fg: black
+  afg: black
+  selectcolor: red            # inherited by radiobutton
+
+  # Font used for labels
+  label_font: { family: Helvetica, size: 8, weight: normal }
+  # Font used for buttons and other controls
+  button_font: { family: Helvetica, size: 10, weight: normal }
+
+- item: server
+  name: k4
+  type: k4
+  address: K4-SNxxxxx.local   # match your serial number in the string !!!!!!!!!
+  port: 9200
+#  startup: TS1;                   # Set test mode
+
+#- item: server
+  #name: s1
+  #address: 127.0.0.1
+  #port: 7000
+
+#- item: server
+  #name: s2
+  #address: 127.0.0.1
+  #port: 7002
+
+- item: page
+  name: main
+  columns: 2
+  contains:
+    - item: group
+      contains:
+      - item: group
+        label: VFO A
+        contains:
+          - { item: vfo, AorB: A, server: k4, bg: white, fg: black }
+      - item: group
+        label: VFO B
+        contains:
+          - { item: vfo, AorB: B, server: k4, bg: white, fg: black }
+
+    - item: group
+      column: 0
+      label: VFO link
+      rows: 1
+      columns: 2
+      contains:
+            - { item: radiobutton, groupid: link, indicator: 0, text: Linked,      cmd: BI0;#DPM0;, response: BI0;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: link, indicator: 0, text: Independent, cmd: BI1;#DPM2;, response: BI1;, abg: yellow, bg: '#98F5FF' }
+
+    - item: group
+      column: 1
+      label:  Recall Quick Memory
+      columns: 4
+      rows: 1
+      rowspan: 1
+      contains:
+        - { item: radiobutton, groupid: recall, indicator: 0, text: CW,   cmd: SW34;DE60;SW17;,  abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: recall, indicator: 0, text: SSB,  cmd: SW34;DE60;SW51;,  abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: recall, indicator: 0, text: DATA, cmd: SW34;DE60;SW18;,  abg: yellow, bg: '#E3CF57' }
+        - { item: radiobutton, groupid: recall, indicator: 0, text: AFSK, cmd: SW34;DE60;SW52;,  abg: yellow, bg: '#E3CF57' }
+
+
+    - item: group
+      column: 0
+      #rowspan: 1
+      label: Mode VFO
+      columns: 6
+      contains:
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - CW,   cmd: MD3;,  abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - USB,  cmd: MD2;,  abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - LSB,  cmd: MD1;,  abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - AM,   cmd: MD5;,  abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - FM,   cmd: MD4;,  abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: A - DATA, cmd: MD6;,  abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - CW,   cmd: MD$3;, abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - USB,  cmd: MD$2;, abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - LSB,  cmd: MD$1;, abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - AM,   cmd: MD$5;, abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - FM,   cmd: MD$4;, abg: yellow, bg: '#CAFF70' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: B - DATA, cmd: MD$6;, abg: yellow, bg: '#CAFF70' }
+
+    - item: group
+      column: 1
+      columns: 2
+      rowspan: 5
+      contains:
+        - item: group
+          label:  VFO-A
+          columns: 1
+          rows: 10
+          #rowspan: 12
+          contains:
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:   6 m, cmd: BN10;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  10 m, cmd: BN09;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  12 m, cmd: BN08;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  15 m, cmd: BN07;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  17 m, cmd: BN06;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  20 m, cmd: BN05;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  30 m, cmd: BN04;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  40 m, cmd: BN03;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  60 m, cmd: BN02;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text:  80 m, cmd: BN01;,  abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: bandA, indicator: 0, text: 160 m, cmd: BN00;,  abg: yellow, bg: '#98F5FF' }
+
+        - item: group
+          label:  VFO-B
+          columns: 1
+          rows: 10
+          #rowspan: 12
+          contains:
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:   6 m, cmd: BN$10;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  10 m, cmd: BN$09;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  12 m, cmd: BN$08;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  15 m, cmd: BN$07;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  17 m, cmd: BN$06;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  20 m, cmd: BN$05;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  30 m, cmd: BN$04;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  40 m, cmd: BN$03;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  60 m, cmd: BN$02;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text:  80 m, cmd: BN$01;, abg: yellow, bg: '#CAFF70' }
+            - { item: radiobutton, groupid: bandB, indicator: 0, text: 160 m, cmd: BN$00;, abg: yellow, bg: '#CAFF70' }
+
+
+    - item: group
+      label: Bandwidth # Is initialized from the radio (if radio value matches a button) and follows the radio.
+      columns: 6
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   50 Hz, cmd: BW0005;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text:  100 Hz, cmd: BW0010;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text:  150 Hz, cmd: BW0015;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text:  200 Hz, cmd: BW0020;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text:  300 Hz, cmd: BW0030;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text:  500 Hz, cmd: BW0050;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text: 2.4 kHz, cmd: BW0240;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text: 2.6 kHz, cmd: BW0260;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text: 2.8 kHz, cmd: BW0280;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text: 3.0 kHz, cmd: BW0300;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text: 3.5 kHz, cmd: BW0350;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: bandwidth, indicator: 0, text: 4.0 kHz, cmd: BW0400;, abg: yellow, bg: '#E3CF57' }
+
+
+    - item: group
+      label: TX Power
+      columns: 7
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: power, indicator: 0, text:   1 W, cmd: PC001L;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:   5 W, cmd: PC050L;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  12 W, cmd: PC012H;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  25 W, cmd: PC025H;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  50 W, cmd: PC050H;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  75 W, cmd: PC075H;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text: 100 W, cmd: PC100H;, abg: yellow, bg: '#E3CF57' }
+
+    - item: group
+      label: RX EQ
+      columns: 4
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: rxeq, indicator: 0, text: Flat, cmd: REF;;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: rxeq, indicator: 0, text: CW,   cmd: RE-16+03+03+03-16-16-16-16;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: rxeq, indicator: 0, text: SSB,  cmd: RE+04+02-01-01+05+04+03+00;, abg: yellow, bg: '#E3CF57' }
+
+    - item: group
+      label: TX EQ SSB
+      columns: 4
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: txeq, indicator: 0, text: Normal,  cmd: TE+03-01-03+00+03+06+09+06;ME0108100;;ES028;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: txeq, indicator: 0, text: Ctest-W, cmd: TE-16-16-09-01+03+06+10+07;ES028;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: txeq, indicator: 0, text: Ctest-N, cmd: TE-16-16-09-01+03+06+10+07;ES024;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: txeq, indicator: 0, text: ESSB,    cmd: TE+03-01-03+00+03+06+09+06;ME0108200;ES140;, abg: yellow, bg: '#E3CF57' }
+
+
+    - item: group
+      label: SPLIT   (Change TX with VFO-B)
+      columns: 4
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: split, indicator: 0, text: Up  1, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN5;FC+4000;ME44.2;VT1;VT$1;UPB100;MXA.B;;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: Up  5, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN10;FC+4000;ME44.2;VT1;VT$1;UPB500;MXA.B;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: Up 10, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN20;FC+9000;ME44.2;VT1;VT$1;UPB1000;MXA.B;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: None,  cmd: SB0;FT0;FC;AB3;#SPN74;, abg: yellow, bg: '#E3CF57' }
+
+    - item: group
+      label: Tune
+      columns: 2
+      column: 1
+      contains:
+            - { item: button, text: TUNE,     cmd: SW16;,  abg: yellow, bg: orange }
+            - { item: button, text: TUNE LP, cmd: SW131;, abg: yellow, bg: orange }
+
+    - item: group
+      label: Miscellaneous
+      columns: 6
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: test, text: Test on,  cmd:        TS1;,   abg: yellow, bg: orange, indicator: 0 }
+            - { item: button,                     text: A-NB,     cmd:        NB/;,   abg: yellow, bg: '#98F5FF' }
+            - { item: button,                     text: A-NR,     cmd:        NR/;,   abg: yellow, bg: '#98F5FF' }
+            - { item: button,                     text: A->B,     cmd:        SW72;,  abg: yellow, bg: '#E3CF57' }
+            - { item: button,                     text: A/B,      cmd:        SW41;,  abg: yellow, bg: '#E3CF57' }
+            - { item: button,                     text: A-APF,    cmd:        AP/;,   abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: test, text: Test off, cmd:        TS0;,   abg: yellow, bg: orange, indicator: 0 }
+            - { item: button,                     text: B-NB,     cmd:        NB$/;,  abg: yellow, bg: '#CAFF70' }
+            - { item: button,                     text: B-NR,     cmd:        NR$/;,   abg: yellow, bg: '#CAFF70' }
+            - { item: button,                     text: B->A,     cmd:        SW147;, abg: yellow, bg: '#E3CF57' }
+            - { item: button,                     text: SPOT,     cmd:        SP3;,   abg: yellow, bg: '#E3CF57' }
+            - { item: button,                     text: B-APF,    cmd:        AP$/;,  abg: yellow, bg: '#CAFF70' }
+            #- { item: button,                     text: K4D off,  cmd:       PS0;,   abg: yellow, bg: '#E3CF57' }
+            #- { item: button,                     text: Exit,     directive:  quit,   abg: yellow, bg: '#E3CF57' }
+            #- { item: button, text: K4D On,     cmd: [ s2: '/0001:RY1P,00000000:XX\r\n' ],  abg: yellow, bg: green }
+            #- { item: button, text: K4D OFF,    cmd:  PS0;,  abg: green, bg: red1 }
+            #- { item: button, text: Shutdown all,  cmd: [ k4: PS0;,  s2: '/0001:RY,00000000:XX\r\n', s1: '//RY,0000\r\n', s2: '/0002:RELAYOPEN,0000:XX\r\n' ], bg: red1, abg: green }
+
+    - item: group
+      label: Antenna
+      columns: 2
+      column: 1
+      contains:
+            - { item: button, text: ANT,     cmd: SW60;,   abg: yellow, bg: '#E3CF57' }
+            - { item: button, text: RX ANT,  cmd: SW70;,   abg: yellow, bg: '#E3CF57' }
+            - { item: button, text: Rem ANT, cmd: SW1135;, abg: yellow, bg: '#E3CF57' }
+            - { item: button, text: Sub ANT, cmd: SW157;,  abg: yellow, bg: '#E3CF57' }
+
+    - item: group
+      label: Attenuator
+      columns: 8
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: attA, text:  A off, cmd: RA000;, abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text:  3dB,  cmd: RA031;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text:  6dB,  cmd: RA061;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text:  9dB,  cmd: RA091;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text: 12dB,  cmd: RA121;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text: 15dB,  cmd: RA151;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text: 18dB,  cmd: RA181;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attA, text: 21dB,  cmd: RA211;,  abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text: B off, cmd: RA$000;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text:  3dB,  cmd: RA$031;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text:  6dB,  cmd: RA$061;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text:  9dB,  cmd: RA$091;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text: 12dB,  cmd: RA$121;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text: 15dB,  cmd: RA$151;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text: 18dB,  cmd: RA$181;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: attB, text: 21dB,  cmd: RA$211;, abg: yellow, bg: '#CAFF70', indicator: 0 }
+
+    - item: group
+      label: Preamp
+      columns: 4
+      column: 1
+      contains:
+            - { item: radiobutton, groupid: preampA, text: A off, cmd: PA00;,   abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: preampA, text: A PA1, cmd: PA11;,   abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: preampA, text: A PA2, cmd: PA21;,   abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: preampA, text: A PA3, cmd: PA31;,   abg: yellow, bg: '#98F5FF', indicator: 0 }
+            - { item: radiobutton, groupid: preampB, text: B off, cmd: PA$00;,   abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: preampB, text: B PA1, cmd: PA$11;,   abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: preampB, text: b PA2, cmd: PA$21;,   abg: yellow, bg: '#CAFF70', indicator: 0 }
+            - { item: radiobutton, groupid: preampB, text: b PA3, cmd: PA$31;,   abg: yellow, bg: '#CAFF70', indicator: 0 }
+
+
+    - item: group
+      label: ATU control
+      columns: 3
+      column: 0
+      contains:
+            - { item: radiobutton, groupid: atu, indicator: 0, text: ATU bypass, cmd: AT1;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: atu, indicator: 0, text: ATU auto,   cmd: AT2;,  abg: yellow, bg: '#E3CF57' }
+            - { item: button,      groupid: atu, indicator: 0, text: ATU tune,   cmd: SW40;, abg: red,    bg: orange }
+
+
