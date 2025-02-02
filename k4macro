@@ -240,14 +240,15 @@ class Server():
                 self.connected = False
                 return
 
-            dprint1('{name}: received: {str}'.format(name=self.name, str=recv_str))
             if self.type != 'k4':
+                dprint1('{name}: received: {bytes}'.format(name=self.name, bytes=recv_bytes))
                 try:
                     self.recv_queue.put([recv_bytes])
                 except queue.ShutDown:
                     continue
             else:
                 recv_str = recv_bytes.decode()
+                dprint1('{name}: received: {str}'.format(name=self.name, str=recv_str))
                 recv_strs = recv_str.split(';')
                 if len(recv_strs) == 0:
                     continue
