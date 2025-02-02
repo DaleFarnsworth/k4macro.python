@@ -174,17 +174,17 @@
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   2.3 kHz, cmd: BW0230;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   3.5 kHz, cmd: BW0350;, abg: yellow, bg: '#98F5FF' }
             - { item: radiobutton, groupid: bandwidth, indicator: 0, text:   4.0 kHz, cmd: BW0400;, abg: yellow, bg: '#98F5FF' }
-# can this group read the bandwidth at startup, like the band indicators and mode selection?
 
     - item: group
       label: Power
-      columns: 3
+      columns: 5
       column: 0
       contains:
-            - { item: radiobutton, groupid: power, indicator: 0, text:   5 watts, cmd: PC050L;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: power, indicator: 0, text:  50 watts, cmd: PC050H;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: power, indicator: 0, text: 100 watts, cmd: PC100H;, abg: yellow, bg: '#98F5FF' }
-# also this group?   Or can the power be set up as a box like frequency?
+            - { item: radiobutton, groupid: power, indicator: 0, text:   5 W, cmd: PC050L;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  25 W, cmd: PC025H;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  50 W, cmd: PC050H;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:  75 W, cmd: PC075H;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: power, indicator: 0, text: 100 W, cmd: PC100H;, abg: yellow, bg: '#98F5FF' }
 
     - item: group
       label: ATU control
@@ -192,25 +192,22 @@
       column: 0
       contains:
             - { item: radiobutton, groupid: atu, indicator: 0, text: ATU bypass,    cmd: AT1;,   abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: atu, indicator: 0, text: ATU auto,      cmd: AT2;,   abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: atu, indicator: 0, text: ATU auto,      cmd: AT2;,   abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
             - { item: button,      groupid: atu,               text: ATU tune,      cmd: SW40;, abg: red,    bg: yellow }
-# The 3rd button needs to be just a press and let it do its thing.  Not sure how to do this in this group
 
     - item: group
       label: Miscellaneous
       columns: 3
       column: 0
       contains:
-        - { item: button, text: Band up,    cmd:  BN+;,  abg: yellow, bg: '#00FFFF' }          # row 2
-        - { item: button, text: Band down,  cmd:  BN-;,  abg: yellow, bg: '#00FFFF' }          # row 2
-        - { item: button, text: A/B,        cmd:  SW41;, abg: green,  bg: yellow}              # row 3
-        - { item: button, text: A->B,       cmd:  SW72;, abg: green,  bg: yellow}              # row 3
-        - { item: button, text: B->A,       cmd:  SW147;,abg: green,  bg: yellow}              # row 3
-        - { item: button, text: Test mode on,  cmd:  TS1;,  abg: yellow, bg: '#00FFFF' }
-        - { item: button, text: Test mode off, cmd:  TS0;,  abg: yellow, bg: '#00FFFF' }
         - { item: button, text: K4D On,     cmd: [ s2: '/0001:RY1P,00000000:XX\r\n' ],  abg: yellow, bg: green }
+        - { item: button, text: A/B,        cmd:  SW41;, abg: green,  bg: yellow}              # row 3
+        - { item: button, text: Band up,    cmd:  BN+;,  abg: yellow, bg: '#00FFFF' }          # row 2
         - { item: button, text: K4D OFF,    cmd:  PS0;,  abg: green, bg: red1 }
+        - { item: button, text: A->B,       cmd:  SW72;, abg: green,  bg: yellow}              # row 3
+        - { item: button, text: Band down,  cmd:  BN-;,  abg: yellow, bg: '#00FFFF' }          # row 2
         - { item: button, text: Shutdown all,  cmd: [ k4: PS0;,  s2: '/0001:RY,00000000:XX\r\n', s1: '//RY,0000\r\n', s2: '/0002:RELAYOPEN,0000:XX\r\n' ],  bg:   red1, abg:     green }
+        - { item: button, text: B->A,       cmd:  SW147;,abg: green,  bg: yellow}              # row 3
         - { item: button, text: Exit, directive:  quit,  bg:  white, abg:       red }
 
 # vim: set expandtab ts=2 sw=2:
