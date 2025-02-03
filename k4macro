@@ -66,7 +66,33 @@ class Default():
 class Server():
     server_dict = {}
     default_server_name = None
+    k4_long_base_params = {
+            '#A': ['#AR', '#AVG'],
+            'AC': ['ACM', 'ACS', 'ACT', 'ACN'],
+            '#C': ['#CAL', '#CUR'],
+            '#D': ['#DPM', '#DSM'],
+            'DN': ['DNB'],
+            '#F': ['#FPS', '#FRZ', '#FXA', '#FXT'],
+            '#H': ['#HDPM', '#HDSM', '#HREF', '#HWBS', '#HWFC', '#HWFH'],
+            'KZ': ['KZL', 'KZF'],
+            'LO': ['LOG'],
+            'ME': ['MEDF'],
+            '#M': ['#MP'],
+            '#N': ['#NBL', '#NB'],
+            'PC': ['PCX'],
+            '#P': ['#PKM'],
+            '#R': ['#REF'],
+            'RR': ['RRT', 'RRC', 'RRP'],
+            'SM': ['SMH'],
+            '#S': ['#SCL', '#SFL', '#SPM', '#SPN'],
+            'SW': ['SWT', 'SWH'],
+            'UP': ['UPB'],
+            '#V': ['#VFA', '#VFB'],
+            '#W': ['#WBS', '#WFC', '#WFH'],
+            'XV': ['XVN', 'XVM', 'XVR', 'XVI', 'XVO', 'XVP '],
+        }
 
+    @staticmethod
     def server(server_name):
         return Server.server_dict[server_name]
 
@@ -83,20 +109,26 @@ class Server():
         return Server.server(Server.default_server_name)
 
     @staticmethod
-    def send_dict(cmd_dict):
-        for server_name in cmd_dict:
+    def send_cmds_with_server(cmd_list):
+        for server_name, cmds in cmd_list:
             if server_name in Server.server_names():
-                server = Server.server_name(server_name)
-                server.send(cmd_dict[server_name])
+                server = Server.server(server_name)
+                server.send_cmds(cmds)
             elif server_name == 'delay':
                 delay = float(cmd_dict[server_name]) / 1000
                 time.sleep(delay)
             else:
-                print("Unknown server name '{name}'".format(name=server_name))
+                raise Exception("Unknown server name '{name}'".format(name=server_name))
+
+    @staticmethod
+    def split_cmd(cmd):
+        if cmd[-1] == ';':
+            cmd = cmd[0:-1]
+        return cmd.split(';')
 
     def __init__(self, config_info):
         self.name = config_info['name']
-        self.type = config_info.get('type', '')
+        self.type = config_info.get('type', '').lower()
         self.address = config_info['address']
         self.port = config_info['port']
         self.startup = config_info.get('startup', None)
@@ -107,13 +139,29 @@ class Server():
         self.send_thread = None
         self.recv_thread = None
         self.connected = False
-        self.response_subscriptions = {}
-        self.max_response_key_length = 0
+        self.param_subscriptions = {}
         self.poll_callbacks = {}
+        self.base_cache = {}
+
+        if self.type == 'k4':
+            self.k4_params = {}
 
         if Server.default_server_name == None:
             Server.default_server_name = config_info['name']
         Server.server_dict[self.name] = self
+
+    def update_k4_param(self, param):
+        base = param_base(param)
+        old = self.k4_params.get(base, None)
+        self.k4_params[base] = param
+
+        if old != param:
+            callbacks = self.param_subscriptions.get(base, [])
+            for callback in callbacks:
+                callback(param + ';')
+            return True
+        else:
+            return False
 
     def add_poll_callback(self, key, callback):
         self.poll_callbacks[key] = callback
@@ -144,10 +192,10 @@ class Server():
             self.recv_thread.start()
             if self.type == 'k4':
                 Page.top.after(50, self.poll)
-                self.send('K41;')               # request K4 to respond in advanced mode
-                self.send('AI2;AID060;')        # request K4 to send updates every 60 mS
+                self.send_str('K41;')               # request K4 to respond in advanced mode
+                self.send_str('AI2;AID060;')        # request K4 to send updates every 60 mS
                 if self.startup != None:
-                    self.send(self.startup)     # send user-specified startup commands
+                    self.send_cmds(self.startup)     # send user-specified startup commands
                 self.add_poll_callback(self.recv_thread, self.receive)
         except socket.gaierror:
             print('Address not found: {addr}'.format(addr=self.address))
@@ -167,10 +215,20 @@ class Server():
         if self.recv_thread != None:
             self.recv_thread.join()
 
-    def send(self, cmd):
+    def send_str(self, cmd):
+        self.send_queue.put(cmd)
+
+    def send_cmds(self, cmds):
         if not self.connected:
             print("Server '{name}' not connected.".format(cmd=cmd, name=self.name))
-        self.send_queue.put(cmd)
+        if isinstance(cmds, str):
+            cmds = [cmds]
+        for cmd in cmds:
+            if cmd == '':
+                continue
+            if self.update_k4_param(cmd):
+                cmd += ';'
+                self.send_str(cmd)
 
     def send_loop(self):
         while True:
@@ -183,47 +241,73 @@ class Server():
             except OSError:
                 print("Failed to send command, '{cmd}' to '{name}'".format(cmd=cmd, name=self.name))
 
-    def sendall(self, cmd):
-        if isinstance(cmd, str):
-            self.send(cmd)
-        elif isinstance(cmd, dict):
-            Server.send_dict(cmd)
-        elif isinstance(cmd, list):
-            for cmd_dict in cmd:
-                if isinstance(cmd_dict, dict):
-                    Server.send_dict(cmd_dict)
-                else:
-                    print("Unknown server sub-command 'cmd'".format(cmd=cmd_dict))
+    def expand_cmds(self, cmds):
+        if isinstance(cmds, str):
+            return [[self.name, Server.split_cmd(cmds)]]
+        elif isinstance(cmds, dict):
+            cmd_dict = cmds
+            ret = []
+            for name in cmd_dict:
+                cmd = cmd_dict[name]
+                ret.append(name, Server.split_cmd(cmd_dict[name]))
+            return ret
+        elif isinstance(cmds, list):
+            ret = []
+            for cmd_dict in cmds:
+                if not isinstance(cmd_dict, dict):
+                    raise Exception("Unknown server sub-command '{cmd}'".format(cmd=cmd_dict))
+                for name in cmd_dict:
+                    cmd = cmd_dict[name]
+                    ret.append(name, Server.split_cmd(cmd_dict[name]))
+            return ret
         else:
-            print("Unknown cmd '{cmd}'".format(cmd=cmd))
+            raise Exception("Error: bad cmd format: '{cmd}'".format(cmd=cmd))
 
-    def k4_receive(self, response):
-        if len(response) > self.max_response_key_length:
-            beyond_last = self.max_response_key_length + 2
-        else:
-            beyond_last = len(response) + 2
+    def expand_server_cmds(self, cmds):
+        if isinstance(cmds, str):
+            return Server.split_cmd(cmds)
+        ret = []
+        for name, cmds in self.expand_cmds(cmds):
+            if name == self.name:
+                ret.extend(cmds)
+        return ret
 
-        start = len(cmd_base(response))
+    def expand_and_send_cmds(self, cmds):
+        expanded_cmds = self.expand_cmds(cmds)
+        Server.send_cmds_with_server(expanded_cmds)
 
-        found = False
-        for end in range(start, beyond_last):
-            for func in self.response_subscriptions.get(response[0:end], []):
-                func(response)
-                found = True
-        return found
+    def cmd_bases(self, cmds):
+        bases = []
+        expanded_cmds = self.expand_cmds(cmds)
+        for server_name, cmds in expanded_cmds:
+            if server_name != self.name:
+                continue
+            for cmd in cmds:
+                bases.append(param_base(cmd))
+        return bases
+
+    def subscribe_cmds(self, cmds, callback):
+        bases = self.cmd_bases(cmds)
+        for base in bases:
+            self.subscribe_response(base, callback)
+            if base not in self.base_cache:
+                self.base_cache[base] = True
+                self.send_str(base + ';')
+
+    def clear_base_cache(self):
+        self.base_cache.clear()
 
     def receive(self):
-        try:
-            responses = self.recv_queue.get_nowait()
-            for response in responses:
-                dprint2('{name}: dequeued response: {response}'.format(name=self.name, response=response))
-                if self.type == 'k4':
-                    response += ';'
-                    if self.k4_receive(response):
-                        continue
-                dprint2('{name}: unhandled response: {response}'.format(name=self.name, response=response))
-        except queue.Empty:
-            pass
+        while True:
+            try:
+                responses = self.recv_queue.get_nowait()
+                for response in responses:
+                    if self.type == 'k4':
+                        if self.update_k4_param(response):
+                            continue
+                    # For now, ignore responses from non-K4 servers
+            except queue.Empty:
+                break
 
     def recv_loop(self):
         while True:
@@ -232,7 +316,7 @@ class Server():
             if not self.connected:
                 return
             if len(in_error) > 0:
-                print("socket error")
+                raise Exception("Socket error reading from server '{name}'".format(name=self.name))
             if len(readable) == 0:
                 continue
 
@@ -264,20 +348,17 @@ class Server():
                     partial_response = ''
 
                 self.recv_queue.put(responses)
-                dprint2('{name}: queued: {responses}'.format(name=self.name, responses=responses))
 
     def subscribe_response(self, key, callback):
-        if len(key) > self.max_response_key_length:
-            self.max_response_key_length = len(key)
-        if not key in self.response_subscriptions:
-            self.response_subscriptions[key] = []
-        if callback in self.response_subscriptions[key]:
-            raise Exception('duplicate subscription for {key}: {callback}'.format(key, callback))
-        self.response_subscriptions[key].append(callback)
+        if not key in self.param_subscriptions:
+            self.param_subscriptions[key] = []
+        if callback in self.param_subscriptions[key]:
+            raise Exception('duplicate subscription for {key}: {callback}'.format(key=key, callback=callback))
+        self.param_subscriptions[key].append(callback)
 
     def unsubscribe_response(self, key, callback):
-        self.response_subscriptions[key].remove(callback)
- 
+        self.param_subscriptions[key].remove(callback)
+
 class Container():
     depth = -1
 
@@ -436,6 +517,7 @@ class Button(Widget):
 
         server_name = config_info.get('server', Server.default_server_name)
         self.server = Server.server(server_name)
+        self.server.clear_base_cache()
 
         width = container.items_width()
         if len(text) > width:
@@ -456,7 +538,7 @@ class Button(Widget):
                 print('Unknown directive: ', directive)
 
         if cmd != None:
-            command = lambda: self.server.sendall(cmd)
+            command = lambda: self.server.expand_and_send_cmds(cmd)
 
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
@@ -480,17 +562,12 @@ class Radiobutton(Widget):
     radiobutton_responses = {}
     variables = {}
     response_callbacks = {}
-
-    @staticmethod
-    def select(group_id, response):
-        for r, b in Radiobutton.radiobutton_responses[group_id].items():
-            if r == response:
-                b.button.select()
-            else:
-                b.button.deselect()
+    button_counter = 0
 
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
+
+        Radiobutton.button_counter += 1
 
         self.text = str(config_info.get('text', ''))
         self.cmd = config_info.get('cmd', None)
@@ -504,14 +581,13 @@ class Radiobutton(Widget):
         afg = config_info.get('afg', Default.afg)
         if afg == None:
             afg = fg
+
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
 
         server_name = config_info.get('server', Server.default_server_name)
         self.server = Server.server(server_name)
 
-        if not self.group_id in Radiobutton.radiobutton_responses:
-            Radiobutton.radiobutton_responses[self.group_id] = {}
-        Radiobutton.radiobutton_responses[self.group_id][self.response] = self
+        self.params = {}
 
         if not self.group_id in Radiobutton.variables:
             Radiobutton.variables[self.group_id] = tk.StringVar
@@ -541,22 +617,37 @@ class Radiobutton(Widget):
                     indicator=indicator,
                     selectcolor=selectcolor,
                     variable=variable,
-                    value=self.cmd)
+                    value=Radiobutton.button_counter)
 
         self.button.grid(row=container.row, column=container.column, sticky='w')
 
-        if self.server.type == 'k4':
-            group_id = self.group_id
-            if group_id not in Radiobutton.response_callbacks:
-                Radiobutton.response_callbacks[group_id] = lambda response: Radiobutton.select(group_id, response)
-                key = cmd_base(self.response)
-                self.server.subscribe_response(key, Radiobutton.response_callbacks[group_id])
-                self.server.send('{key};'.format(key=key))
+        for response in self.server.expand_server_cmds(self.response):
+            base = param_base(response)
+            self.params[base] = response
+            if base.startswith('SW'):
+                raise Exception("'SW' not permitted in Radiobutton command: '{cmd}'".format(cmd=self.response))
+
+        self.server.subscribe_cmds(self.response, self.on_response_received)
 
     def on_clicked(self):
-        self.select(self.group_id, self.response)
         if self.cmd != None:
-            self.server.sendall(self.cmd)
+            self.server.expand_and_send_cmds(self.cmd)
+
+    def compare_params(self, group, text):
+        params = self.params
+        for base in params.keys():
+            dprint2('commpare {group}:{text} s: {s}, b: {b}'.format(group=group, text=text, s=self.server.k4_params.get(base, None), b=params[base]))
+            if params[base] != self.server.k4_params.get(base, None):
+                dprint2('No match')
+                return False
+        dprint2('Match')
+        return True
+
+    def on_response_received(self, response):
+        if self.compare_params(self.group_id, self.text):
+            self.button.select()
+        else:
+            self.button.deselect()
 
 class VFO(Widget):
     def __init__(self, config_info, container):
@@ -637,8 +728,7 @@ class VFO(Widget):
 
         frame.grid(row=container.row, column=container.column, sticky='w')
 
-        self.server.subscribe_response('F{vfo}'.format(vfo=self.AorB), self.on_response_received)
-        self.server.send('F{vfo};'.format(vfo=self.AorB))
+        self.server.subscribe_cmds('F{vfo}'.format(vfo=self.AorB), self.on_response_received)
 
     def on_vfo_change(self):
         freq = int(float(self.vfo_sb.get()) * 1000)
@@ -654,7 +744,7 @@ class VFO(Widget):
         freq = int(float(self.vfo_sb.get()) * 1000)
         freq11 = "{:011d}".format(freq)
         cmd = "F{vfo}{freq};".format(vfo=self.AorB, freq=freq11)
-        self.server.send(cmd)
+        self.server.expand_and_send_cmds(cmd)
 
     def on_delta_change(self):
         self.increment = self.delta_map[self.delta_sb.get()]
@@ -707,9 +797,7 @@ class Slider(Widget):
         self.scale.grid(row=container.row, column=container.column, sticky='nw')
 
         cmd = self.eval_value(self.cmd, self.value.get())
-        key = cmd_base(cmd)
-        self.server.subscribe_response(key, self.on_response_received)
-        self.server.send('{key};'.format(key=key))
+        self.server.subscribe_cmds(cmd, self.on_response_received)
 
     def eval_value(self, s, value):
         return eval(s)
@@ -721,7 +809,7 @@ class Slider(Widget):
             next_value = value + self.eval_value(self.increment, value)
         self.scale.configure(resolution=self.eval_value(self.increment, next_value))
         cmd = self.eval_value(self.cmd, value)
-        self.server.send(cmd)
+        self.server.send_cmds(cmd)
         self.previous_value = value
 
     def on_response_received(self, response):
@@ -730,11 +818,15 @@ class Slider(Widget):
         self.scale.configure(resolution=self.eval_value(self.increment, value))
         self.previous_value = value
 
-def cmd_base(cmd):
-    if cmd[2] == '$':
-        base = cmd[0:3]
-    else:
-        base = cmd[0:2]
+def param_base(param):
+    base = param[0:2]
+    if base in Server.k4_long_base_params:
+        for long_base in Server.k4_long_base_params[base]:
+            if param.startswith(long_base):
+                base = long_base
+                break
+    if len(param) > len(base) and param[len(base)] == '$':
+        base += '$'
     return base
 
 def read_config(config_file_name):

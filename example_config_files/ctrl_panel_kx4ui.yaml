@@ -123,10 +123,10 @@
       rows: 1
       rowspan: 1
       contains:
-        - { item: radiobutton, groupid: recall, indicator: 0, text: CW,   cmd: SW34;DE60;SW17;,  abg: yellow, bg: '#E3CF57' }
-        - { item: radiobutton, groupid: recall, indicator: 0, text: SSB,  cmd: SW34;DE60;SW51;,  abg: yellow, bg: '#E3CF57' }
-        - { item: radiobutton, groupid: recall, indicator: 0, text: DATA, cmd: SW34;DE60;SW18;,  abg: yellow, bg: '#E3CF57' }
-        - { item: radiobutton, groupid: recall, indicator: 0, text: AFSK, cmd: SW34;DE60;SW52;,  abg: yellow, bg: '#E3CF57' }
+        - { item: button, text: CW,   cmd: SW34;DE60;SW17;,  abg: yellow, bg: '#E3CF57' }
+        - { item: button, text: SSB,  cmd: SW34;DE60;SW51;,  abg: yellow, bg: '#E3CF57' }
+        - { item: button, text: DATA, cmd: SW34;DE60;SW18;,  abg: yellow, bg: '#E3CF57' }
+        - { item: button, text: AFSK, cmd: SW34;DE60;SW52;,  abg: yellow, bg: '#E3CF57' }
 
 
     - item: group
@@ -214,7 +214,7 @@
       columns: 7
       column: 0
       contains:
-            - { item: radiobutton, groupid: power, indicator: 0, text:   1 W, cmd: PC001L;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: power, indicator: 0, text:   1 W, cmd: PC010L;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: power, indicator: 0, text:   5 W, cmd: PC050L;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: power, indicator: 0, text:  12 W, cmd: PC012H;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: power, indicator: 0, text:  25 W, cmd: PC025H;, abg: yellow, bg: '#E3CF57' }
@@ -227,7 +227,7 @@
       columns: 4
       column: 0
       contains:
-            - { item: radiobutton, groupid: rxeq, indicator: 0, text: Flat, cmd: REF;;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: rxeq, indicator: 0, text: Flat, cmd: RE+00+00+00+00+00+00+00+00;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: rxeq, indicator: 0, text: CW,   cmd: RE-16+03+03+03-16-16-16-16;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: rxeq, indicator: 0, text: SSB,  cmd: RE+04+02-01-01+05+04+03+00;, abg: yellow, bg: '#E3CF57' }
 
@@ -236,10 +236,10 @@
       columns: 4
       column: 0
       contains:
-            - { item: radiobutton, groupid: txeq, indicator: 0, text: Normal,  cmd: TE+03-01-03+00+03+06+09+06;ME0108100;;ES028;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: txeq, indicator: 0, text: Normal,  cmd: TE+03-01-03+00+03+06+09+06;ME0108.0100;ES028;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: txeq, indicator: 0, text: Ctest-W, cmd: TE-16-16-09-01+03+06+10+07;ES028;, abg: yellow, bg: '#E3CF57' }
             - { item: radiobutton, groupid: txeq, indicator: 0, text: Ctest-N, cmd: TE-16-16-09-01+03+06+10+07;ES024;, abg: yellow, bg: '#E3CF57' }
-            - { item: radiobutton, groupid: txeq, indicator: 0, text: ESSB,    cmd: TE+03-01-03+00+03+06+09+06;ME0108200;ES140;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: txeq, indicator: 0, text: ESSB,    cmd: TE+03-01-03+00+03+06+09+06;ME0108.0200;ES140;, abg: yellow, bg: '#E3CF57' }
 
 
     - item: group
@@ -247,10 +247,10 @@
       columns: 4
       column: 0
       contains:
-            - { item: radiobutton, groupid: split, indicator: 0, text: Up  1, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN5;FC+4000;ME44.2;VT1;VT$1;UPB100;MXA.B;;,  abg: yellow, bg: '#E3CF57' }
-            - { item: radiobutton, groupid: split, indicator: 0, text: Up  5, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN10;FC+4000;ME44.2;VT1;VT$1;UPB500;MXA.B;,  abg: yellow, bg: '#E3CF57' }
-            - { item: radiobutton, groupid: split, indicator: 0, text: Up 10, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN20;FC+9000;ME44.2;VT1;VT$1;UPB1000;MXA.B;, abg: yellow, bg: '#E3CF57' }
-            - { item: radiobutton, groupid: split, indicator: 0, text: None,  cmd: SB0;FT0;FC;AB3;#SPN74;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: Up  1, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN5000;FC+4000;ME44.2;UPB100;MXA.B;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: Up  5, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN10000;FC+4000;ME44.2;UPB500;MXA.B;,  abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: Up 10, cmd: RT0;XT0;#FXT2;AB3;FT1;SB1;#SPN20000;FC+9000;ME44.2;UPB1000;MXA.B;, abg: yellow, bg: '#E3CF57' }
+            - { item: radiobutton, groupid: split, indicator: 0, text: None,  cmd: SB0;FT0;FC;AB3;#SPN74000;, abg: yellow, bg: '#E3CF57' }
 
     - item: group
       label: Tune
