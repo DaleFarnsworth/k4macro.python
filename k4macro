@@ -140,7 +140,6 @@ class Server():
         self.recv_thread = None
         self.connected = False
         self.param_subscriptions = {}
-        self.poll_callbacks = {}
 
         if self.type == 'k4':
             self.k4_params = {}
@@ -162,19 +161,6 @@ class Server():
         else:
             return False
 
-    def add_poll_callback(self, key, callback):
-        self.poll_callbacks[key] = callback
-
-    def remove_poll_callback(self, key):
-        self.poll_callbacks.pop(key, '')
-
-    def poll(self):
-        for key in tuple(self.poll_callbacks):
-            callback = self.poll_callbacks.get(key, None)
-            if callback != None:
-                callback()
-        Page.top.after(50, self.poll)
-
     def connect(self):
         vprint1('Connecting to {name}, address {addr}, port {port}'.format(
               name=self.name, addr=self.address, port=self.port))
@@ -190,12 +176,11 @@ class Server():
             self.recv_thread = threading.Thread(target=self.recv_loop, name=self.name+'.recv_thread')
             self.recv_thread.start()
             if self.type == 'k4':
-                Page.top.after(50, self.poll)
                 self.send_str('K41;')               # request K4 to respond in advanced mode
                 self.send_str('AI2;AID060;')        # request K4 to send updates every 60 mS
                 if self.startup != None:
                     self.send_cmds(self.startup)     # send user-specified startup commands
-                self.add_poll_callback(self.recv_thread, self.receive)
+                Poll.add_poll_callback(1, self.receive)
         except socket.gaierror:
             print('Address not found: {addr}'.format(addr=self.address))
             if not Options.debug > 0:
@@ -558,7 +543,7 @@ class Button(Widget):
 class Radiobutton(Widget):
     radiobutton_responses = {}
     variables = {}
-    response_callbacks = {}
+    response_callbacks = []
     button_counter = 0
 
     def __init__(self, config_info, container):
@@ -734,10 +719,10 @@ class VFO(Widget):
         if mod != 0:
             self.vfo_sb.delete(0, 'end')
             self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
-        self.server.add_poll_callback(self, self.send_vfo_change)
+        Poll.add_poll_callback(50, self.send_vfo_change)
 
     def send_vfo_change(self):
-        self.server.remove_poll_callback(self)
+        Poll.remove_poll_callback(50, self.send_vfo_change)
         freq = int(float(self.vfo_sb.get()) * 1000)
         freq11 = "{:011d}".format(freq)
         cmd = "F{vfo}{freq};".format(vfo=self.AorB, freq=freq11)
@@ -844,6 +829,33 @@ def read_config(config_file_name):
             else:
                 print("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
 
+
+class Poll:
+    poll_callbacks = {}
+    polls = {}
+    top = None
+
+    def __init__(self, top):
+        Poll.top = top
+
+    def add_poll_callback(interval, callback):
+        if interval not in Poll.poll_callbacks:
+            Poll.poll_callbacks[interval] = []
+            Poll.polls[interval] = lambda: Poll.poll(interval)
+            Poll.top.after(interval, Poll.polls[interval])
+        Poll.poll_callbacks[interval].append(callback)
+
+    def poll(interval):
+        for callback in tuple(Poll.poll_callbacks[interval]):
+            callback()
+        if len(Poll.poll_callbacks[interval]) == 0:
+            del Poll.poll_callbacks[interval]
+        else:
+            Poll.top.after(interval, Poll.polls[interval])
+
+    def remove_poll_callback(interval, callback):
+        Poll.poll_callbacks[interval].remove(callback)
+
 class Options():
     config_file = None
     verbose = 0
@@ -901,6 +913,7 @@ def main():
     top.title('K4 Macro-Python')
     top.protocol("WM_DELETE_WINDOW", cleanup_and_exit)
     Page.top = top
+    Poll(top)
 
     read_config(Options.config_file)
 
