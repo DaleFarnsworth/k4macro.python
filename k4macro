@@ -333,8 +333,7 @@ class Server():
         param = self.k4_params.get(base, None)
         if param != None:
             callback(param)
-        else:
-            self.send_str(base + ';')
+        self.send_str(base + ';')
         if callback in self.param_subscriptions[base]:
             raise Exception('duplicate subscription for {base}: {callback}'.format(base=base, callback=callback))
         self.param_subscriptions[base].append(callback)
