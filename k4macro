@@ -141,7 +141,6 @@ class Server():
         self.connected = False
         self.param_subscriptions = {}
         self.poll_callbacks = {}
-        self.base_cache = {}
 
         if self.type == 'k4':
             self.k4_params = {}
@@ -290,12 +289,6 @@ class Server():
         bases = self.cmd_bases(cmds)
         for base in bases:
             self.subscribe_response(base, callback)
-            if base not in self.base_cache:
-                self.base_cache[base] = True
-                self.send_str(base + ';')
-
-    def clear_base_cache(self):
-        self.base_cache.clear()
 
     def receive(self):
         while True:
@@ -349,15 +342,20 @@ class Server():
 
                 self.recv_queue.put(responses)
 
-    def subscribe_response(self, key, callback):
-        if not key in self.param_subscriptions:
-            self.param_subscriptions[key] = []
-        if callback in self.param_subscriptions[key]:
-            raise Exception('duplicate subscription for {key}: {callback}'.format(key=key, callback=callback))
-        self.param_subscriptions[key].append(callback)
+    def subscribe_response(self, base, callback):
+        if not base in self.param_subscriptions:
+            self.param_subscriptions[base] = []
+        param = self.k4_params.get(base, None)
+        if param != None:
+            callback(param)
+        else:
+            self.send_str(base + ';')
+        if callback in self.param_subscriptions[base]:
+            raise Exception('duplicate subscription for {base}: {callback}'.format(base=base, callback=callback))
+        self.param_subscriptions[base].append(callback)
 
-    def unsubscribe_response(self, key, callback):
-        self.param_subscriptions[key].remove(callback)
+    def unsubscribe_response(self, base, callback):
+        self.param_subscriptions[base].remove(callback)
 
 class Container():
     depth = -1
@@ -517,7 +515,6 @@ class Button(Widget):
 
         server_name = config_info.get('server', Server.default_server_name)
         self.server = Server.server(server_name)
-        self.server.clear_base_cache()
 
         width = container.items_width()
         if len(text) > width:
