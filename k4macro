@@ -210,9 +210,9 @@ class Server():
         for cmd in cmds:
             if cmd == '':
                 continue
-            if self.update_k4_param(cmd):
-                cmd += ';'
-                self.send_str(cmd)
+            self.update_k4_param(cmd)
+            cmd += ';'
+            self.send_str(cmd)
 
     def send_loop(self):
         while True:
