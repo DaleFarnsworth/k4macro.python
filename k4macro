@@ -409,7 +409,7 @@ class Server():
             self.k4_subscriptions[base] = []
         parameter = self.k4_parameters.get(base, None)
         if parameter != None:
-            callback(parameter)
+            callback(parameter + ';')
         self.send_str(base + ';')
         if callback in self.k4_subscriptions[base]:
             raise Exception('duplicate subscription for {base}: {callback}'.format(base=base, callback=callback))
@@ -710,8 +710,21 @@ class Radiobutton(Widget):
             self.button.deselect()
 
 class VFO(Widget):
+    steps = [.001, .01, .1, 1, 10, 100 ]
+    texts = [ '1 Hz', '10 Hz', '100 Hz', '1 kHz', '10 kHz', '100 kHz' ]
+    step_to_index = {}
+    text_to_index = {}
+
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
+
+        if len(VFO.step_to_index) == 0:
+            for i, step in enumerate(VFO.steps):
+                VFO.step_to_index[step] = i
+
+        if len(VFO.text_to_index) == 0:
+            for i, text in enumerate(VFO.texts):
+                VFO.text_to_index[text] = i
 
         self.AorB = config_info.get('AorB', 'A').upper()
         server_name = config_info.get('server', Server.default_server_name)
@@ -722,7 +735,7 @@ class VFO(Widget):
         abg = config_info.get('abg', Default.abg)
         vfo_font = config_info.get('font', container.button_font)
 
-        self.increment = .1
+        self.step = .1
 
         frame = tk.Frame(container.frame)
 
@@ -733,8 +746,8 @@ class VFO(Widget):
                 from_=100,
                 to=54000,
                 wrap=False,
-                command=self.on_vfo_change,
-                increment=self.increment,
+                command=self.on_frequency_change,
+                increment=self.step,
                 font=font,
                 width=9,
                 repeatdelay=300,
@@ -761,16 +774,14 @@ class VFO(Widget):
                     bg=bg,
                     padx=1,
                     pady=1,
-                    command=self.on_vfo_change)
+                    command=self.on_frequency_change)
 
         set_button.grid(row=0, column=1, sticky='w')
 
-        self.delta_map = { '1 Hz': .001, '10 Hz': .01, '100 Hz': .1, '1 kHz': 1, '10 kHz': 10, '100 kHz': 100 }
-
-        self.delta_sb = tk.Spinbox(
+        self.step_sb = tk.Spinbox(
                 frame,
-                command=self.on_delta_change,
-                values= tuple(self.delta_map.keys()),
+                command=self.on_step_change,
+                values= tuple(VFO.texts),
                 font=font,
                 width=7,
                 format='%5.3f',
@@ -781,39 +792,63 @@ class VFO(Widget):
                 bg=bg,
                 activebackground=abg,
                 )
-        self.delta_sb.delete(0, 'end')
-        self.delta_sb.insert(0, '100 Hz')
+        self.step_sb.delete(0, 'end')
+        self.step_sb.insert(0, '100 Hz')
 
-        self.delta_sb.grid(row=0, column=2, sticky='w')
+        self.step_sb.grid(row=0, column=2, sticky='w')
 
         frame.grid(row=container.row, column=container.column, sticky='w')
 
-        self.server.subscribe_cmds('F{vfo}'.format(vfo=self.AorB), self.on_response_received)
+        self.server.subscribe_cmds('F{vfo}'.format(vfo=self.AorB), self.on_frequency_received)
+        step_cmd = 'VT'
+        if self.AorB == 'B':
+            step_cmd += '$'
+        self.server.subscribe_cmds(step_cmd, self.on_step_received)
 
-    def on_vfo_change(self):
+    def on_frequency_change(self):
         freq = int(float(self.vfo_sb.get()) * 1000)
-        mod = freq % int(self.increment * 1000)
+        mod = freq % int(self.step * 1000)
         freq -= mod
         if mod != 0:
             self.vfo_sb.delete(0, 'end')
             self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
-        Poll.add_poll_callback(50, self.send_vfo_change)
+        Poll.add_poll_callback(50, self.send_frequency)
 
-    def send_vfo_change(self):
-        Poll.remove_poll_callback(50, self.send_vfo_change)
+    def send_frequency(self):
+        Poll.remove_poll_callback(50, self.send_frequency)
         freq = int(float(self.vfo_sb.get()) * 1000)
         freq11 = "{:011d}".format(freq)
         cmd = "F{vfo}{freq};".format(vfo=self.AorB, freq=freq11)
-        self.server.expand_and_send_cmds(cmd)
+        self.server.send_cmds(cmd)
 
-    def on_delta_change(self):
-        self.increment = self.delta_map[self.delta_sb.get()]
-        self.vfo_sb.config(increment=self.increment)
-
-    def on_response_received(self, response):
+    def on_frequency_received(self, response):
         value  = "{:.3f}".format(float(response[2:13]) / 1000)
         self.vfo_sb.delete(0, 'end')
         self.vfo_sb.insert(0, value)
+
+    def on_step_change(self):
+        self.step = VFO.steps[VFO.text_to_index[self.step_sb.get()]]
+        self.vfo_sb.config(increment=self.step)
+        mode_index = self.current_mode_index()
+        cmd = 'VT'
+        if self.AorB == 'B':
+            cmd += '$'
+        cmd += str(VFO.step_to_index[self.step])
+        cmd += self.current_mode_index()
+        self.server.send_cmds(cmd + ';')
+
+    def on_step_received(self, response):
+        step_index = int(response[-3])
+        self.step = VFO.steps[int(step_index)]
+        self.step_sb.delete(0, 'end')
+        self.step_sb.insert(0, VFO.texts[VFO.step_to_index[self.step]])
+
+    def current_mode_index(self):
+        cmd = 'MD'
+        if self.AorB == 'B':
+            cmd += '$'
+        mode_parameter = self.server.k4_parameter(cmd)
+        return mode_parameter[-1]
 
 class Slider(Widget):
     def __init__(self, config_info, container):
@@ -984,6 +1019,9 @@ def vprint1(*args, **kwargs):
 def vprint2(*args, **kwargs):
     if Options.verbose >= 2:
         print(*args, **kwargs)
+
+def tprint(*args, **kwargs):
+    print(*args, **kwargs)
 
 def main():
     Options.Parse()
