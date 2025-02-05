@@ -66,31 +66,87 @@ class Default():
 class Server():
     server_dict = {}
     default_server_name = None
-    k4_long_base_params = {
-            '#A': ['#AR', '#AVG'],
-            'AC': ['ACM', 'ACS', 'ACT', 'ACN'],
-            '#C': ['#CAL', '#CUR'],
-            '#D': ['#DPM', '#DSM'],
-            'DN': ['DNB'],
-            '#F': ['#FPS', '#FRZ', '#FXA', '#FXT'],
-            '#H': ['#HDPM', '#HDSM', '#HREF', '#HWBS', '#HWFC', '#HWFH'],
-            'KZ': ['KZL', 'KZF'],
-            'LO': ['LOG'],
-            'ME': ['MEDF'],
-            '#M': ['#MP'],
-            '#N': ['#NBL', '#NB'],
-            'PC': ['PCX'],
-            '#P': ['#PKM'],
-            '#R': ['#REF'],
-            'RR': ['RRT', 'RRC', 'RRP'],
-            'SM': ['SMH'],
-            '#S': ['#SCL', '#SFL', '#SPM', '#SPN'],
-            'SW': ['SWT', 'SWH'],
-            'UP': ['UPB'],
-            '#V': ['#VFA', '#VFB'],
-            '#W': ['#WBS', '#WFC', '#WFH'],
-            'XV': ['XVN', 'XVM', 'XVR', 'XVI', 'XVO', 'XVP '],
-        }
+    k4_long_base_commands = {
+        '#A': ['#AR', '#AVG'],
+        'AC': ['ACM', 'ACS', 'ACT', 'ACN'],
+        '#C': ['#CAL', '#CUR'],
+        '#D': ['#DPM', '#DSM'],
+        'DN': ['DNB'],
+        '#F': ['#FPS', '#FRZ', '#FXA', '#FXT'],
+        '#H': ['#HDPM', '#HDSM', '#HREF', '#HWBS', '#HWFC', '#HWFH'],
+        'KZ': ['KZL', 'KZF'],
+        'LO': ['LOG'],
+        'ME': ['MEDF'],
+        '#M': ['#MP'],
+        '#N': ['#NBL', '#NB'],
+        'PC': ['PCX'],
+        '#P': ['#PKM'],
+        '#R': ['#REF'],
+        'RR': ['RRT', 'RRC', 'RRP'],
+        'SM': ['SMH'],
+        '#S': ['#SCL', '#SFL', '#SPM', '#SPN'],
+        'SW': ['SWT', 'SWH'],
+        'UP': ['UPB'],
+        '#V': ['#VFA', '#VFB'],
+        '#W': ['#WBS', '#WFC', '#WFH'],
+        'XV': ['XVN', 'XVM', 'XVR', 'XVI', 'XVO', 'XVP '],
+    }
+
+    # commands that end in +, -, /, \, ^, > are also pseudo set-only commands
+    k4_set_only_cmd_bases = {
+        'AB': True,
+        'DE': True,
+        'DM': True,
+        'DNB': True,
+        'DN': True,
+        'EC': True,
+        'LI': True,     # where total length of cmd is <= 6 characters
+        'MS': True,     # where total length of cmd is <= 4 characters
+        'RC$': True,
+        'RC': True,
+        'RD$': True,
+        'RD': True,
+        'RU$': True,
+        'RU': True,
+        'RX': True,
+        'SI': True,
+        'SP$': True,
+        'SP': True,
+        'SWH': True,
+        'SW': True,
+        'SWT': True,
+        'TX': True,
+        'UPB': True,
+        'UP': True,
+    }
+
+    k4_get_only_cmd_bases = {
+        'BG': True,
+        'IF': True,
+        'MA$': True,
+        'MA': True,
+        'OM': True,
+        'PP': True,
+        'RV': True,
+        'SM$': True,
+        'SMH$': True,
+        'SMH': True,
+        'SM': True,
+        'SN': True,
+        'TA': True,
+        'TG': True,
+        'TQ': True,
+        'UT': True,
+    }
+
+    set_only_suffixes = {
+        '+': True,
+        '-': True,
+        '/': True,
+        '\\': True,
+        '+': True,
+        '-': True,
+    }
 
     @staticmethod
     def server(server_name):
@@ -107,6 +163,24 @@ class Server():
     @staticmethod
     def default():
         return Server.server(Server.default_server_name)
+
+    @staticmethod
+    def k4_set_only_cmd(base, cmd):
+        if base in Server.k4_set_only_cmd_bases:
+            if base == 'LI' and len(cmd) > 6:
+                return False
+            elif base == 'MS' and len(cmd) > 4:
+                return False
+            else:
+                return True
+        elif base[-1] in Server.set_only_suffixes:
+            return True
+        else:
+            return False
+
+    @staticmethod
+    def k4_get_only_cmd(base):
+        return base in Server.k4_get_only_cmd_bases
 
     @staticmethod
     def send_cmds_with_server(cmd_list):
@@ -139,27 +213,27 @@ class Server():
         self.send_thread = None
         self.recv_thread = None
         self.connected = False
-        self.param_subscriptions = {}
-
-        if self.type == 'k4':
-            self.k4_params = {}
+        self.k4_subscriptions = {}
+        self.k4_parameters = {}
 
         if Server.default_server_name == None:
             Server.default_server_name = config_info['name']
         Server.server_dict[self.name] = self
 
-    def update_k4_param(self, param):
-        base = param_base(param)
-        old = self.k4_params.get(base, None)
-        self.k4_params[base] = param
+    def update_k4_parameter(self, base, parameter):
+        old = self.k4_parameters.get(base, None)
+        self.k4_parameters[base] = parameter
 
-        if old != param:
-            callbacks = self.param_subscriptions.get(base, [])
+        if old != parameter:
+            callbacks = self.k4_subscriptions.get(base, [])
             for callback in callbacks:
-                callback(param + ';')
+                callback(parameter + ';')
             return True
         else:
             return False
+
+    def k4_parameter(self, base):
+        return self.k4_parameters.get(base, None)
 
     def connect(self):
         vprint1('Connecting to {name}, address {addr}, port {port}'.format(
@@ -206,13 +280,14 @@ class Server():
         if not self.connected:
             print("Server '{name}' not connected.".format(cmd=cmd, name=self.name))
         if isinstance(cmds, str):
-            cmds = [cmds]
+            cmds = Server.split_cmd(cmds)
         for cmd in cmds:
             if cmd == '':
                 continue
-            self.update_k4_param(cmd)
-            cmd += ';'
-            self.send_str(cmd)
+            base = cmd_base(cmd)
+            if Server.k4_set_only_cmd(base, cmd) or self.update_k4_parameter(base, cmd):
+                cmd += ';'
+                self.send_str(cmd)
 
     def send_loop(self):
         while True:
@@ -267,7 +342,7 @@ class Server():
             if server_name != self.name:
                 continue
             for cmd in cmds:
-                bases.append(param_base(cmd))
+                bases.append(cmd_base(cmd))
         return bases
 
     def subscribe_cmds(self, cmds, callback):
@@ -281,8 +356,10 @@ class Server():
                 responses = self.recv_queue.get_nowait()
                 for response in responses:
                     if self.type == 'k4':
-                        if self.update_k4_param(response):
-                            continue
+                        base = cmd_base(response)
+                        if not Server.k4_get_only_cmd(base):
+                            self.update_k4_parameter(base, response)
+
                     # For now, ignore responses from non-K4 servers
             except queue.Empty:
                 break
@@ -328,18 +405,18 @@ class Server():
                 self.recv_queue.put(responses)
 
     def subscribe_response(self, base, callback):
-        if not base in self.param_subscriptions:
-            self.param_subscriptions[base] = []
-        param = self.k4_params.get(base, None)
-        if param != None:
-            callback(param)
+        if not base in self.k4_subscriptions:
+            self.k4_subscriptions[base] = []
+        parameter = self.k4_parameters.get(base, None)
+        if parameter != None:
+            callback(parameter)
         self.send_str(base + ';')
-        if callback in self.param_subscriptions[base]:
+        if callback in self.k4_subscriptions[base]:
             raise Exception('duplicate subscription for {base}: {callback}'.format(base=base, callback=callback))
-        self.param_subscriptions[base].append(callback)
+        self.k4_subscriptions[base].append(callback)
 
     def unsubscribe_response(self, base, callback):
-        self.param_subscriptions[base].remove(callback)
+        self.k4_subscriptions[base].remove(callback)
 
 class Container():
     depth = -1
@@ -405,7 +482,7 @@ class Page(Container):
             Page.name_stack.append(page_name)
             Page.pages[page_name].instance_show()
         else:
-            print("Page:'{name}' not found.".format(name=page_name))
+           raise Exception("Page:'{name}' not found.".format(name=page_name))
 
     @staticmethod
     def show_previous():
@@ -516,7 +593,7 @@ class Button(Widget):
                 page_name = directive[len('show_page '):]
                 command = lambda: Page.show(page_name)
             else:
-                print('Unknown directive: ', directive)
+               raise Exception('Unknown directive: ', directive)
 
         if cmd != None:
             command = lambda: self.server.expand_and_send_cmds(cmd)
@@ -568,7 +645,7 @@ class Radiobutton(Widget):
         server_name = config_info.get('server', Server.default_server_name)
         self.server = Server.server(server_name)
 
-        self.params = {}
+        self.parameters = {}
 
         if not self.group_id in Radiobutton.variables:
             Radiobutton.variables[self.group_id] = tk.StringVar
@@ -603,10 +680,12 @@ class Radiobutton(Widget):
         self.button.grid(row=container.row, column=container.column, sticky='w')
 
         for response in self.server.expand_server_cmds(self.response):
-            base = param_base(response)
-            self.params[base] = response
-            if base.startswith('SW'):
-                raise Exception("'SW' not permitted in Radiobutton command: '{cmd}'".format(cmd=self.response))
+            base = cmd_base(response)
+            self.parameters[base] = response
+            if Server.k4_set_only_cmd(base, response):
+                raise Exception("Set-only command: '{cmd}' not permitted in Radiobutton".format(cmd=self.response))
+            if Server.k4_get_only_cmd(base):
+                raise Exception("Get-only command: '{cmd}' not permitted in Radiobutton".format(cmd=self.response))
 
         self.server.subscribe_cmds(self.response, self.on_response_received)
 
@@ -614,18 +693,18 @@ class Radiobutton(Widget):
         if self.cmd != None:
             self.server.expand_and_send_cmds(self.cmd)
 
-    def compare_params(self, group, text):
-        params = self.params
-        for base in params.keys():
-            dprint2('commpare {group}:{text} s: {s}, b: {b}'.format(group=group, text=text, s=self.server.k4_params.get(base, None), b=params[base]))
-            if params[base] != self.server.k4_params.get(base, None):
+    def compare_parameters(self, group, text):
+        parameters = self.parameters
+        for base in parameters.keys():
+            dprint2('commpare {group}:{text} s: {s}, b: {b}'.format(group=group, text=text, s=self.server.k4_parameters.get(base, None), b=parameters[base]))
+            if parameters[base] != self.server.k4_parameters.get(base, None):
                 dprint2('No match')
                 return False
         dprint2('Match')
         return True
 
     def on_response_received(self, response):
-        if self.compare_params(self.group_id, self.text):
+        if self.compare_parameters(self.group_id, self.text):
             self.button.select()
         else:
             self.button.deselect()
@@ -761,7 +840,7 @@ class Slider(Widget):
         self.value.set(0.0)
         self.previous_value = 0.0
 
-        resolution=self.eval_value((self.increment), self.value.get())
+        resolution=self.eval_value(self.increment, self.value.get())
 
         self.scale = tk.Scale(container.frame,
                          from_=self.from_,
@@ -799,14 +878,15 @@ class Slider(Widget):
         self.scale.configure(resolution=self.eval_value(self.increment, value))
         self.previous_value = value
 
-def param_base(param):
-    base = param[0:2]
-    if base in Server.k4_long_base_params:
-        for long_base in Server.k4_long_base_params[base]:
-            if param.startswith(long_base):
+def cmd_base(cmd):
+    ucmd = cmd.upper()
+    base = ucmd[0:2]
+    if base in Server.k4_long_base_commands:
+        for long_base in Server.k4_long_base_commands[base]:
+            if ucmd.startswith(long_base):
                 base = long_base
                 break
-    if len(param) > len(base) and param[len(base)] == '$':
+    if len(cmd) > len(base) and cmd[len(base)] == '$':
         base += '$'
     return base
 
@@ -826,7 +906,7 @@ def read_config(config_file_name):
             elif item == 'defaults':
                 Default(config_info)
             else:
-                print("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
+                raise Exception("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
 
 
 class Poll:
