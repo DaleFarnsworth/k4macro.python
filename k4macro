@@ -617,9 +617,7 @@ class Button(Widget):
         button.grid(row=container.row, column=container.column, sticky='w')
 
 class Radiobutton(Widget):
-    radiobutton_responses = {}
     variables = {}
-    response_callbacks = []
     button_counter = 0
 
     def __init__(self, config_info, container):
