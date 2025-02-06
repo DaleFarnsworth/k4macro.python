@@ -256,7 +256,7 @@ class Server():
                 self.send_str('AI2;AID060;')        # request K4 to send updates every 60 mS
                 if self.startup != None:
                     self.send_cmds(self.startup)     # send user-specified startup commands
-                Poll.add_poll_callback(1, self.receive)
+                Poll.add_poll(1, self.receive)
         except socket.gaierror:
             print('Address not found: {addr}'.format(addr=self.address))
             if not Options.debug > 0:
@@ -724,10 +724,10 @@ class Radiobutton(Widget):
                 self.flashoff()
 
     def flashon(self):
-        Poll.add_poll_callback(self.flashmS, self.flash)
+        Poll.add_poll(self.flashmS, self.flash)
 
     def flashoff(self):
-        Poll.remove_poll_callback(self.flashmS, self.flash)
+        Poll.remove_poll(self.flashmS, self.flash)
 
     def flash(self):
         self.flashstate = not self.flashstate
@@ -837,10 +837,10 @@ class VFO(Widget):
         if mod != 0:
             self.vfo_sb.delete(0, 'end')
             self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
-        Poll.add_poll_callback(50, self.send_frequency)
+        Poll.add_poll(50, self.send_frequency)
 
     def send_frequency(self):
-        Poll.remove_poll_callback(50, self.send_frequency)
+        Poll.remove_poll(50, self.send_frequency)
         freq = int(float(self.vfo_sb.get()) * 1000)
         freq11 = "{:011d}".format(freq)
         cmd = "F{vfo}{freq};".format(vfo=self.AorB, freq=freq11)
@@ -999,15 +999,16 @@ class Poll:
         else:
             Poll.top.after(interval, Poll.polls[interval])
 
-    def add_poll_callback(interval, callback):
+    def add_poll(interval, callback):
         if interval not in Poll.poll_callbacks:
             Poll.poll_callbacks[interval] = []
             Poll.polls[interval] = lambda: Poll.poll(interval)
             Poll.top.after(interval, Poll.polls[interval])
-        if callback not in Poll.poll_callbacks[interval]:
-            Poll.poll_callbacks[interval].append(callback)
+        if callback in Poll.poll_callbacks[interval]:
+            raise Exception('Error: adding duplicate poll:', interval, callback)
+        Poll.poll_callbacks[interval].append(callback)
 
-    def remove_poll_callback(interval, callback):
+    def remove_poll(interval, callback):
         try:
             Poll.poll_callbacks[interval].remove(callback)
         except:
