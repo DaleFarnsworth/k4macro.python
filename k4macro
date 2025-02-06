@@ -220,6 +220,8 @@ class Server():
             Server.default_server_name = config_info['name']
         Server.server_dict[self.name] = self
 
+        self.connect()
+
     def update_k4_parameter(self, base, parameter):
         old = self.k4_parameters.get(base, None)
         self.k4_parameters[base] = parameter
@@ -485,14 +487,14 @@ class Page(Container):
     top = None
 
     @staticmethod
-    def show(page_name):
+    def show_page(page_name):
         if len(Page.name_stack) > 0:
             current_page_name = Page.name_stack[-1]
             current_page = Page.pages[current_page_name]
-            current_page.close()
+            current_page.hide()
         if page_name in Page.pages:
             Page.name_stack.append(page_name)
-            Page.pages[page_name].instance_show()
+            Page.pages[page_name].show()
         else:
            raise Exception("Page:'{name}' not found.".format(name=page_name))
 
@@ -503,7 +505,7 @@ class Page(Container):
         current_page_name = Page.name_stack.pop()
         page_name = Page.name_stack.pop()
         Page.name_stack.append(current_page_name)
-        Page.show(page_name)
+        Page.show_page(page_name)
 
     def __init__(self, config_info):
         super().__init__(config_info, None)
@@ -512,15 +514,14 @@ class Page(Container):
 
         self.label_font = config_info.get('label_font', Default.label_font)
         self.button_font = config_info.get('button_font', Default.button_font)
-
-    def instance_show(self):
         self.frame = tk.Frame(Page.top)
-        self.frame.grid()
         self.show_widgets()
 
-    def close(self):
-        self.frame.destroy()
-        self.server.clear_k4_subscriptions()
+    def show(self):
+        self.frame.grid()
+
+    def hide(self):
+        self.frame.grid_forget()
 
 class Group(Container):
     def __init__(self, config_info, container):
@@ -603,7 +604,7 @@ class Button(Widget):
                 command = special_strings[directive]
             elif directive.startswith('show_page '):
                 page_name = directive[len('show_page '):]
-                command = lambda: Page.show(page_name)
+                command = lambda: Page.show_page(page_name)
             else:
                raise Exception('Unknown directive: ', directive)
 
@@ -1053,10 +1054,7 @@ def main():
 
     read_config(Options.config_file)
 
-    for server in Server.servers():
-        server.connect()
-
-    Page.show('main')
+    Page.show_page('main')
 
     top.mainloop()
 
