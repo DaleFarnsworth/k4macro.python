@@ -1004,10 +1004,14 @@ class Poll:
             Poll.poll_callbacks[interval] = []
             Poll.polls[interval] = lambda: Poll.poll(interval)
             Poll.top.after(interval, Poll.polls[interval])
-        Poll.poll_callbacks[interval].append(callback)
+        if callback not in Poll.poll_callbacks[interval]:
+            Poll.poll_callbacks[interval].append(callback)
 
     def remove_poll_callback(interval, callback):
-        Poll.poll_callbacks[interval].remove(callback)
+        try:
+            Poll.poll_callbacks[interval].remove(callback)
+        except:
+            pass
 
 class Options():
     config_file = None
