@@ -418,12 +418,21 @@ class Server():
     def unsubscribe_response(self, base, callback):
         self.k4_subscriptions[base].remove(callback)
 
+    def clear_k4_subscriptions(self):
+        self.k4_subscriptions.clear()
+
 class Container():
     depth = -1
 
     def __init__(self, config_info, container):
         self.config_info = config_info
         self.container = container
+        if isinstance(self, Page):
+            inherited_server_name = Server.default_server_name
+        else:
+            inherited_server_name = container.server_name
+        self.server_name = config_info.get('server', inherited_server_name)
+        self.server = Server.server(self.server_name)
         self.columns = config_info.get('columns', len(self.config_info['contains']))
         self.row = 0
         self.column = 0
@@ -473,11 +482,14 @@ class Container():
 class Page(Container):
     pages = {}
     name_stack = []
-    current_frame = None
     top = None
 
     @staticmethod
     def show(page_name):
+        if len(Page.name_stack) > 0:
+            current_page_name = Page.name_stack[-1]
+            current_page = Page.pages[current_page_name]
+            current_page.close()
         if page_name in Page.pages:
             Page.name_stack.append(page_name)
             Page.pages[page_name].instance_show()
@@ -488,14 +500,13 @@ class Page(Container):
     def show_previous():
         if len(Page.name_stack) < 2:
             return
-        Page.name_stack.pop()             # pop current page
+        current_page_name = Page.name_stack.pop()
         page_name = Page.name_stack.pop()
+        Page.name_stack.append(current_page_name)
         Page.show(page_name)
 
     def __init__(self, config_info):
         super().__init__(config_info, None)
-
-        self.frame = None
 
         Page.pages[config_info['name']] = self
 
@@ -503,12 +514,13 @@ class Page(Container):
         self.button_font = config_info.get('button_font', Default.button_font)
 
     def instance_show(self):
-        if Page.current_frame != None:
-            Page.current_frame.destroy()
         self.frame = tk.Frame(Page.top)
         self.frame.grid()
         self.show_widgets()
-        Page.current_frame = self.frame
+
+    def close(self):
+        self.frame.destroy()
+        self.server.clear_k4_subscriptions()
 
 class Group(Container):
     def __init__(self, config_info, container):
@@ -559,6 +571,9 @@ class Widget():
         self.fg = None
         self.afg = None
 
+        server_name = config_info.get('server', container.server_name)
+        self.server = Server.server(server_name)
+
 class Button(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
@@ -573,9 +588,6 @@ class Button(Widget):
         if afg == None:
             afg = fg
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
-
-        server_name = config_info.get('server', Server.default_server_name)
-        self.server = Server.server(server_name)
 
         width = container.items_width()
         if len(text) > width:
@@ -639,9 +651,6 @@ class Radiobutton(Widget):
             afg = fg
 
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
-
-        server_name = config_info.get('server', Server.default_server_name)
-        self.server = Server.server(server_name)
 
         self.parameters = {}
 
@@ -725,8 +734,6 @@ class VFO(Widget):
                 VFO.text_to_index[text] = i
 
         self.AorB = config_info.get('AorB', 'A').upper()
-        server_name = config_info.get('server', Server.default_server_name)
-        self.server = Server.server(server_name)
 
         bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
@@ -851,9 +858,6 @@ class VFO(Widget):
 class Slider(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
-
-        server_name = config_info.get('server', Server.default_server_name)
-        self.server = Server.server(server_name)
 
         bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)

@@ -11,11 +11,13 @@
 # page options:
 #   name: The page name (required).
 #     The page named 'main' is the first one displayed.
+#   server: The default server items contained in this page will use
 #   columns: The number of columns in which contained items will be displayed.
 #   contains: The list of items this page contains
 
 # group options:
 #   label: The label that will be displayed for this group.
+#   server: The default server items contained in this group will use
 #   row: The row of the container in which this group will be placed.
 #   column: The column of the container in which this group will be placed.
 #   rowspan: The number of rows this group will occupy.
@@ -25,6 +27,7 @@
 
 # button options:
 #   text: button text
+#   server: The server name of the server referenced by this button
 #   cmd: Either:
 #     a text string to be sent to k4, or
 #     a python 'list' object containg server name/cmd pairs (python dict objects)
@@ -47,6 +50,7 @@
 #   length: The length of the slider in pixels
 #   width: The width in pixels if the slider is verical, otherwise the height
 #   increment: A python expression to set the slider increment given the variable value
+#   server: The server name of the server referenced by this slider
 #   cmd: A python expression to produce the K4 command given the variable 'value'.
 #   response: A python expression to extract the slider value from the K4 response.
 #   font: The font used for the slider's text.
@@ -85,19 +89,21 @@
 
 - item: page
   name: main
+  server: k4
   columns: 2
   contains:
     - item: group
+      column: 0
       contains:
       - item: group
         label: VFO A
         contains:
-          - { item: vfo, AorB: A, server: k4, bg: white, fg: black }
+          - { item: vfo, AorB: A, bg: white, fg: black }
 
       - item: group
         label: VFO B
         contains:
-          - { item: vfo, AorB: B, server: k4, bg: white, fg: black }
+          - { item: vfo, AorB: B, bg: white, fg: black }
 
     - item: group
       label: Mode VFO
