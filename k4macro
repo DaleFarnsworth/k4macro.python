@@ -335,20 +335,19 @@ class Server():
         expanded_cmds = self.expand_cmds(cmds)
         Server.send_cmds_with_server(expanded_cmds)
 
-    def cmd_bases(self, cmds):
-        bases = []
+    def server_cmds(self, cmds):
+        ret = []
         expanded_cmds = self.expand_cmds(cmds)
         for server_name, cmds in expanded_cmds:
             if server_name != self.name:
                 continue
             for cmd in cmds:
-                bases.append(cmd_base(cmd))
-        return bases
+                ret.append(cmd)
+        return ret
 
     def subscribe_cmds(self, cmds, callback):
-        bases = self.cmd_bases(cmds)
-        for base in bases:
-            self.subscribe_response(base, callback)
+        for cmd in self.server_cmds(cmds):
+            self.subscribe_response(cmd, callback)
 
     def receive(self):
         while True:
@@ -404,13 +403,14 @@ class Server():
 
                 self.recv_queue.put(responses)
 
-    def subscribe_response(self, base, callback):
+    def subscribe_response(self, cmd, callback):
+        base = cmd_base(cmd)
         if not base in self.k4_subscriptions:
             self.k4_subscriptions[base] = []
         parameter = self.k4_parameters.get(base, None)
         if parameter != None:
             callback(parameter + ';')
-        self.send_str(base + ';')
+        self.send_str(cmd_get_format(cmd))
         if callback in self.k4_subscriptions[base]:
             raise Exception('duplicate subscription for {base}: {callback}'.format(base=base, callback=callback))
         self.k4_subscriptions[base].append(callback)
@@ -926,6 +926,17 @@ def cmd_base(cmd):
     if len(cmd) > len(base) and cmd[len(base)] == '$':
         base += '$'
     return base
+
+def cmd_get_format(cmd):
+    base = cmd_base(cmd)
+    get_base = base
+    if base == 'ML':
+        get_base = cmd[0:3]
+    elif base == 'BR':
+        get_base = cmd[0:3]
+    elif base == 'PK':
+        get_base = cmd[0:4]
+    return get_base + ';'
 
 def read_config(config_file_name):
     with open(config_file_name) as stream:
