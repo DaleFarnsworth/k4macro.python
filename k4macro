@@ -827,7 +827,8 @@ class VFO(Widget):
         self.server.send_cmds(cmd)
 
     def on_frequency_received(self, response):
-        value  = "{:.3f}".format(float(response[2:13]) / 1000)
+        freq_str = response_after_base(response)
+        value  = "{:.3f}".format(float(freq_str[0:11]) / 1000)
         self.vfo_sb.delete(0, 'end')
         self.vfo_sb.insert(0, value)
 
@@ -843,8 +844,9 @@ class VFO(Widget):
         self.server.send_cmds(cmd + ';')
 
     def on_step_received(self, response):
-        step_index = int(response[-3])
-        self.step = VFO.steps[int(step_index)]
+        step_str = response_after_base(response)
+        step_index = int(step_str[0])
+        self.step = VFO.steps[step_index]
         self.step_sb.delete(0, 'end')
         self.step_sb.insert(0, VFO.texts[VFO.step_to_index[self.step]])
 
@@ -937,6 +939,10 @@ def cmd_get_format(cmd):
     elif base == 'PK':
         get_base = cmd[0:4]
     return get_base + ';'
+
+def response_after_base(response):
+    i = len(cmd_base(response))
+    return response[i:]
 
 def read_config(config_file_name):
     with open(config_file_name) as stream:
