@@ -41,6 +41,22 @@
 #   bg: background color
 #   abg: active background color
 
+# radiobutton options:
+#   groupid: a string shared by all buttons in this group, unique to all groups
+#   indicator: Set to 0 if no indicator is to be displayed
+#   text: button text
+#   server: The server name of the server referenced by this button
+#   cmd: Either:
+#     a text string to be sent to k4, or
+#     a python 'list' object containg server name/cmd pairs (python dict objects)
+#     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
+#     then send 's1cmd' to server s1.
+#   fg: foreground color
+#   bg: background color
+#   abg: active background color
+#   selectcolor: button color when selected
+#   flashrate: the rate at which the button will flash when selected in tenths of a second
+
 # slider options:
 #   from: The lowest value of the slider
 #   to: The highest value of he slider
@@ -178,7 +194,7 @@
       columns: 2
       column: 0
       contains:
-            - { item: radiobutton, groupid: test ,indicator: 0, text: Test mode on,  cmd: TS1;,   abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: test ,indicator: 0, text: Test mode on,  cmd: TS1;,   abg: yellow, bg: '#98F5FF', flashrate: 10 }
             - { item: radiobutton, groupid: test, indicator: 0, text: Test mode off, cmd: TS0;,   abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
 
 
@@ -265,5 +281,3 @@
         - { item: button,      groupid: misc, indicator: 0, text: K4D OFF, cmd:  PS0;,          abg: '#00C957', bg: red1 }
         - { item: button,      groupid: misc, indicator: 0, text: B->A,    cmd:  SW147;,        abg: green,     bg: yellow }
         - { item: button,      groupid: misc, indicator: 0, text: Exit, directive:  quit,  bg:  white, abg:       red }
-
-# vim: set expandtab ts=2 sw=2:

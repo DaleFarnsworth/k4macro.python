@@ -643,13 +643,15 @@ class Radiobutton(Widget):
         self.response = config_info.get('response', self.cmd)
         indicator = config_info.get('indicator', 1)
         selectcolor = config_info.get('selectcolor', Default.selectcolor)
-        self.group_id = config_info.get('groupid', None)
         bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
         abg = config_info.get('abg', Default.abg)
         afg = config_info.get('afg', Default.afg)
         if afg == None:
             afg = fg
+        self.flashmS = int(config_info.get('flashrate', 0) * 100 / 2)
+        self.flashstate = False
+        self.group_id = config_info.get('groupid', None)
 
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
 
@@ -713,6 +715,23 @@ class Radiobutton(Widget):
 
     def on_response_received(self, response):
         if self.compare_parameters(self.group_id, self.text):
+            self.button.select()
+            if self.flashmS > 0:
+                self.flashon()
+        else:
+            self.button.deselect()
+            if self.flashmS > 0:
+                self.flashoff()
+
+    def flashon(self):
+        Poll.add_poll_callback(self.flashmS, self.flash)
+
+    def flashoff(self):
+        Poll.remove_poll_callback(self.flashmS, self.flash)
+
+    def flash(self):
+        self.flashstate = not self.flashstate
+        if self.flashstate:
             self.button.select()
         else:
             self.button.deselect()
@@ -972,13 +991,6 @@ class Poll:
     def __init__(self, top):
         Poll.top = top
 
-    def add_poll_callback(interval, callback):
-        if interval not in Poll.poll_callbacks:
-            Poll.poll_callbacks[interval] = []
-            Poll.polls[interval] = lambda: Poll.poll(interval)
-            Poll.top.after(interval, Poll.polls[interval])
-        Poll.poll_callbacks[interval].append(callback)
-
     def poll(interval):
         for callback in tuple(Poll.poll_callbacks[interval]):
             callback()
@@ -986,6 +998,13 @@ class Poll:
             del Poll.poll_callbacks[interval]
         else:
             Poll.top.after(interval, Poll.polls[interval])
+
+    def add_poll_callback(interval, callback):
+        if interval not in Poll.poll_callbacks:
+            Poll.poll_callbacks[interval] = []
+            Poll.polls[interval] = lambda: Poll.poll(interval)
+            Poll.top.after(interval, Poll.polls[interval])
+        Poll.poll_callbacks[interval].append(callback)
 
     def remove_poll_callback(interval, callback):
         Poll.poll_callbacks[interval].remove(callback)
