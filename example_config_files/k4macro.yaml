@@ -78,6 +78,7 @@
 #   fg: foreground color
 #   bg: background color
 #   font: the font used for the vfo
+#   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox.
 
 - item: defaults
   # Colors

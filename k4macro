@@ -37,6 +37,7 @@ import textwrap
 import threading
 import time
 import tkinter as tk
+import tkinter.ttk as ttk
 import tkinter.font as tkFont
 import yaml
 
@@ -758,14 +759,14 @@ class VFO(Widget):
         self.bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
         abg = config_info.get('abg', Default.abg)
-        font = config_info.get('font', container.button_font)
-        self.vfo_sb = None
+        vfo_font = config_info.get('font', container.button_font)
+        step_spinbox = true_values(config_info.get('step_spinbox', 'false'))
 
         self.step = .1
 
         frame = tk.Frame(container.frame)
 
-        font = tkFont.Font(family=font['family'], size=font['size'], weight=font['weight'])
+        font = tkFont.Font(family=vfo_font['family'], size=vfo_font['size'], weight=vfo_font['weight'])
 
         self.enter_frequency_wrapper = (Page.top.register(self.enter_frequency), '%P', '%V')
         self.vfo_sb = tk.Spinbox(
@@ -792,7 +793,7 @@ class VFO(Widget):
 
         self.step_sb = tk.Spinbox(
                 frame,
-                command=self.on_step_change,
+                command=self.on_step_sb_changed,
                 values=tuple(VFO.texts),
                 font=font,
                 width=7,
@@ -805,7 +806,23 @@ class VFO(Widget):
         self.step_sb.delete(0, 'end')
         self.step_sb.insert(0, '100 Hz')
 
-        self.step_sb.grid(row=0, column=1, sticky='w')
+        self.step_cb_val = tk.StringVar()
+
+        cbfont = tkFont.Font(family=vfo_font['family'], size=vfo_font['size'], weight=vfo_font['weight'])
+        self.step_cb = ttk.Combobox(
+                frame,
+                textvar=self.step_cb_val,
+                font=(vfo_font['family'], vfo_font['size']),
+                values=VFO.texts,
+                width=7,
+                justify='right',
+                )
+        self.step_cb_val.trace('w', self.on_step_cb_changed)
+
+        if step_spinbox:
+            self.step_sb.grid(row=0, column=1, sticky='w')
+        else:
+            self.step_cb.grid(row=0, column=1, sticky='w')
 
         frame.grid(row=container.row, column=container.column, sticky='w')
 
@@ -862,8 +879,17 @@ class VFO(Widget):
         self.vfo_sb.insert(0, value)
         self.vfo_sb.configure(validate='all')
 
-    def on_step_change(self):
-        self.step = VFO.steps[VFO.text_to_index[self.step_sb.get()]]
+    def on_step_sb_changed(self):
+        text = self.step_sb.get()
+        self.set_step(text)
+
+    def on_step_cb_changed(self, var, index, mode):
+        text = self.step_cb.get()
+        if text != '':
+            self.set_step(text)
+
+    def set_step(self, text):
+        self.step = VFO.steps[VFO.text_to_index[text]]
         self.vfo_sb.config(increment=self.step)
         mode_index = self.current_mode_index()
         cmd = 'VT'
@@ -878,7 +904,9 @@ class VFO(Widget):
         step_index = int(step_str[0])
         self.step = VFO.steps[step_index]
         self.step_sb.delete(0, 'end')
-        self.step_sb.insert(0, VFO.texts[VFO.step_to_index[self.step]])
+        text = VFO.texts[VFO.step_to_index[self.step]]
+        self.step_sb.insert(0, text)
+        self.step_cb_val.set(text)
 
     def current_mode_index(self):
         cmd = 'MD'
@@ -973,6 +1001,16 @@ def cmd_get_format(cmd):
 def response_after_base(response):
     i = len(cmd_base(response))
     return response[i:]
+
+def true_values(v):
+    if v == True:
+        return True
+
+    if not isinstance(v, str):
+        return False
+
+    v = v.lower()
+    return v == 'true' or v == 'on' or v == '1' or v == 'yes'
 
 def read_config(config_file_name):
     with open(config_file_name) as stream:
