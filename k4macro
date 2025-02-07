@@ -755,17 +755,19 @@ class VFO(Widget):
 
         self.AorB = config_info.get('AorB', 'A').upper()
 
-        bg = config_info.get('bg', Default.bg)
+        self.bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
         abg = config_info.get('abg', Default.abg)
-        vfo_font = config_info.get('font', container.button_font)
+        font = config_info.get('font', container.button_font)
+        self.vfo_sb = None
 
         self.step = .1
 
         frame = tk.Frame(container.frame)
 
-        font = tkFont.Font(family=vfo_font['family'], size=vfo_font['size'], weight=vfo_font['weight'])
+        font = tkFont.Font(family=font['family'], size=font['size'], weight=font['weight'])
 
+        self.enter_frequency_wrapper = (Page.top.register(self.enter_frequency), '%P', '%V')
         self.vfo_sb = tk.Spinbox(
                 frame,
                 from_=100,
@@ -774,7 +776,7 @@ class VFO(Widget):
                 command=self.on_frequency_change,
                 increment=self.step,
                 font=font,
-                width=9,
+                width=11,
                 repeatdelay=300,
                 repeatinterval=1,
                 format='%5.3f',
@@ -782,45 +784,28 @@ class VFO(Widget):
                 state='normal',
                 cursor='hand2',
                 fg=fg,
-                bg=bg,
+                bg=self.bg,
                 )
-
         self.vfo_sb.grid(row=0, column=0, sticky='w')
-
-        set_font = tkFont.Font(family=vfo_font['family'], size=int(vfo_font['size']/3), weight='bold')
-
-        set_button = tk.Button(frame,
-                    bd='1',
-                    text="S\nE\nT",
-                    font=set_font,
-                    relief='flat',
-                    justify='left',
-                    fg=fg,
-                    bg=bg,
-                    padx=1,
-                    pady=1,
-                    command=self.on_frequency_change)
-
-        set_button.grid(row=0, column=1, sticky='w')
+        self.vfo_sb.bind('<Return>', self.set_frequency)
+        self.vfo_sb.configure(validate='all', validatecommand=self.enter_frequency_wrapper)
 
         self.step_sb = tk.Spinbox(
                 frame,
                 command=self.on_step_change,
-                values= tuple(VFO.texts),
+                values=tuple(VFO.texts),
                 font=font,
                 width=7,
-                format='%5.3f',
                 justify='right',
-                state='normal',
-                cursor='hand2',
+                state='readonly',
                 fg=fg,
-                bg=bg,
+                bg=self.bg,
                 activebackground=abg,
                 )
         self.step_sb.delete(0, 'end')
         self.step_sb.insert(0, '100 Hz')
 
-        self.step_sb.grid(row=0, column=2, sticky='w')
+        self.step_sb.grid(row=0, column=1, sticky='w')
 
         frame.grid(row=container.row, column=container.column, sticky='w')
 
@@ -830,13 +815,35 @@ class VFO(Widget):
             step_cmd += '$'
         self.server.subscribe_cmds(step_cmd, self.on_step_received)
 
+    def enter_frequency(self, p, v):
+        try:
+            float(p)
+        except:
+            return False
+
+        if v == 'focusin' or v == 'key':
+            self.vfo_sb.configure(bg='lightgray')
+            return True
+        elif v == 'focusout':
+            return self.set_frequency()
+
+    def set_frequency(self, arg=''):
+        Page.top.focus()                # Remove focus from vfo_sb
+        freq = float(self.vfo_sb.get())
+        if freq < 100 or freq >= 54000:
+            return False
+
+        self.vfo_sb.configure(bg=self.bg)
+        self.send_frequency()
+        return True
+
     def on_frequency_change(self):
         freq = int(float(self.vfo_sb.get()) * 1000)
         mod = freq % int(self.step * 1000)
         freq -= mod
         if mod != 0:
             self.vfo_sb.delete(0, 'end')
-            self.vfo_sb.insert(0, "{:.3f}".format(float(freq)/1000))
+            self.vfo_sb.insert(0, "{:5.3f}".format(float(freq)/1000))
         Poll.add_poll(50, self.send_frequency)
 
     def send_frequency(self):
@@ -847,10 +854,13 @@ class VFO(Widget):
         self.server.send_cmds(cmd)
 
     def on_frequency_received(self, response):
+        self.vfo_sb.configure(bg=self.bg)
         freq_str = response_after_base(response)
-        value  = "{:.3f}".format(float(freq_str[0:11]) / 1000)
+        value  = "{:5.3f}".format(float(freq_str[0:11]) / 1000)
+        self.vfo_sb.configure(validate='none')
         self.vfo_sb.delete(0, 'end')
         self.vfo_sb.insert(0, value)
+        self.vfo_sb.configure(validate='all')
 
     def on_step_change(self):
         self.step = VFO.steps[VFO.text_to_index[self.step_sb.get()]]
@@ -1071,7 +1081,7 @@ def main():
     Options.Parse()
 
     top = tk.Tk()
-    top.title('K4 Macro-Python')
+    top.title('K4 Macro')
     top.protocol("WM_DELETE_WINDOW", cleanup_and_exit)
     Page.top = top
     Poll(top)
