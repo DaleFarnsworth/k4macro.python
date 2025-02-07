@@ -903,6 +903,7 @@ class VFO(Widget):
         step_str = response_after_base(response)
         step_index = int(step_str[0])
         self.step = VFO.steps[step_index]
+        self.vfo_sb.config(increment=self.step)
         self.step_sb.delete(0, 'end')
         text = VFO.texts[VFO.step_to_index[self.step]]
         self.step_sb.insert(0, text)
