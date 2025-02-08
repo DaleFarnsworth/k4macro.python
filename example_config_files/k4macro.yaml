@@ -235,7 +235,7 @@
       - item: slider
         from: 0.0
         to: 110.0
-        length: 200
+        length: 400
         increment: ".0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0"
         cmd: "'PC{:03d}L;'.format(int(float(value)*10)) if float(value) <= 10.0 else 'PC{:03d}H;'.format(int(value))"
         response: "float(value[2:5])/10 if value[5] == 'L' else float(value[2:5])/10000 if value[5] == 'X' else float(value[2:5])"
@@ -250,20 +250,30 @@
             - { item: button,      groupid: atu,               text: tune,   cmd: SW40;, abg: red,    bg: yellow }
 
     - item: group
-      label: Volume
-      columns: 5
+      label: Main Volume
       column: 0
       contains:
-            - { item: radiobutton, groupid: vol, indicator: 0, text:  Mute, cmd: AG000;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:    5%, cmd: AG003;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   10%, cmd: AG006;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   15%, cmd: AG009;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   20%, cmd: AG012;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   25%, cmd: AG015;, abg: yellow, bg: '#98F5FF', selectcolor: 'yellow' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   30%, cmd: AG018;, abg: yellow, bg: '#98F5FF', selectcolor: 'red1' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   35%, cmd: AG021;, abg: yellow, bg: '#98F5FF', selectcolor: 'red1' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   40%, cmd: AG024;, abg: yellow, bg: '#98F5FF', selectcolor: 'red1' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:   50%, cmd: AG030;, abg: yellow, bg: '#98F5FF', selectcolor: 'red1' }
+      - item: slider
+        from: 0
+        to: 100
+        length: 400
+        increment: "1"
+        cmd: "'AG{:03d};'.format(int(float(value)*0.6))"
+        response: "float(value[2:5])/0.6"
+        bg: '#CAFF70'
+
+    - item: group
+      label: Sub Volume
+      column: 0
+      contains:
+      - item: slider
+        from: 0
+        to: 1000
+        length: 400
+        increment: "1"
+        cmd: "'AG${:03d};'.format(int(float(value)*0.6))"
+        response: "float(value[3:6])/0.6"
+        bg: '#98F5FF'
 
     - item: group
       columns: 2
@@ -338,6 +348,6 @@
       columns: 1
       column: 1
       rowspan: 1 # was 6
-      row: 11
+      row: 10
       contains:
         - { item: button, groupid: k4, text: '     POWER OFF     ', cmd:  PS0;,          abg: '#00C957', bg: red1 }
