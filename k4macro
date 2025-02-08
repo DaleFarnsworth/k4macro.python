@@ -391,7 +391,7 @@ class Server():
         if old != parameter:
             callbacks = self.k4_subscriptions.get(base, [])
             for callback in callbacks:
-                callback(parameter + ';')
+                callback(base + parameter + ';')
             return True
         else:
             return False
@@ -449,7 +449,7 @@ class Server():
             if cmd == '':
                 continue
             base = cmd_base(cmd)
-            if Server.k4_set_only_cmd(base, cmd) or self.update_k4_parameter(base, cmd):
+            if Server.k4_set_only_cmd(base, cmd) or self.update_k4_parameter(base, cmd[len(base):]):
                 cmd += ';'
                 self.send_str(cmd)
 
@@ -520,8 +520,9 @@ class Server():
                 for response in responses:
                     if self.type == 'k4':
                         base = cmd_base(response)
-                        if response[len(base)] == '?':
-                            raise Exception('Received error response from K4: ' + response)
+                        response = response[len(base):]
+                        if response[0] == '?':
+                            raise Exception('Received error response from K4: ', base + response)
                         self.update_k4_parameter(base, response)
 
                     # For now, ignore responses from non-K4 servers
@@ -575,7 +576,7 @@ class Server():
         parameter = self.k4_parameters.get(base, None)
         if parameter != None:
             callback(parameter + ';')
-        self.send_str(cmd_get_format(cmd))
+        self.send_str(cmd_get_format(cmd))              # TODO Try sending only if not found is cached parameters
         if callback in self.k4_subscriptions[base]:
             raise Exception('duplicate subscription for {base}: {callback}'.format(base=base, callback=callback))
         self.k4_subscriptions[base].append(callback)
@@ -854,11 +855,12 @@ class Radiobutton(Widget):
 
         for response in self.server.expand_server_cmds(self.response):
             base = cmd_base(response)
-            self.parameters[base] = response
             if Server.k4_set_only_cmd(base, response):
                 raise Exception("Set-only command: '{cmd}' not permitted in Radiobutton".format(cmd=self.response))
             if Server.k4_get_only_cmd(base):
                 raise Exception("Get-only command: '{cmd}' not permitted in Radiobutton".format(cmd=self.response))
+            response = response[len(base):]
+            self.parameters[base] = response
 
         self.server.subscribe_cmds(self.response, self.on_response_received)
 
@@ -871,7 +873,6 @@ class Radiobutton(Widget):
         for base in parameters.keys():
             dprint2('commpare {group}:{text} s: {s}, b: {b}'.format(group=group, text=text, s=self.server.k4_parameters.get(base, None), b=parameters[base]))
             if parameters[base] != self.server.k4_parameters.get(base, None):
-                dprint2('No match')
                 return False
         dprint2('Match')
         return True
