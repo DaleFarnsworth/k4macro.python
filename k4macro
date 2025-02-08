@@ -902,8 +902,8 @@ class Radiobutton(Widget):
             self.button.deselect()
 
 class VFO(Widget):
-    steps = [.001, .01, .1, 1, 10, 100 ]
-    texts = [ '1 Hz', '10 Hz', '100 Hz', '1 kHz', '10 kHz', '100 kHz' ]
+    steps = [.001, .01, .1, 1, 10 ]
+    texts = [ '1 Hz', '10 Hz', '100 Hz', '1 kHz', '10 kHz' ]
     step_to_index = {}
     text_to_index = {}
 
@@ -1070,6 +1070,12 @@ class VFO(Widget):
     def on_step_received(self, response):
         step_str = response_after_base(response)
         step_index = int(step_str[0])
+        if step_index == 5:                             # Work around an apparent K4 bug
+            cmd = 'VT'
+            if self.AorB == 'B':
+                cmd += '$'
+            self.server.send_cmds(cmd + '2;')
+            step_index = 2
         self.step = VFO.steps[step_index]
         self.vfo_sb.config(increment=self.step)
         text = VFO.texts[VFO.step_to_index[self.step]]
