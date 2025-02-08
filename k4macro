@@ -359,6 +359,8 @@ class Server():
                 for response in responses:
                     if self.type == 'k4':
                         base = cmd_base(response)
+                        if response[len(base)] == '?':
+                            raise Exception('Received error response from K4: ' + response)
                         self.update_k4_parameter(base, response)
 
                     # For now, ignore responses from non-K4 servers
