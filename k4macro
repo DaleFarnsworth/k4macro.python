@@ -964,6 +964,7 @@ class VFO(Widget):
                 state='readonly',
                 fg=fg,
                 bg=self.bg,
+                readonlybackground=self.bg,
                 activebackground=abg,
                 )
         self.step_sb.delete(0, 'end')
@@ -971,7 +972,10 @@ class VFO(Widget):
 
         self.step_cb_val = tk.StringVar()
 
-        cbfont = tkFont.Font(family=vfo_font['family'], size=vfo_font['size'], weight=vfo_font['weight'])
+        # Define the style for combobox widget
+        style= ttk.Style()
+        style.configure("TCombobox", background=self.bg, forground=fg, selectbackground=self.bg, selectforeground=fg)
+
         self.step_cb = ttk.Combobox(
                 frame,
                 textvar=self.step_cb_val,
@@ -1047,7 +1051,7 @@ class VFO(Widget):
         self.set_step(text)
 
     def on_step_cb_changed(self, var, index, mode):
-        text = self.step_cb.get()
+        text = self.step_cb_val.get()
         if text != '':
             self.set_step(text)
 
@@ -1067,9 +1071,11 @@ class VFO(Widget):
         step_index = int(step_str[0])
         self.step = VFO.steps[step_index]
         self.vfo_sb.config(increment=self.step)
-        self.step_sb.delete(0, 'end')
         text = VFO.texts[VFO.step_to_index[self.step]]
+        self.step_sb.configure(state='normal')
+        self.step_sb.delete(0, 'end')
         self.step_sb.insert(0, text)
+        self.step_sb.configure(state='readonly')
         self.step_cb_val.set(text)
 
     def current_mode_index(self):
