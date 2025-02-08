@@ -129,14 +129,6 @@
           - { item: vfo, AorB: b, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
 
     - item: group
-      label: VFO link
-      columns: 2
-      column: 0
-      contains:
-            - { item: radiobutton, groupid: link, indicator: 0, text: Linked,      cmd: FT0;BI0;#DPM0;, response: BI0;,  abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: link, indicator: 0, text: Independent, cmd: FT0;BI1;#DPM2;, response: BI1;,  abg: yellow, bg: '#98F5FF' }
-
-    - item: group
       label: Transceiver mode
       columns: 2
       column: 1
@@ -146,22 +138,12 @@
             - { item: radiobutton, groupid: test, indicator: 0, text: Transmit, cmd: TS0;,   abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
 
     - item: group
-      label: Mode VFO
-      columns: 6
+      label: VFO link
+      columns: 2
       column: 0
       contains:
-        - { item: radiobutton, groupid: modeA, indicator: 0, text: ' A-CW ', cmd: MD3;,  abg:  green, bg: '#CAFF70', selectcolor: '#00C957' }
-        - { item: radiobutton, groupid: modeA, indicator: 0, text: USB,      cmd: MD2;,  abg:    red, bg: '#CAFF70', selectcolor: '#00C957' }
-        - { item: radiobutton, groupid: modeA, indicator: 0, text: LSB,      cmd: MD1;,  abg:    red, bg: '#CAFF70', selectcolor: '#00C957' }
-        - { item: radiobutton, groupid: modeA, indicator: 0, text: AM,       cmd: MD5;,  abg: yellow, bg: '#CAFF70', selectcolor: '#00C957' }
-        - { item: radiobutton, groupid: modeA, indicator: 0, text: FM,       cmd: MD4;,  abg: yellow, bg: '#CAFF70', selectcolor: '#00C957' }
-        - { item: radiobutton, groupid: modeA, indicator: 0, text: ' DATA ', cmd: MD6;,  abg:  green, bg: '#CAFF70', selectcolor: '#00C957' }
-        - { item: radiobutton, groupid: modeB, indicator: 0, text: ' B-CW ', cmd: MD$3;, abg:  green, bg: '#98F5FF' }
-        - { item: radiobutton, groupid: modeB, indicator: 0, text: USB,      cmd: MD$2;, abg:    red, bg: '#98F5FF' }
-        - { item: radiobutton, groupid: modeB, indicator: 0, text: LSB,      cmd: MD$1;, abg:    red, bg: '#98F5FF' }
-        - { item: radiobutton, groupid: modeB, indicator: 0, text: AM,       cmd: MD$5;, abg: yellow, bg: '#98F5FF' }
-        - { item: radiobutton, groupid: modeB, indicator: 0, text: FM,       cmd: MD$4;, abg: yellow, bg: '#98F5FF' }
-        - { item: radiobutton, groupid: modeB, indicator: 0, text: ' DATA ', cmd: MD$6;, abg:  green, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: link, indicator: 0, text: Linked,      cmd: FT0;BI0;#DPM0;, response: BI0;,  abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
+            - { item: radiobutton, groupid: link, indicator: 0, text: Independent, cmd: FT0;BI1;#DPM2;, response: BI1;,  abg: yellow, bg: '#98F5FF' }
 
     - item: group
       columns: 2
@@ -204,52 +186,22 @@
             - { item: radiobutton, groupid: bandB, indicator: 0, text: ' 160 m ', cmd: BN$00;, abg: yellow, bg: '#98F5FF' }
 
     - item: group
-      columns: 2
-      column: 1
-      rowspan: 2 # was 12
-      row: 8
+      label: Mode VFO
+      columns: 6
+      column: 0
       contains:
-        - item: group
-          label: Pre
-          columns: 1
-          rows: 4
-          contains:
-            - { item: radiobutton, groupid: pre, indicator: 0, text:    None,      cmd: PA00;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: pre, indicator: 0, text:    Preamp 1,  cmd: PA11;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: pre, indicator: 0, text:    Preamp 2,  cmd: PA21;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: pre, indicator: 0, text:    Preamp 3,  cmd: PA31;, abg: yellow, bg: '#98F5FF' }
-
-        - item: group
-          label: Att
-          columns: 1
-          rows: 4
-          contains:
-            - { item: radiobutton, groupid: att, indicator: 0, text:     0 dB,  cmd: RA000;RA$000;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: att, indicator: 0, text:    -3 dB,  cmd: RA031;RA$031;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: att, indicator: 0, text:    -6 dB,  cmd: RA061;RA$061;, abg: yellow, bg: '#98F5FF' }
-            - { item: radiobutton, groupid: att, indicator: 0, text:   -12 dB,  cmd: RA121;RA$121;, abg: yellow, bg: '#98F5FF' }
-
-    - item: group
-      columns: 2
-      column: 1
-      rowspan: 1 # was 22
-      row: 10
-      contains:
-        - item: group
-          label: VFO lock
-          columns: 1
-          rows: 1
-          contains:
-            - { item: radiobutton, groupid: misc, indicator: 0, text: VFO NL,  cmd:  LK0;LK$0;,     abg: cyan,      bg: yellow, selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: misc, indicator: 0, text: VFO LK,  cmd:  LK1;LK$1;,     abg: cyan,      bg: yellow }
-
-        - item: group
-          label: RF level
-          columns: 1
-          rows: 1
-          contains:
-            - { item: radiobutton, groupid: misc, indicator: 0, text: RF NL,   cmd:  RG-00;RG$-00;, abg: yellow,    bg: yellow, selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: misc, indicator: 0, text: RF -20,  cmd:  RG-20;RG$-20;, abg: cyan,      bg: yellow }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: ' A-CW ', cmd: MD3;,  abg:  green, bg: '#CAFF70', selectcolor: '#00C957' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: USB,      cmd: MD2;,  abg:    red, bg: '#CAFF70', selectcolor: '#00C957' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: LSB,      cmd: MD1;,  abg:    red, bg: '#CAFF70', selectcolor: '#00C957' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: AM,       cmd: MD5;,  abg: yellow, bg: '#CAFF70', selectcolor: '#00C957' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: FM,       cmd: MD4;,  abg: yellow, bg: '#CAFF70', selectcolor: '#00C957' }
+        - { item: radiobutton, groupid: modeA, indicator: 0, text: ' DATA ', cmd: MD6;,  abg:  green, bg: '#CAFF70', selectcolor: '#00C957' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: ' B-CW ', cmd: MD$3;, abg:  green, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: USB,      cmd: MD$2;, abg:    red, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: LSB,      cmd: MD$1;, abg:    red, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: AM,       cmd: MD$5;, abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: FM,       cmd: MD$4;, abg: yellow, bg: '#98F5FF' }
+        - { item: radiobutton, groupid: modeB, indicator: 0, text: ' DATA ', cmd: MD$6;, abg:  green, bg: '#98F5FF' }
 
     - item: group
       label: Bandwidth
@@ -314,6 +266,32 @@
             - { item: radiobutton, groupid: vol, indicator: 0, text:   50%, cmd: AG030;, abg: yellow, bg: '#98F5FF', selectcolor: 'red1' }
 
     - item: group
+      columns: 2
+      column: 1
+      rowspan: 2 # was 12
+      row: 7
+      contains:
+        - item: group
+          label: Pre
+          columns: 1
+          rows: 4
+          contains:
+            - { item: radiobutton, groupid: pre, indicator: 0, text:    None,      cmd: PA00;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: pre, indicator: 0, text:    Preamp 1,  cmd: PA11;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: pre, indicator: 0, text:    Preamp 2,  cmd: PA21;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: pre, indicator: 0, text:    Preamp 3,  cmd: PA31;, abg: yellow, bg: '#98F5FF' }
+
+        - item: group
+          label: Att
+          columns: 1
+          rows: 4
+          contains:
+            - { item: radiobutton, groupid: att, indicator: 0, text:     0 dB,  cmd: RA000;RA$000;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: att, indicator: 0, text:    -3 dB,  cmd: RA031;RA$031;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: att, indicator: 0, text:    -6 dB,  cmd: RA061;RA$061;, abg: yellow, bg: '#98F5FF' }
+            - { item: radiobutton, groupid: att, indicator: 0, text:   -12 dB,  cmd: RA121;RA$121;, abg: yellow, bg: '#98F5FF' }
+
+    - item: group
       label: Sidetone
       columns: 2
       column: 0
@@ -332,6 +310,28 @@
         - { item: button,      groupid: misc, indicator: 0, text: Band up, cmd:  BN+;,          abg: yellow,    bg: '#00FFFF' }
         - { item: button,      groupid: misc, indicator: 0, text: Band dn, cmd:  BN-;,          abg: yellow,    bg: '#00FFFF' }
         - { item: button,      groupid: misc, indicator: 0, text: Exit, directive:  quit,  bg:  white, abg:       red }
+
+    - item: group
+      columns: 2
+      column: 1
+      rowspan: 1 # was 22
+      row: 9
+      contains:
+        - item: group
+          label: VFO lock
+          columns: 1
+          rows: 1
+          contains:
+            - { item: radiobutton, groupid: misc, indicator: 0, text: VFO NL,  cmd:  LK0;LK$0;,     abg: cyan,      bg: yellow, selectcolor: '#00C957' }
+            - { item: radiobutton, groupid: misc, indicator: 0, text: VFO LK,  cmd:  LK1;LK$1;,     abg: cyan,      bg: yellow }
+
+        - item: group
+          label: RF level
+          columns: 1
+          rows: 1
+          contains:
+            - { item: radiobutton, groupid: misc, indicator: 0, text: RF NL,   cmd:  RG-00;RG$-00;, abg: yellow,    bg: yellow, selectcolor: '#00C957' }
+            - { item: radiobutton, groupid: misc, indicator: 0, text: RF -20,  cmd:  RG-20;RG$-20;, abg: cyan,      bg: yellow }
 
     - item: group
       label: K4
