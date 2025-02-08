@@ -255,7 +255,7 @@
       column: 0
       contains:
             - { item: radiobutton, groupid: vol, indicator: 0, text:  Mute, cmd: AG000;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-            - { item: radiobutton, groupid: vol, indicator: 0, text:    5%, cmd: AG004;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
+            - { item: radiobutton, groupid: vol, indicator: 0, text:    5%, cmd: AG003;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
             - { item: radiobutton, groupid: vol, indicator: 0, text:   10%, cmd: AG006;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
             - { item: radiobutton, groupid: vol, indicator: 0, text:   15%, cmd: AG009;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
             - { item: radiobutton, groupid: vol, indicator: 0, text:   20%, cmd: AG012;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
