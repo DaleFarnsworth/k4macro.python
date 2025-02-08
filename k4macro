@@ -121,6 +121,15 @@ class Server():
         'UP': True,
     }
 
+    set_only_suffixes = {
+        '+': True,
+        '-': True,
+        '/': True,
+        '\\': True,
+        '+': True,
+        '-': True,
+    }
+
     k4_get_only_cmd_bases = {
         'BG': True,
         'IF': True,
@@ -138,15 +147,6 @@ class Server():
         'TG': True,
         'TQ': True,
         'UT': True,
-    }
-
-    set_only_suffixes = {
-        '+': True,
-        '-': True,
-        '/': True,
-        '\\': True,
-        '+': True,
-        '-': True,
     }
 
     @staticmethod
@@ -253,8 +253,8 @@ class Server():
             self.recv_thread = threading.Thread(target=self.recv_loop, name=self.name+'.recv_thread')
             self.recv_thread.start()
             if self.type == 'k4':
-                self.send_str('K41;')               # request K4 to respond in advanced mode
-                self.send_str('AI2;AID060;')        # request K4 to send updates every 60 mS
+                self.send_str('K41;')                # request K4 to respond in advanced mode
+                self.send_str('AI2;AID060;')         # request K4 to send updates every 60 mS
                 if self.startup != None:
                     self.send_cmds(self.startup)     # send user-specified startup commands
                 Poll.add_poll(1, self.receive)
@@ -359,8 +359,7 @@ class Server():
                 for response in responses:
                     if self.type == 'k4':
                         base = cmd_base(response)
-                        if not Server.k4_get_only_cmd(base):
-                            self.update_k4_parameter(base, response)
+                        self.update_k4_parameter(base, response)
 
                     # For now, ignore responses from non-K4 servers
             except queue.Empty:
