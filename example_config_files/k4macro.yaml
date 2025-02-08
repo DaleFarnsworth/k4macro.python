@@ -124,7 +124,7 @@
           label: VFO A
           contains:
             - { item: vfo, AorB: A, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
- 
+
         - item: group
           label: VFO B
           contains:
@@ -135,7 +135,7 @@
         contains:
               - { item: radiobutton, groupid: link, indicator: 0, text: Linked,      cmd: FT0;BI0;#DPM0;, response: BI0;,  abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
               - { item: radiobutton, groupid: link, indicator: 0, text: Independent, cmd: FT0;BI1;#DPM2;, response: BI1;,  abg: yellow, bg: '#98F5FF' }
- 
+
       - item: group
         label: Mode VFO
         columns: 6
@@ -181,10 +181,10 @@
         - item: slider
           from: 0.0
           to: 110.0
-          length: 400
-          increment: ".0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0"
-          cmd: "'PC{:03d}L;'.format(int(float(value)*10)) if float(value) <= 10.0 else 'PC{:03d}H;'.format(int(value))"
-          response: "float(value[2:5])/10 if value[5] == 'L' else float(value[2:5])/10000 if value[5] == 'X' else float(value[2:5])"
+          length: 300
+          increment: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
+          cmd: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
+          response: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
 
       - item: group
         label: ATU mode
@@ -199,10 +199,10 @@
         - item: slider
           from: 0
           to: 100
-          length: 400
-          increment: "1"
-          cmd: "'AG{:03d};'.format(int(float(value)*0.6))"
-          response: "float(value[2:5])/0.6"
+          length: 300
+          increment: '1'
+          cmd: '"AG{:03d};".format(int(float(value)*0.6))'
+          response: 'float(value[2:5])/0.6'
           bg: '#CAFF70'
 
       - item: group
@@ -210,18 +210,24 @@
         contains:
         - item: slider
           from: 0
-          to: 1000
-          length: 400
-          increment: "1"
-          cmd: "'AG${:03d};'.format(int(float(value)*0.6))"
-          response: "float(value[3:6])/0.6"
+          to: 100
+          length: 300
+          increment: '1'
+          cmd: '"AG${:03d};".format(int(float(value)*0.6))'
+          response: 'float(value[3:6])/0.6'
           bg: '#98F5FF'
 
       - item: group
         label: Sidetone
         contains:
-              - { item: radiobutton, groupid: st, indicator: 0, text:  Mute,   cmd: ML0000;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-              - { item: radiobutton, groupid: st, indicator: 0, text:  Normal, cmd: ML0025;, abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
+        - item: slider
+          from: 0
+          to: 100
+          length: 400
+          increment: '1'
+          cmd: '"ML1{:03d};".format(int(float(value)))'
+          response: 'float(value[3:6])'
+          bg: '#00C957'
 
       - item: group
         label: Miscellaneous
