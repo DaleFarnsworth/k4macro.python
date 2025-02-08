@@ -73,6 +73,13 @@
 #   fg: foreground color
 #   bg: background color
 
+# vfo options:
+#   AorB: 'A' for vfo A and 'B' for vfo B
+#   fg: foreground color
+#   bg: background color
+#   font: the font used for the vfo
+#   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox
+
 - item: defaults
   # Colors
   bg: maroon1
@@ -327,7 +334,7 @@
         - { item: button,      groupid: misc, indicator: 0, text: Exit, directive:  quit,  bg:  white, abg:       red }
 
     - item: group
-      label: K4 
+      label: K4
       columns: 1
       column: 1
       rowspan: 1 # was 6
