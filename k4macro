@@ -415,7 +415,8 @@ class Server():
             self.recv_thread.start()
             if self.type == 'k4':
                 self.send_str('K41;')                # request K4 to respond in advanced mode
-                self.send_str('AI2;AID060;')         # request K4 to send updates every 60 mS
+                self.send_str('AI4;')                # request K4 to send updates immediately
+                self.send_cmds('MD;MD$;')            # cache the mode response for later use in setting the vfo step
                 if self.startup != None:
                     self.send_cmds(self.startup)     # send user-specified startup commands
                 Poll.add_poll(1, self.receive)
