@@ -808,8 +808,8 @@ class Cyclebutton(Widget):
 
         self.selections = []
 
-        wrap = config_info.get('wrap', False)
-        self.wrap = true_values(wrap)
+        wraparound = config_info.get('wraparound', False)
+        self.wraparound = true_values(wraparound)
 
         conf_selections = config_info.get('selections', None)
         for conf_sel in conf_selections:
@@ -888,7 +888,7 @@ class Cyclebutton(Widget):
     def next_selection(self):
         self.index += 1
         if self.index >= len(self.selections):
-            if self.wrap:
+            if self.wraparound:
                 self.index = 0
             else:
                 self.index = len(self.selections) - 1
