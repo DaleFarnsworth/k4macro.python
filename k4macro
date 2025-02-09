@@ -984,6 +984,7 @@ class VFO(Widget):
                 values=VFO.texts,
                 width=7,
                 justify='right',
+                state='readonly',
                 )
         self.step_cb_val.trace('w', self.on_step_cb_changed)
 
