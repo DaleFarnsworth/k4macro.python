@@ -41,6 +41,21 @@
 #   bg: background color
 #   abg: active background color
 
+# cyclebutton options:
+#   wraparound: true or false. whether the button wraps back around to the first selection
+#   selections: a list of selections, each of which may have the following elements
+#       text: button text
+#       server: The server name of the server referenced by this button
+#       cmd: Either:
+#         a text string to be sent to k4, or
+#         a python 'list' object containg server name/cmd pairs (python dict objects)
+#         to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
+#         then send 's1cmd' to server s1.
+#       fg: foreground color
+#       bg: background color
+#       abg: active background color
+#       flashrate: the rate at which the button will flash when selected in tenths of a second
+
 # radiobutton options:
 #   groupid: a string shared by all buttons in this group, unique to all groups
 #   indicator: Set to 0 if no indicator is to be displayed
@@ -249,6 +264,29 @@
         contains:
               - { item: radiobutton, groupid: test ,indicator: 0, text: Test,     cmd: TS1;,   abg: yellow, bg: '#98F5FF', flashrate: 10 }
               - { item: radiobutton, groupid: test, indicator: 0, text: Transmit, cmd: TS0;,   abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
+
+      - item: group
+        contains:
+        - item: cyclebutton
+          wrap: true
+          selections:
+              - { text: "Test\n(on)",  cmd: TS1;, flashrate: 10 }
+              - { text: "Test\n(off)", cmd: TS0;, bg: '#00C957' }
+
+        - item: cyclebutton
+          wrap: true
+          selections:
+                - { text: "Band+\n160 m",  cmd: BN00;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n80 m",  cmd: BN01;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n60 m",  cmd: BN02;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n40 m",  cmd: BN03;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n30 m",  cmd: BN04;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n20 m",  cmd: BN05;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n17 m",  cmd: BN06;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n15 m",  cmd: BN07;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n12 m",  cmd: BN08;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n10 m",  cmd: BN09;,  abg: yellow, bg: '#CAFF70' }
+                - { text: "Band+\n6 m",  cmd: BN10;,  abg: yellow, bg: '#CAFF70' }
 
       - item: group
         columns: 2
