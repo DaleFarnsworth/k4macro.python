@@ -1222,9 +1222,8 @@ class Poll:
             Poll.poll_callbacks[interval] = []
             Poll.polls[interval] = lambda: Poll.poll(interval)
             Poll.top.after(interval, Poll.polls[interval])
-        if callback in Poll.poll_callbacks[interval]:
-            raise Exception('Error: adding duplicate poll:', interval, callback)
-        Poll.poll_callbacks[interval].append(callback)
+        if not callback in Poll.poll_callbacks[interval]:
+            Poll.poll_callbacks[interval].append(callback)
 
     def remove_poll(interval, callback):
         try:
