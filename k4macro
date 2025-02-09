@@ -523,7 +523,10 @@ class Server():
                         base = cmd_base(response)
                         response = response[len(base):]
                         if response == '?':
-                            raise Exception('Received error response from K4: ', base + response)
+                            if Options.debug > 0:
+                                raise Exception('Received error response from K4: ', base + response)
+                            else:
+                                dprint('Warning: received error response from K4: ', base + response)
                         self.update_k4_parameter(base, response)
 
                     # For now, ignore responses from non-K4 servers
