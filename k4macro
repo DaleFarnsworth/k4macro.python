@@ -522,7 +522,7 @@ class Server():
                     if self.type == 'k4':
                         base = cmd_base(response)
                         response = response[len(base):]
-                        if response[0] == '?':
+                        if response == '?':
                             raise Exception('Received error response from K4: ', base + response)
                         self.update_k4_parameter(base, response)
 
