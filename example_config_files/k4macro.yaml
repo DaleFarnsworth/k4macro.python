@@ -110,7 +110,7 @@
   # Font used for labels
   label_font: { family: Helvetica, size: 10, weight: normal }
   # Font used for buttons and other controls
-  button_font: { family: Helvetica, size: 8, weight: normal }
+  button_font: { family: Helvetica, size: 10, weight: normal }
 
 - item: server
   name: k4
@@ -247,18 +247,18 @@
           wraparound: true
           updown: true
           selections:
-                - { text: "+ MODE A \n   -      CW", cmd: MD3;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ MODE A \n   -     USB", cmd: MD2;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ MODE A \n   -     LSB", cmd: MD1;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ MODE A \n   -      AM", cmd: MD5;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ MODE A \n   -      FM", cmd: MD4;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ MODE A \n   -    CW", cmd: MD3;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ MODE A \n   -    USB", cmd: MD2;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ MODE A \n   -    LSB", cmd: MD1;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ MODE A \n   -    AM", cmd: MD5;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ MODE A \n   -    FM", cmd: MD4;, abg: yellow, bg: '#CAFF70', justify: left }
                 - { text: "+ MODE A \n   -    Data", cmd: MD6;, abg: yellow, bg: '#CAFF70', justify: left }
 
         - item: cyclebutton
           wraparound: true
           selections:
-               - { text: "VFOs\nLINKED",       cmd: FT0;BI0;#DPM0;, bg: '#00C957' }
-               - { text: "VFOs\n INDEPENDENT", cmd: FT0;BI1;#DPM2;, bg: 'yellow' }
+               - { text: " VFOs\n LINKED",        cmd: FT0;BI0;#DPM0;, bg: '#00C957' }
+               - { text: " VFOs\n          INDY", cmd: FT0;BI1;#DPM2;, bg: 'yellow' }
 
         - item: group
           contains:
@@ -301,17 +301,17 @@
           wraparound: true
           updown: true
           selections:
-                - { text: "+  Bandwidth\n   -  50 Hz",  cmd: BW0005;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 100 Hz",  cmd: BW0010;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 200 Hz",  cmd: BW0020;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 300 Hz",  cmd: BW0030;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 400 Hz",  cmd: BW0040;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 450 Hz",  cmd: BW0045;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 500 Hz",  cmd: BW0050;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 1.8 kHz", cmd: BW0180;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 2.5 kHz", cmd: BW0250;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 3.5 kHz", cmd: BW0350;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+  Bandwidth\n   - 4.0 kHz", cmd: BW0400;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -     50 Hz",  cmd: BW0005;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    100 Hz",  cmd: BW0010;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    200 Hz",  cmd: BW0020;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    300 Hz",  cmd: BW0030;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    400 Hz",  cmd: BW0040;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    450 Hz",  cmd: BW0045;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    500 Hz",  cmd: BW0050;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    1.8 kHz", cmd: BW0180;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    2.5 kHz", cmd: BW0250;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    3.5 kHz", cmd: BW0350;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  Bandwidth\n  -    4.0 kHz", cmd: BW0400;, abg: yellow, bg: '#CAFF70', justify: left }
 
         - item: group
           contains:
@@ -327,12 +327,12 @@
           wraparound: true
           updown: true
           selections:
-                - { text: "+    POWER \n  -    5 W", cmd: PC050L;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+    POWER \n  -   10 W", cmd: PC100L;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+    POWER \n  -   25 W", cmd: PC025H;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+    POWER \n  -   50 W", cmd: PC050H;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+    POWER \n  -   75 W", cmd: PC075H;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+    POWER \n  -  100 W", cmd: PC100H;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+    POWER \n  -       5 W", cmd: PC050L;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+    POWER \n  -      10 W", cmd: PC100L;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+    POWER \n  -      25 W", cmd: PC025H;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+    POWER \n  -      50 W", cmd: PC050H;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+    POWER \n  -      75 W", cmd: PC075H;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+    POWER \n  -     100 W", cmd: PC100H;, abg: yellow, bg: '#CAFF70', justify: left }
 
         - item: cyclebutton
           wraparound: true
@@ -340,24 +340,24 @@
           selections:
                 - { text: "+ PREAMP \n   -       0", cmd: PA00;, abg: yellow, bg: '#CAFF70', justify: left }
                 - { text: "+ PREAMP \n   -       1", cmd: PA11;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ PREAMP \n     -     2", cmd: PA21;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ PREAMP \n   -       2", cmd: PA21;, abg: yellow, bg: '#CAFF70', justify: left }
                 - { text: "+ PREAMP \n   -       3", cmd: PA31;, abg: yellow, bg: '#CAFF70', justify: left }
         - item: cyclebutton
           wraparound: true
           updown: true
           selections:
-                - { text: "+ ATTENUATION \n   -    0 dB", cmd: RA000;RA$000;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ ATTENUATION \n   -   -3 dB", cmd: RA031;RA$031;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ ATTENUATION \n   -   -6 dB", cmd: RA061;RA$061;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ ATTENUATION \n   -  -12 dB", cmd: RA121;RA$121;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ ATTENUATION \n   -  -15 dB", cmd: RA151;RA$151;, abg: yellow, bg: '#CAFF70', justify: left }
-                - { text: "+ ATTENUATION \n   -  -18 dB", cmd: RA181;RA$181;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ ATTEN   \n   -  0 dB", cmd: RA000;RA$000;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ ATTEN   \n   -  3 dB", cmd: RA031;RA$031;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ ATTEN   \n   -  6 dB", cmd: RA061;RA$061;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ ATTEN   \n   - 12 dB", cmd: RA121;RA$121;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ ATTEN   \n   - 15 dB", cmd: RA151;RA$151;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+ ATTEM   \n   - 18 dB", cmd: RA181;RA$181;, abg: yellow, bg: '#CAFF70', justify: left }
 
         - item: cyclebutton
           wraparound: true
           selections:
-               - { text: "RF GAIN\n-0",  cmd: RG-00;RG$-00;, bg: '#00C957' }
-               - { text: "RF GAIN\n-10", cmd: RG-10;RG$-10;, bg: 'yellow' }
+               - { text: "  RF GAIN\n -0     ", cmd: RG-00;RG$-00;, bg: '#00C957' }
+               - { text: "  RF GAIN\n-10     ", cmd: RG-10;RG$-10;, bg: 'yellow' }
 
       - item: group
         label: Power (Watts)
@@ -425,4 +425,4 @@
       - item: group
         contains:
           - { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0;,          abg: red1,  bg: '#00C957' }
-          - { item: button,      groupid: misc, indicator: 0, text: '     Exit     ', directive:  quit,  bg:  white, abg:       red }
+          - { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit,  bg:  white, abg:       red }
