@@ -534,6 +534,8 @@ class Server():
                 break
 
     def recv_loop(self):
+        partial_response = ''
+
         while True:
             responses = []
             readable, writable, in_error = select.select([self.socket.fileno()], [], [self.socket], 1)
@@ -558,19 +560,18 @@ class Server():
             else:
                 recv_str = recv_bytes.decode()
                 dprint1('{name}: received: {str}'.format(name=self.name, str=recv_str))
-                recv_strs = recv_str.split(';')
-                if len(recv_strs) == 0:
+                responses = recv_str.split(';')
+                if len(responses) == 0:
                     continue
 
-                if recv_strs[-1] == '':
-                    partial_response = recv_strs[-1]
-                    responses = recv_strs[0:-1]
-                else:
-                    responses = recv_strs
                 if partial_response != '':
-                    response[0] += partial_response
+                    response[0] = partial_response + response[0]
                     partial_response = ''
 
+                if responses[-1] != '':
+                    partial_response = responses[-1]
+
+                responses = responses[0:-1]
                 self.recv_queue.put(responses)
 
     def subscribe_response(self, cmd, callback):
