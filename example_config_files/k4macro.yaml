@@ -40,9 +40,12 @@
 #   fg: foreground color
 #   bg: background color
 #   abg: active background color
+#   justify: 'left', 'right', 'center' to justify text within the Button
 
 # cyclebutton options:
 #   wraparound: true or false. whether the button wraps back around to the first selection
+#   updown: true or false, if true, selections cycle up if the button is clicked in its upper half
+#       and selections cycle down if the button is clicked in its lower half
 #   selections: a list of selections, each of which may have the following elements
 #       text: button text
 #       server: The server name of the server referenced by this button
@@ -54,6 +57,7 @@
 #       fg: foreground color
 #       bg: background color
 #       abg: active background color
+#       justify: 'left', 'right', 'center' to justify text within the Button
 #       flashrate: the rate at which the button will flash when selected in tenths of a second
 
 # radiobutton options:
@@ -275,33 +279,35 @@
 
         - item: cyclebutton
           wraparound: true
+          updown: true
           selections:
-                - { text: "A Band+\n160 m", cmd: BN00;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n80 m",  cmd: BN01;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n60 m",  cmd: BN02;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n40 m",  cmd: BN03;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n30 m",  cmd: BN04;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n20 m",  cmd: BN05;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n17 m",  cmd: BN06;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n15 m",  cmd: BN07;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n12 m",  cmd: BN08;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n10 m",  cmd: BN09;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "A Band+\n6 m",   cmd: BN10;,  abg: yellow, bg: '#CAFF70' }
+              - { text: "+  A Band\n-    160 m", cmd: BN00;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     80 m", cmd: BN01;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     60 m", cmd: BN02;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     40 m", cmd: BN03;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     30 m", cmd: BN04;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     20 m", cmd: BN05;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     17 m", cmd: BN06;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     15 m", cmd: BN07;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     12 m", cmd: BN08;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-     10 m", cmd: BN09;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  A Band\n-      6 m", cmd: BN10;, abg: yellow, bg: '#CAFF70', justify: left }
 
         - item: cyclebutton
           wraparound: true
+          updown: true
           selections:
-                - { text: "B Band+\n160 m", cmd: BN$00;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n80 m",  cmd: BN$01;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n60 m",  cmd: BN$02;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n40 m",  cmd: BN$03;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n30 m",  cmd: BN$04;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n20 m",  cmd: BN$05;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n17 m",  cmd: BN$06;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n15 m",  cmd: BN$07;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n12 m",  cmd: BN$08;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n10 m",  cmd: BN$09;,  abg: yellow, bg: '#CAFF70' }
-                - { text: "B Band+\n6 m",   cmd: BN$10;,  abg: yellow, bg: '#CAFF70' }
+              - { text: "+  B Band\n-    160 m", cmd: BN$00;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     80 m", cmd: BN$01;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     60 m", cmd: BN$02;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     40 m", cmd: BN$03;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     30 m", cmd: BN$04;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     20 m", cmd: BN$05;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     17 m", cmd: BN$06;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     15 m", cmd: BN$07;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     12 m", cmd: BN$08;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-     10 m", cmd: BN$09;, abg: yellow, bg: '#CAFF70', justify: left }
+              - { text: "+  B Band\n-      6 m", cmd: BN$10;, abg: yellow, bg: '#CAFF70', justify: left }
 
       - item: group
         columns: 2

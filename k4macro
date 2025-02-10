@@ -758,6 +758,7 @@ class Button(Widget):
         afg = config_info.get('afg', Default.afg)
         if afg == None:
             afg = fg
+        justify = config_info.get('justify', 'center')
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
 
         width = container.items_width()
@@ -788,6 +789,7 @@ class Button(Widget):
                     text=text,
                     font=font,
                     width=width,
+                    justify=justify,
                     relief='raised',
                     fg=fg,
                     bg=bg,
@@ -808,8 +810,8 @@ class Cyclebutton(Widget):
 
         self.selections = []
 
-        wraparound = config_info.get('wraparound', False)
-        self.wraparound = true_values(wraparound)
+        self.wraparound = true_values(config_info.get('wraparound', False))
+        self.updown = true_values(config_info.get('updown', False))
 
         conf_selections = config_info.get('selections', None)
         for conf_sel in conf_selections:
@@ -832,8 +834,7 @@ class Cyclebutton(Widget):
                 response = response[len(base):]
                 selection['parameters'][base] = response
 
-            command = self.do_selection
-            selection['command'] = command
+            selection['command'] = self.do_selection
 
             selection['cmd'] = cmd
             selection['bg'] = conf_sel.get('bg', Default.bg)
@@ -842,6 +843,7 @@ class Cyclebutton(Widget):
             selection['afg'] = conf_sel.get('afg', Default.afg)
             if selection['afg'] == None:
                 selection['afg'] = selection['fg']
+            selection['justify'] = conf_sel.get('justify', 'center')
             selection['flashmS'] = int(conf_sel.get('flashrate', 0) * 100 / 2)
             self.selections.append(selection)
 
@@ -867,13 +869,28 @@ class Cyclebutton(Widget):
                     width=width,
                     relief='raised',
                     padx=2,
-                    pady=2)
+                    pady=2,
+                    command=selection['command'])
         self.configure()
+
+        self.button.bind('<Button-1>', self.on_click)
 
         for selection in self.selections:
             self.server.subscribe_cmds(selection['response'], self.on_response_received)
 
         self.button.grid(row=container.row, column=container.column, sticky='w')
+
+    def on_click(self, event):
+        if self.updown:
+            selection = self.selections[self.index]
+            button = self.button
+            button.update()
+            height = button.winfo_height()
+            if event.y < height / 2:
+                self.next_selection()
+            else:
+                self.previous_selection()
+            self.do_selection
 
     def configure(self):
         selection = self.selections[self.index]
@@ -883,7 +900,7 @@ class Cyclebutton(Widget):
                     bg=selection['bg'],
                     activebackground=selection['abg'],
                     activeforeground=selection['afg'],
-                    command=selection['command'])
+                    justify=selection['justify'])
 
     def next_selection(self):
         self.index += 1
@@ -893,8 +910,17 @@ class Cyclebutton(Widget):
             else:
                 self.index = len(self.selections) - 1
 
+    def previous_selection(self):
+        self.index -= 1
+        if self.index < 0:
+            if self.wraparound:
+                self.index = len(self.selections) - 1
+            else:
+                self.index = 0
+
     def do_selection(self):
-        self.next_selection()
+        if not self.updown:
+            self.next_selection()
         selection = self.selections[self.index]
         cmd = selection['cmd']
         if cmd != None:
