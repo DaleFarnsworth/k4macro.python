@@ -206,13 +206,6 @@
           response: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
 
       - item: group
-        label: ATU mode
-        contains:
-              - { item: radiobutton, groupid: atu, indicator: 0, text: bypass, cmd: AT1;,  abg: yellow, bg: '#98F5FF' }
-              - { item: radiobutton, groupid: atu, indicator: 0, text: auto,   cmd: AT2;,  abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-              - { item: button,      groupid: atu,               text: tune,   cmd: SW40;, abg: red,    bg: yellow }
-
-      - item: group
         label: Main Volume
         contains:
         - item: slider
@@ -247,6 +240,16 @@
           cmd: '"ML0{:03d};".format(int(float(value)))'
           response: 'float(value[3:6])'
           bg: '#00C957'
+
+      - item: group
+        label: ATU mode
+        contains:
+        - item: cyclebutton
+          wraparound: true
+          selections:
+            - { text: bypass, cmd: AT1;,  abg: yellow, bg: '#98F5FF' }
+            - { text: auto,   cmd: AT2;,  abg: yellow, bg: '#00C957' }
+        - { item: button, groupid: atu, text: tune, cmd: SW40;, abg: red, bg: yellow }
 
       - item: group
         label: Miscellaneous
