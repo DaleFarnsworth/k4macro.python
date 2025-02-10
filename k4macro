@@ -609,6 +609,7 @@ class Container():
 
         self.label_font = None
         self.button_font = None
+        self.children = []
 
     def next_column(self):
         self.column += 1
@@ -628,23 +629,27 @@ class Container():
                     label = config_info.get('label', '')
                     indent = '    ' * Container.depth
                     dprint('{indent}group {label}: row  {row}, column: {column}'.format(indent=indent, label=label, row=self.row, column=self.column))
-                Group(config_info, self)
+                child = Group(config_info, self)
             elif widget_type == 'button':
-                Button(config_info, self)
+                child = Button(config_info, self)
             elif widget_type == 'radiobutton':
-                Radiobutton(config_info, self)
+                child = Radiobutton(config_info, self)
             elif widget_type == 'vfo':
-                VFO(config_info, self)
+                child = VFO(config_info, self)
             elif widget_type == 'slider':
-                Slider(config_info, self)
+                child = Slider(config_info, self)
             elif widget_type == 'cyclebutton':
-                Cyclebutton(config_info, self)
+                child = Cyclebutton(config_info, self)
             elif widget_type == 'getvalue':
-                Getvalue(config_info, self)
+                child = Getvalue(config_info, self)
             elif widget_type == 'bargraph':
-                Bargraph(config_info, self)
+                child = Bargraph(config_info, self)
             elif widget_type == 'text':
-               Text(config_info, self)
+               child = Text(config_info, self)
+            elif widget_type == 'notebook':
+               child = Notebook(config_info, self)
+
+            self.children.append(child)
 
             self.next_column()
         Container.depth -= 1
@@ -719,10 +724,11 @@ class Group(Container):
         rowspan = config_info.get('rowspan', 1)
         self.label_font = config_info.get('label_font', container.label_font)
         self.button_font = config_info.get('button_font', container.button_font)
+        self.tabtext = config_info.get('tabtext', '')
 
-        font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
 
         if 'label' in config_info:
+            font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
             label = config_info['label']
             self.frame = tk.LabelFrame(frame,
                                        text=label,
@@ -1428,6 +1434,24 @@ class Text(Widget):
                     pady=2)
 
         label.grid(row=container.row, column=container.column, sticky='w')
+
+class Notebook(Container):
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
+
+        self.label_font = container.label_font
+        self.button_font = container.button_font
+
+        self.frame = None
+        self.show_widgets()
+
+        notebook = ttk.Notebook(container.frame)
+        notebook.grid()
+
+        for child in self.children:
+            if not isinstance(child, Group):
+                raise Exception('Notebook contains an item that is not a group', child)
+            notebook.add(child.frame, text=child.tabtext)
 
 def cmd_base(cmd):
     ucmd = cmd.upper()

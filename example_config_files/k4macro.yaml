@@ -15,9 +15,14 @@
 #   columns: The number of columns in which contained items will be displayed.
 #   contains: The list of items this page contains
 
+# notebook (tabbed groups) options:
+#   contains: The list of groups this notebook contains
+# Each group contained should have an tabtext option
+
 # group options:
 #   label: The label that will be displayed for this group.
 #   server: The default server items contained in this group will use
+#   tabtext: The tab name for this group if it is part of a notebook
 #   row: The row of the container in which this group will be placed.
 #   column: The column of the container in which this group will be placed.
 #   rowspan: The number of rows this group will occupy.
