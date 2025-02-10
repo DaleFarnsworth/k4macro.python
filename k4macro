@@ -565,7 +565,7 @@ class Server():
                     continue
 
                 if partial_response != '':
-                    response[0] = partial_response + response[0]
+                    responses[0] = partial_response + responses[0]
                     partial_response = ''
 
                 if responses[-1] != '':
