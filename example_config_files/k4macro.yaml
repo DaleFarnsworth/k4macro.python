@@ -139,6 +139,14 @@
       columns: 1
       contains:
       - item: group
+        label: S-Meter
+        contains:
+        - item: getvalue
+          cmd: SMH1;
+          response: 'value if len(value) < 7 else (value[3:8] if value[3] == "$" else value[3:7]) + " dBm"'
+          bg: white
+
+      - item: group
         contains:
         - item: group
           label: VFO A

@@ -639,6 +639,8 @@ class Container():
                 Slider(config_info, self)
             elif widget_type == 'cyclebutton':
                 Cyclebutton(config_info, self)
+            elif widget_type == 'getvalue':
+                Getvalue(config_info, self)
 
             self.next_column()
         Container.depth -= 1
@@ -1319,6 +1321,47 @@ class Slider(Widget):
         self.value.set(value)
         self.scale.configure(resolution=self.eval_value(self.increment, value))
         self.previous_value = value
+
+class Getvalue(Widget):
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
+
+        cmd = config_info.get('cmd', None)
+        self.response = config_info.get('response', cmd)
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
+        abg = config_info.get('abg', Default.abg)
+        afg = config_info.get('afg', Default.afg)
+        if afg == None:
+            afg = fg
+        justify = config_info.get('justify', 'center')
+        label_font = config_info.get('font', config_info.get('button_font', container.button_font))
+
+        self.server.expand_and_send_cmds(cmd)
+
+        font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
+
+        self.label = tk.Label(container.frame,
+                    bd='4',
+                    font=font,
+                    justify=justify,
+                    fg=fg,
+                    bg=bg,
+                    activebackground=abg,
+                    activeforeground=afg,
+                    padx=2,
+                    pady=2)
+
+        self.label.grid(row=container.row, column=container.column, sticky='w')
+
+        self.server.subscribe_cmds(cmd, self.on_response_received)
+
+    def eval_value(self, s, value):
+        return eval(s)
+
+    def on_response_received(self, response):
+        value = self.eval_value(self.response, response)
+        self.label.configure(text=value)
 
 def cmd_base(cmd):
     ucmd = cmd.upper()
