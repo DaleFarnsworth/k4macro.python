@@ -1229,7 +1229,6 @@ class VFO(Widget):
     def set_step(self, text):
         self.step = VFO.steps[VFO.text_to_index[text]]
         self.vfo_sb.config(increment=self.step)
-        mode_index = self.current_mode_index()
         cmd = 'VT'
         if self.AorB == 'B':
             cmd += '$'
@@ -1259,8 +1258,7 @@ class VFO(Widget):
         cmd = 'MD'
         if self.AorB == 'B':
             cmd += '$'
-        mode_parameter = self.server.k4_parameter(cmd)
-        return mode_parameter[-1]
+        return self.server.k4_parameter(cmd)
 
 class Slider(Widget):
     def __init__(self, config_info, container):
