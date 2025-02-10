@@ -133,6 +133,7 @@
   name: main
   server: k4
   columns: 2
+  row: 0
   contains:
     - item: group
       columns: 1
@@ -150,10 +151,58 @@
             - { item: vfo, AorB: b, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
 
       - item: group
-        label: VFO link
         contains:
-              - { item: radiobutton, groupid: link, indicator: 0, text: Linked,      cmd: FT0;BI0;#DPM0;, response: BI0;,  abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-              - { item: radiobutton, groupid: link, indicator: 0, text: Independent, cmd: FT0;BI1;#DPM2;, response: BI1;,  abg: yellow, bg: '#98F5FF' }
+        - item: group
+          contains:
+          - item: cyclebutton
+            wraparound: true
+            selections:
+                - { text: "Test\n(on)",  cmd: TS1;, bg: 'red', flashrate: 10 }
+                - { text: "Test\n(off)", cmd: TS0;, bg: '#00C957' }
+
+        - item: cyclebutton
+          wraparound: true
+          selections:
+               - { text: "VFOs\nLINKED",       cmd: FT0;BI0;#DPM0;, bg: '#00C957' }
+               - { text: "VFOs\n INDEPENDENT", cmd: FT0;BI1;#DPM2;, bg: 'yellow' }
+
+        - item: cyclebutton
+          wraparound: true
+          updown: true
+          selections:
+                - { text: "+  A Band\n-    160 m", cmd: BN00;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     80 m", cmd: BN01;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     60 m", cmd: BN02;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     40 m", cmd: BN03;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     30 m", cmd: BN04;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     20 m", cmd: BN05;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     17 m", cmd: BN06;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     15 m", cmd: BN07;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     12 m", cmd: BN08;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-     10 m", cmd: BN09;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  A Band\n-      6 m", cmd: BN10;, abg: yellow, bg: '#CAFF70', justify: left }
+
+        - item: cyclebutton
+          wraparound: true
+          updown: true
+          selections:
+                - { text: "+  B Band\n-    160 m", cmd: BN$00;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     80 m", cmd: BN$01;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     60 m", cmd: BN$02;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     40 m", cmd: BN$03;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     30 m", cmd: BN$04;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     20 m", cmd: BN$05;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     17 m", cmd: BN$06;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     15 m", cmd: BN$07;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     12 m", cmd: BN$08;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-     10 m", cmd: BN$09;, abg: yellow, bg: '#CAFF70', justify: left }
+                - { text: "+  B Band\n-      6 m", cmd: BN$10;, abg: yellow, bg: '#CAFF70', justify: left }
+
+#      - item: group
+#        label: VFO link
+#        contains:
+#              - { item: radiobutton, groupid: link, indicator: 0, text: Linked,      cmd: FT0;BI0;#DPM0;, response: BI0;,  abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
+#              - { item: radiobutton, groupid: link, indicator: 0, text: Independent, cmd: FT0;BI1;#DPM2;, response: BI1;,  abg: yellow, bg: '#98F5FF' }
 
       - item: group
         label: Mode VFO
@@ -253,67 +302,22 @@
 
       - item: group
         label: Miscellaneous
-        columns: 3
+        columns: 4
         contains:
           - { item: button,      groupid: misc, indicator: 0, text: A/B,     cmd:  SW41;,         abg: green,     bg: yellow }
           - { item: button,      groupid: misc, indicator: 0, text: A->B,    cmd:  DE0010;SW72;,  abg: green,     bg: yellow }
           - { item: button,      groupid: misc, indicator: 0, text: B->A,    cmd:  SW147;,        abg: green,     bg: yellow }
-          - { item: button,      groupid: misc, indicator: 0, text: Band up, cmd:  BN+;,          abg: yellow,    bg: '#00FFFF' }
-          - { item: button,      groupid: misc, indicator: 0, text: Band dn, cmd:  BN-;,          abg: yellow,    bg: '#00FFFF' }
+#          - { item: button,      groupid: misc, indicator: 0, text: Band up, cmd:  BN+;,          abg: yellow,    bg: '#00FFFF' }
+#          - { item: button,      groupid: misc, indicator: 0, text: Band dn, cmd:  BN-;,          abg: yellow,    bg: '#00FFFF' }
           - { item: button,      groupid: misc, indicator: 0, text: Exit, directive:  quit,  bg:  white, abg:       red }
 
     - item: group
       columns: 1
-      row: 0
       contains:
       - item: group
-        label: Transceiver mode
-        contains:
-              - { item: radiobutton, groupid: test ,indicator: 0, text: Test,     cmd: TS1;,   abg: yellow, bg: '#98F5FF', flashrate: 10 }
-              - { item: radiobutton, groupid: test, indicator: 0, text: Transmit, cmd: TS0;,   abg: yellow, bg: '#98F5FF', selectcolor: '#00C957' }
-
-      - item: group
-        contains:
-        - item: cyclebutton
-          wraparound: true
-          selections:
-              - { text: "Test\n(on)",  cmd: TS1;, flashrate: 10 }
-              - { text: "Test\n(off)", cmd: TS0;, bg: '#00C957' }
-
-        - item: cyclebutton
-          wraparound: true
-          updown: true
-          selections:
-              - { text: "+  A Band\n-    160 m", cmd: BN00;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     80 m", cmd: BN01;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     60 m", cmd: BN02;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     40 m", cmd: BN03;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     30 m", cmd: BN04;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     20 m", cmd: BN05;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     17 m", cmd: BN06;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     15 m", cmd: BN07;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     12 m", cmd: BN08;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-     10 m", cmd: BN09;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  A Band\n-      6 m", cmd: BN10;, abg: yellow, bg: '#CAFF70', justify: left }
-
-        - item: cyclebutton
-          wraparound: true
-          updown: true
-          selections:
-              - { text: "+  B Band\n-    160 m", cmd: BN$00;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     80 m", cmd: BN$01;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     60 m", cmd: BN$02;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     40 m", cmd: BN$03;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     30 m", cmd: BN$04;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     20 m", cmd: BN$05;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     17 m", cmd: BN$06;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     15 m", cmd: BN$07;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     12 m", cmd: BN$08;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-     10 m", cmd: BN$09;, abg: yellow, bg: '#CAFF70', justify: left }
-              - { text: "+  B Band\n-      6 m", cmd: BN$10;, abg: yellow, bg: '#CAFF70', justify: left }
-
-      - item: group
         columns: 2
+        column: 1
+        row: 0
         contains:
           - item: group
             label:  VFO A
@@ -349,6 +353,8 @@
 
       - item: group
         columns: 2
+        column: 1
+        row: 1
         contains:
           - item: group
             label: Pre
@@ -370,6 +376,8 @@
 
       - item: group
         columns: 2
+        column: 1
+        row: 2
         contains:
           - item: group
             label: VFO lock
@@ -386,6 +394,8 @@
               - { item: radiobutton, groupid: misc, indicator: 0, text: RF -20,  cmd:  RG-20;RG$-20;, abg: cyan,      bg: yellow }
 
       - item: group
+        column: 1
+        row: 3
         label: K4
         contains:
           - { item: button, groupid: k4, text: '     POWER OFF     ', cmd:  PS0;,          abg: '#00C957', bg: red1 }
