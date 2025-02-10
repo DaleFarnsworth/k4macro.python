@@ -141,10 +141,33 @@
       - item: group
         label: S-Meter
         contains:
-        - item: getvalue
-          cmd: SMH1;
-          response: 'value if len(value) < 7 else (value[3:8] if value[3] == "$" else value[3:7]) + " dBm"'
-          bg: white
+        - item: group
+          columns: 1
+          contains:
+          - item: text
+            text: '                '
+            bg: white
+          - item: getvalue
+            cmd: SMH1;
+            response: 'value if len(value) < 7 else (value[4:8] if value[3] == "$" else value[3:7]) + " dBm"'
+            bg: white
+        - item: group
+          columns: 1
+          contains:
+          - item: group
+            contains:
+            - item: text
+              text: '  '
+              bg: white
+            - item: bargraph
+              maximum: 42
+              length: 166
+              cmd: SM1;
+              response: 'value if len(value) < 4 else value.rstrip(";")[3:] if value[3] == "$" else value.rstrip(";")[2:]'
+              bg: white
+          - item: text
+            text: " S1 3 5 7 9  +20 +40 +60"
+            bg: white
 
       - item: group
         contains:

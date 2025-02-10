@@ -580,7 +580,7 @@ class Server():
             self.k4_subscriptions[base] = []
         parameter = self.k4_parameters.get(base, None)
         if parameter != None:
-            callback(parameter + ';')
+            callback(base + parameter + ';')
         self.send_str(cmd_get_format(cmd))              # TODO Try sending only if not found is cached parameters
         if not callback in self.k4_subscriptions[base]:
             self.k4_subscriptions[base].append(callback)
@@ -641,6 +641,10 @@ class Container():
                 Cyclebutton(config_info, self)
             elif widget_type == 'getvalue':
                 Getvalue(config_info, self)
+            elif widget_type == 'bargraph':
+                Bargraph(config_info, self)
+            elif widget_type == 'text':
+               Text(config_info, self)
 
             self.next_column()
         Container.depth -= 1
@@ -1304,6 +1308,7 @@ class Slider(Widget):
         self.server.subscribe_cmds(cmd, self.on_response_received)
 
     def eval_value(self, s, value):
+        # value is used by eval()
         return eval(s)
 
     def value_changed(self, event):
@@ -1357,11 +1362,72 @@ class Getvalue(Widget):
         self.server.subscribe_cmds(cmd, self.on_response_received)
 
     def eval_value(self, s, value):
+        # value is used by eval()
         return eval(s)
 
     def on_response_received(self, response):
         value = self.eval_value(self.response, response)
         self.label.configure(text=value)
+
+class Bargraph(Widget):
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
+
+        cmd = config_info.get('cmd', None)
+        self.response = config_info.get('response', cmd)
+        maximum = config_info.get('maximum', 100)
+        length = config_info.get('length', 100)
+
+        self.server.expand_and_send_cmds(cmd)
+
+        self.progressvalue = tk.IntVar()
+        progressbar = ttk.Progressbar(container.frame,
+                    variable=self.progressvalue,
+                    maximum=maximum + .01,
+                    length=length)
+
+        progressbar.grid(row=container.row, column=container.column, sticky='w')
+
+        self.server.subscribe_cmds(cmd, self.on_response_received)
+
+    def eval_value(self, s, value):
+        # value is used by eval()
+        return eval(s)
+
+    def on_response_received(self, response):
+        value = int(self.eval_value(self.response, response))
+        self.progressvalue.set(value)
+
+class Text(Widget):
+    def __init__(self, config_info, container):
+        super().__init__(config_info, container)
+
+        text = config_info.get('text', '')
+        length = config_info.get('length', 100)
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
+        abg = config_info.get('abg', Default.abg)
+        afg = config_info.get('afg', Default.afg)
+        if afg == None:
+            afg = fg
+        justify = config_info.get('justify', 'center')
+
+        label_font = config_info.get('font', config_info.get('button_font', container.button_font))
+        font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
+
+        label = tk.Label(container.frame,
+                    text=text,
+                    bd='4',
+                    font=font,
+                    justify=justify,
+                    fg=fg,
+                    bg=bg,
+                    activebackground=abg,
+                    activeforeground=afg,
+                    padx=2,
+                    pady=2)
+
+        label.grid(row=container.row, column=container.column, sticky='w')
 
 def cmd_base(cmd):
     ucmd = cmd.upper()
