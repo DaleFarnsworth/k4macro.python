@@ -1136,7 +1136,7 @@ class VFO(Widget):
                 command=self.on_step_sb_changed,
                 values=tuple(VFO.texts),
                 font=font,
-                width=7,
+                width=6,
                 justify='right',
                 state='readonly',
                 fg=fg,
@@ -1158,7 +1158,7 @@ class VFO(Widget):
                 textvar=self.step_cb_val,
                 font=(vfo_font['family'], vfo_font['size']),
                 values=VFO.texts,
-                width=7,
+                width=6,
                 justify='right',
                 state='readonly',
                 )
