@@ -8,7 +8,7 @@
   abg: gray
   fg: black
   # afg: black                # non-existent means same as fg
-  selectcolor: lightred       # inherited by radiobutton
+  selectcolor: red            # inherited by radiobutton
 
   # Font used for labels
   label_font: { family: Helvetica, size: 10, weight: normal }
@@ -207,7 +207,7 @@
           - item: cyclebutton
             wraparound: true
             selections:
-               - { text: "Test mode \n    on",  cmd: TS1;, blink: true }
+               - { text: "Test mode \n    on",  cmd: TS1;, bg: red }
                - { text: "Test mode \n   off", cmd: TS0;,  }
 
       - item: group
