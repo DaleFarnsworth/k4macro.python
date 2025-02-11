@@ -33,7 +33,6 @@ import queue
 import select
 import socket
 import sys
-import textwrap
 import threading
 import time
 import tkinter as tk
@@ -780,8 +779,6 @@ class Button(Widget):
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
 
         width = container.items_width()
-        if len(text) > width:
-            text = textwrap.fill(text, width)
 
         special_strings = {
             'quit': cleanup_and_exit,
@@ -874,9 +871,6 @@ class Cyclebutton(Widget):
 
         for selection in self.selections:
             text = selection['text']
-            if len(text) > width:
-                text = textwrap.fill(text, width)
-            selection['text'] = text
 
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
@@ -1013,16 +1007,12 @@ class Radiobutton(Widget):
         variable = Radiobutton.variables[self.group_id]
 
         width = container.items_width()
-        if len(self.text) > width:
-            wrapped_text = textwrap.fill(self.text, width)
-        else:
-            wrapped_text = self.text
 
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
         self.button = tk.Radiobutton(container.frame,
                     bd='4',
-                    text=wrapped_text,
+                    text=text,
                     font=font,
                     width=width,
                     relief='raised',
