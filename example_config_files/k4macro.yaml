@@ -207,7 +207,7 @@
           - item: cyclebutton
             wraparound: true
             selections:
-               - { text: "Test mode \n    on",  cmd: TS1;, flashrate: 10 }
+               - { text: "Test mode \n    on",  cmd: TS1;, blink: true }
                - { text: "Test mode \n   off", cmd: TS0;,  }
 
       - item: group
@@ -373,7 +373,7 @@
 #       bg: background color
 #       abg: active background color
 #       justify: 'left', 'right', 'center' to justify text within the Button
-#       flashrate: the rate at which the button will flash when selected in tenths of a second
+#       blink: If set to true, the button will blink.
 
 # radiobutton options:
 #   groupid: a string shared by all buttons in this group, unique to all groups
@@ -389,7 +389,7 @@
 #   bg: background color
 #   abg: active background color
 #   selectcolor: button color when selected
-#   flashrate: the rate at which the button will flash when selected in tenths of a second
+#   blink: If set to true, the button will blink.
 
 # slider options:
 #   from: The lowest value of the slider

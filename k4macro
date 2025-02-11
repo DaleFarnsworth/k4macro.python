@@ -751,6 +751,8 @@ class Group(Container):
         self.show_widgets()
 
 class Widget():
+    blink_mS = 500
+
     def __init__(self, config_info, container):
         self.config_info = config_info
         self.container = container
@@ -821,7 +823,7 @@ class Cyclebutton(Widget):
         super().__init__(config_info, container)
 
         self.index = 0
-        self.flashstate = False
+        self.blink_state = False
 
         self.selections = []
 
@@ -859,7 +861,7 @@ class Cyclebutton(Widget):
             if selection['afg'] == None:
                 selection['afg'] = selection['fg']
             selection['justify'] = conf_sel.get('justify', 'center')
-            selection['flashmS'] = int(conf_sel.get('flashrate', 0) * 100 / 2)
+            selection['blink'] = conf_sel.get('blink', False)
             self.selections.append(selection)
 
         width = 0
@@ -953,22 +955,22 @@ class Cyclebutton(Widget):
             if self.compare_parameters(selection['text'], selection['parameters']):
                 self.index = index
                 self.configure()
-                if selection['flashmS'] > 0:
-                    self.flashon(selection)
+                if selection['blink']:
+                    self.blinkon(selection)
             else:
-                if selection['flashmS'] > 0:
-                    self.flashoff(selection)
+                if selection['blink']:
+                    self.blinkoff(selection)
 
-    def flashon(self, selection):
-        Poll.add_poll(selection['flashmS'], self.flash)
+    def blinkon(self, selection):
+        Poll.add_poll(Widget.blink_mS, self.blink)
 
-    def flashoff(self, selection):
-        Poll.remove_poll(selection['flashmS'], self.flash)
+    def blinkoff(self, selection):
+        Poll.remove_poll(Widget.blink_mS, self.blink)
 
-    def flash(self):
+    def blink(self):
         selection = self.selections[self.index]
-        self.flashstate = not self.flashstate
-        if self.flashstate:
+        self.blink_state = not self.blink_state
+        if self.blink_state:
             self.button.configure(bg=selection['fg'], fg=selection['bg'])
         else:
             self.button.configure(bg=selection['bg'], fg=selection['fg'])
@@ -994,8 +996,8 @@ class Radiobutton(Widget):
         afg = config_info.get('afg', Default.afg)
         if afg == None:
             afg = fg
-        self.flashmS = int(config_info.get('flashrate', 0) * 100 / 2)
-        self.flashstate = False
+        self.blink = config_info.get('blink', False)
+        self.blink_state = False
         self.group_id = config_info.get('groupid', None)
 
         button_font = config_info.get('font', config_info.get('button_font', container.button_font))
@@ -1057,22 +1059,22 @@ class Radiobutton(Widget):
     def on_response_received(self, response):
         if self.compare_parameters(self.group_id, self.text):
             self.button.select()
-            if self.flashmS > 0:
-                self.flashon()
+            if self.blink:
+                self.blinkon()
         else:
             self.button.deselect()
-            if self.flashmS > 0:
-                self.flashoff()
+            if self.blink:
+                self.blinkoff()
 
-    def flashon(self):
-        Poll.add_poll(self.flashmS, self.flash)
+    def blinkon(self):
+        Poll.add_poll(Widget.blink_mS, self.blink)
 
-    def flashoff(self):
-        Poll.remove_poll(self.flashmS, self.flash)
+    def blinkoff(self):
+        Poll.remove_poll(Widget.blink_mS, self.blink)
 
-    def flash(self):
-        self.flashstate = not self.flashstate
-        if self.flashstate:
+    def blink(self):
+        self.blink_state = not self.blink_state
+        if self.blink_state:
             self.button.select()
         else:
             self.button.deselect()
