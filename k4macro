@@ -521,6 +521,11 @@ class Server():
                 for response in responses:
                     if self.type == 'k4':
                         base = cmd_base(response)
+                        if Options.debug >= 1:
+                            if base in ['SM', 'SM$', 'SMH', 'SMH$' ]:
+                                dprint3('{name}: received: {response}'.format(name=self.name, response=response))
+                            else:
+                                dprint1('{name}: received: {response}'.format(name=self.name, response=response))
                         response = response[len(base):]
                         if response == '?':
                             if Options.debug > 0:
@@ -559,7 +564,7 @@ class Server():
                     continue
             else:
                 recv_str = recv_bytes.decode()
-                dprint1('{name}: received: {str}'.format(name=self.name, str=recv_str))
+                dprint3('{name}: received: {str}'.format(name=self.name, str=recv_str))
                 responses = recv_str.split(';')
                 if len(responses) == 0:
                     continue
@@ -1580,6 +1585,10 @@ def dprint1(*args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
 
 def dprint2(*args, **kwargs):
+    if Options.debug >= 2:
+        print(*args, file=sys.stderr, **kwargs)
+
+def dprint3(*args, **kwargs):
     if Options.debug >= 2:
         print(*args, file=sys.stderr, **kwargs)
 
