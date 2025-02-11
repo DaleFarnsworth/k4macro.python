@@ -148,6 +148,19 @@
     - item: group
       columns: 1
       contains:
+
+      - item: group
+        contains:
+        - item: group
+          label: VFO A
+          contains:
+            - { item: vfo, AorB: A, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
+
+        - item: group
+          label: VFO B
+          contains:
+            - { item: vfo, AorB: b, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
+
       - item: group
         label: S-Meter
         contains:
@@ -164,7 +177,7 @@
                 bg: white
               - item: getvalue
                 cmd: SMH1;
-                response: 'value if len(value) < 7 else value[3:7] + " dBm"'
+                responsevalue: 'value if len(value) < 7 else value[3:7] + " dBm"'
                 bg: white
             - item: group
               columns: 1
@@ -176,9 +189,9 @@
                   bg: white
                 - item: bargraph
                   maximum: 42
-                  length: 217
+                  length: 265
                   cmd: SM1;
-                  response: 'value if len(value) < 4 else value.rstrip(";")[2:]'
+                  responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
                   bg: white
               - item: text
                 text: " S1  3  5  7  9    +20   +40   +60"
@@ -192,8 +205,9 @@
                 text: 'VFO B      '
                 bg: white
               - item: getvalue
-                cmd: SMH$1;
-                response: 'value if len(value) < 7 else value[4:8] + " dBm"'
+                cmd: SMH1;
+                response: SMH$;
+                responsevalue: 'value if len(value) < 7 else value[4:8] + " dBm"'
                 bg: white
             - item: group
               columns: 1
@@ -205,25 +219,14 @@
                   bg: white
                 - item: bargraph
                   maximum: 42
-                  length: 217
-                  cmd: SM$1;
-                  response: 'value if len(value) < 4 else value.rstrip(";")[3:]'
+                  length: 265
+                  cmd: SM1;
+                  response: SM$;
+                  responsevalue: 'value if len(value) < 4 else value.rstrip(";")[3:]'
                   bg: white
               - item: text
                 text: " S1  3  5  7  9    +20   +40   +60"
                 bg: white
-
-      - item: group
-        contains:
-        - item: group
-          label: VFO A
-          contains:
-            - { item: vfo, AorB: A, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
-
-        - item: group
-          label: VFO B
-          contains:
-            - { item: vfo, AorB: b, bg: white, fg: black, font: { family: Helvetica, size: 10, weight: normal } }
 
       - item: group
         contains:
@@ -366,9 +369,9 @@
           from: 0.0
           to: 110.0
           length: 300
-          increment: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
-          cmd: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
-          response: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+          incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
+          cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
+          responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
 
       - item: group
         label: Main Volume
@@ -377,9 +380,9 @@
           from: 0
           to: 100
           length: 300
-          increment: '1'
-          cmd: '"AG{:03d};".format(int(float(value)*0.6))'
-          response: 'float(value[2:5])/0.6'
+          incrementvalue: '1'
+          cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
+          responsevalue: 'float(value[2:5])/0.6'
           bg: '#CAFF70'
 
       - item: group
@@ -389,9 +392,9 @@
           from: 0
           to: 100
           length: 300
-          increment: '1'
-          cmd: '"AG${:03d};".format(int(float(value)*0.6))'
-          response: 'float(value[3:6])/0.6'
+          incrementvalue: '1'
+          cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
+          responsevalue: 'float(value[3:6])/0.6'
           bg: '#98F5FF'
 
       - item: group
@@ -401,9 +404,9 @@
           from: 0
           to: 100
           length: 300
-          increment: '1'
-          cmd: '"ML0{:03d};".format(int(float(value)))'
-          response: 'float(value[3:6])'
+          incrementvalue: '1'
+          cmdvalue: '"ML0{:03d};".format(int(float(value)))'
+          responsevalue: 'float(value[3:6])'
           bg: '#00C957'
 
       - item: group
