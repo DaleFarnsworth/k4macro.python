@@ -239,7 +239,7 @@
   wraparound: true
   selections:
   - { text: " VFOs\n LINKED",        cmd: FT0;BI0;#DPM0; }
-  - { text: " VFOs\n          INDY", cmd: FT0;BI1;#DPM2; }
+  - { text: " VFOs\n UNLINKED", cmd: FT0;BI1;#DPM2; }
 #end
 
 #define VFOs_LOCKED
