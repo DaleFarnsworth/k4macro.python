@@ -286,7 +286,7 @@
         contains:
         - item: slider
           from: 0
-          to: 100
+          to: 60
           length: 300
           incrementvalue: '1'
           cmdvalue: '"ML0{:03d};".format(int(float(value)))'
