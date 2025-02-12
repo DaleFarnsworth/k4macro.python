@@ -82,7 +82,7 @@
 #end
 
 #define VFO_A
-- { item: vfo, AorB: A, font: { family: Helvetica, size: 14, weight: normal } }
+- { item: vfo, AorB: A, font: { family: Helvetica, size: 19, weight: normal } }
 - item: group
   button_font: { family: Helvetica, size: 6, weight: normal }
   columns: 1
@@ -167,7 +167,7 @@
 #end
 
 #define VFO_B
-- { item: vfo, AorB: B, font: { family: Helvetica, size: 14, weight: normal } }
+- { item: vfo, AorB: B, font: { family: Helvetica, size: 19, weight: normal } }
 - item: group
   button_font: { family: Helvetica, size: 6, weight: normal }
   columns: 1
