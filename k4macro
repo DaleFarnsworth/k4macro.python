@@ -667,6 +667,11 @@ class Container():
             for line in text.split('\n'):
                 if len(line) > width:
                     width = len(line)
+            for config_info in config_info.get('selections', []):
+                text = str(config_info.get('text', ''))
+                for line in text.split('\n'):
+                    if len(line) > width:
+                        width = len(line)
         return width
 
 class Page(Container):
@@ -866,12 +871,7 @@ class Cyclebutton(Widget):
             selection['blink'] = conf_sel.get('blink', False)
             self.selections.append(selection)
 
-        width = 0
-        for selection in self.selections:
-            text = selection['text']
-            for line in text.split('\n'):
-                if len(line) > width:
-                    width = len(line)
+        width = container.items_width()
 
         for selection in self.selections:
             text = selection['text']
