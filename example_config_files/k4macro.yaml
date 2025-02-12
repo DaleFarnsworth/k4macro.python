@@ -313,6 +313,19 @@
           - { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0; }
           - { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit }
 
+# preprocessor directives:
+#   #define <block_name>
+#     - defines a block, <block_name>,  containing all following lines until a #end directive
+#       must appear in column 1
+#
+#   #end
+#     - terminates a block definition
+#       must appear in column 1
+#
+#   #include <block_name>
+#     - is replaced by the block <block_name>
+#       indentation is preserved.
+
 # item descriptions:
 #
 # server options:
@@ -338,6 +351,7 @@
 #   rowspan: The number of rows this group will occupy.
 #   columnspan: The number of columns this group will occupy.
 #   columns: The number of columns in which contained items will be displayed.
+#   tabtext: Contains the name displayed on this tab of the containing notebook
 #   contains: The list of items this group contains
 
 # button options:
@@ -413,3 +427,7 @@
 #   bg: background color
 #   font: the font used for the vfo
 #   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox
+
+# notebook (tabs) option:
+# A notebook contains only groups, each selecable by a tab
+# Each group it contains must have a tabtext option

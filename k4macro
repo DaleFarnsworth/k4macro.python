@@ -30,9 +30,11 @@
 import ctypes
 import math
 import queue
+import re
 import select
 import socket
 import sys
+import tempfile
 import threading
 import time
 import tkinter as tk
@@ -442,7 +444,7 @@ class Server():
 
     def send_cmds(self, cmds):
         if not self.connected:
-            print("Server '{name}' not connected.".format(cmd=cmd, name=self.name))
+            print("Server '{name}' not connected.".format(name=self.name))
         if isinstance(cmds, str):
             cmds = Server.split_cmd(cmds)
         for cmd in cmds:
@@ -1489,8 +1491,143 @@ def true_values(v):
     v = v.lower()
     return v == 'true' or v == 'on' or v == '1' or v == 'yes'
 
+class Config():
+    main_block_name = ' main'
+
+    @staticmethod
+    def preprocess(filename):
+        self = Config()
+        return self.process(filename)
+
+    def process(self, filename):
+        self.filename = filename
+        self.blocks = {}
+        self.errors = 0
+
+        block_stack = []
+        current_block = { 'name':Config.main_block_name, 'lines':[] }
+        self.blocks[Config.main_block_name] = current_block
+        in_block = False
+        line_count = 0
+        with open(filename) as stream:
+            while True:
+                line = stream.readline()
+                if line == '':
+                    break
+                line_count += 1
+                match = re.search("^([ \t]*)#(define|end|include)([ \t]+([_A-Za-z][_A-Za-z0-9]*)([ \t]*)(.*)$)?", line)
+                if not match:
+                    current_block['lines'].append(line)
+                else:
+                    indent = match.group(1)
+                    directive = match.group(2)
+                    after_directive = match.group(3)
+                    block_name = match.group(4)
+                    trailing = match.group(6)
+                    if directive == 'define':
+                        if indent != '':
+                            dprint('Error ({filename}:{line_count}): #define must be in column 1'.format(filename=filename, line_count=line_count))
+                            self.errors += 1
+                            continue
+                        elif block_name == None:
+                            dprint('Error ({filename}:{line_count}): Invalid block name after #define'.format(filename=filename, line_count=line_count))
+                            self.errors += 1
+                            continue
+                        elif trailing != '':
+                            dprint('Error ({filename}:{line_count}): unexpected characters after #define {name}'.format(filename=filename, line_count=line_count, name=block_name))
+                            self.errors += 1
+                            continue
+                        elif in_block:
+                            pname = block_stack[-1]['name']
+                            dprint('Error ({filename}:{line_count}): #define {name}, encountered while defining {pname}'.format(filename=filename, line_count=line_count, name=block_name, pname=pname))
+                            self.errors += 1
+                            continue
+                        elif block_name in self.blocks:
+                            pname = block_stack[-1]['name']
+                            dprint('Error ({filename}:{line_count}): #define {name}, redefined. Previously defined at line {pline_count}'.format(filename=filename, line_count=line_count, name=block_name, pline_count=self.blocks[block_name]['line_count']))
+                            self.errors += 1
+                            continue
+
+                        block_stack.append(current_block)
+                        current_block = { 'name':block_name, 'lines':[], 'line_count':line_count }
+                        self.blocks[block_name] = current_block
+                        in_block = True
+                    elif directive == 'end':
+                        if not in_block:
+                            dprint('Error ({filename}:{line_count}): #end encountered while not defining a block'.format(filename=filename, line_count=line_count))
+                            self.errors += 1
+                            continue
+                        elif after_directive != None:
+                            dprint('Error ({filename}:{line_count}): extra characters found after #end'.format(filename=filename, line_count=line_count))
+                            self.errors += 1
+                            continue
+                        current_block = block_stack.pop()
+                        if current_block['name']:
+                            in_block = False
+                    elif directive == 'include':
+                        if block_name == None:
+                            dprint('Error ({filename}:{line_count}): Invalid block name after #include'.format(filename=filename, line_count=line_count))
+                            self.errors += 1
+                            continue
+                        elif trailing != '':
+                            dprint('Error ({filename}:{line_count}): unexpected characters after #include {name}'.format(filename=filename, line_count=line_count, name=block_name))
+                            self.errors += 1
+                            continue
+                        line = { 'indent':indent, 'block_name':block_name, 'line_count':line_count }
+                        current_block['lines'].append(line)
+
+        if in_block:
+            block_name = current_block['name']
+            dprint('Error ({filename}:{line_count}): End of file while defining block {block_name}'.format(filename=filename, line_count=line_count, block_name=block_name))
+            self.errors += 1
+
+        self.writing_blocks = {}
+        indents = []
+
+        if Options.yaml_file != None:
+            with open(Options.yaml_file, 'w') as stream:
+                self.write_block(stream, Config.main_block_name, '', 1)
+        else:
+            tmpfile = tempfile.TemporaryFile(mode='w+')
+            self.write_block(tmpfile, Config.main_block_name, '', 1)
+
+        if self.errors > 0:
+            quit()
+
+        if Options.yaml_file != None:
+            quit()
+
+        tmpfile.seek(0)
+        return tmpfile
+
+    def write_block(self, file, block_name, indent, line_count):
+        if block_name in self.writing_blocks:
+            previous_line_count = self.writing_blocks[block_name]
+            dprint('Error ({filename}:{line_count}): #include {block_name}, recursively included, previously at {previous_line_count}'.format(filename=self.filename, line_count=line_count, block_name=block_name, previous_line_count=previous_line_count))
+            self.errors += 1
+
+        self.writing_blocks[block_name] = line_count
+
+        block = self.blocks[block_name]
+        for line in block['lines']:
+            if isinstance(line, str):
+                if line != "\n":
+                    line = indent + line
+                file.write(line)
+            else:
+                block_name = line['block_name']
+                if block_name not in self.blocks:
+                    line_count = line['line_count']
+                    dprint('Error ({filename}:{line_count}): #include of undefined block {block_name}.'.format(filename=self.filename, line_count=line_count, block_name=block_name))
+                    self.errors += 1
+                    continue
+
+                self.write_block(file, block_name, indent + line['indent'], line_count)
+
+        del self.writing_blocks[block['name']]
+
 def read_config(config_file_name):
-    with open(config_file_name) as stream:
+    with Config.preprocess(config_file_name) as stream:
         try:
             config = yaml.safe_load(stream)
         except yaml.YAMLError as exc:
@@ -1542,21 +1679,26 @@ class Options():
     config_file = None
     verbose = 0
     debug = 0
+    yaml_file = None
 
     @staticmethod
     def Parse():
         parser = OptionParser(version=version)
-        parser.add_option('--config', dest='config_file', default='k4macro.yaml',
+        parser.add_option('-c', '--config', dest='config_file', default='k4macro.yaml',
                           help="use config file FILE", metavar="FILE")
         parser.add_option('-v', '--verbose', action='count', dest='verbose', default = 0,
                           help="output additional status messages")
         parser.add_option('-d', '--debug', action='count', dest='debug', default=0,
                           help="output debugging messages")
+        parser.add_option('--yaml', dest='yaml_file', default=None,
+                          help="output preprocessed YAML to FILE", metavar="FILE")
         (options, args) = parser.parse_args()
 
         Options.config_file = options.config_file
         Options.verbose = options.verbose
         Options.debug = options.debug
+        Options.yaml_file = options.yaml_file
+
         if Options.debug > 0 and Options.verbose == 0:
             Options.verbose = Options.debug
 
