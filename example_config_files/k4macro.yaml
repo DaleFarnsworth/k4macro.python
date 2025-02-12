@@ -22,296 +22,394 @@
   port: 9200
   startup: TS1;                   # Set test mode
 
-#- item: server
-#  name: s1
-#  address: 192.168.1.24
-#  port: 7000
-
-#- item: server
-#  name: s2
-#  address: 192.168.1.24
-#  port: 7002
-
-#- item: page
-#  name: main
-#  server: k4
-#  columns: 2
-#  row: 0
-#  contains:
-#    - item: group
-#      columns: 1
-#      contains:
-
 - item: page
   name: main
   server: k4
   columns: 2
   row: 0
   contains:
+
+  - item: group
+    columns: 1
+    contains:
+
     - item: group
-      columns: 1
       contains:
+      #include VFO_A_widgets
+      #include VFO_B_widgets
 
-      - item: group
-        contains:
-        - item: group
-          label: VFO A
-          columns: 1
-          contains:
-            - { item: vfo, AorB: A, font: { family: Helvetica, size: 14, weight: normal } }
-            - item: group
-              button_font: { family: Helvetica, size: 6, weight: normal }
-              columns: 1
-              contains:
-              - item: group
-                contains:
-                - item: text
-                  text: ' '
-                - item: bargraph
-                  maximum: 42
-                  length: 317
-                  cmd: SM1;
-                  responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
-              - item: text
-                text: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+    - item: group
+      contains:
+      #include VFOs_LINKED
+      #include VFOs_LOCKED
+      #include Test_mode
 
-            - item: group
-              contains:
-              - item: cyclebutton
-                wraparound: true
-                updown: true
-                selections:
-                      - { text: "+  Band\n-  160 m", cmd: BN00;, justify: left }
-                      - { text: "+  Band\n-   80 m", cmd: BN01;, justify: left }
-                      - { text: "+  Band\n-   60 m", cmd: BN02;, justify: left }
-                      - { text: "+  Band\n-   40 m", cmd: BN03;, justify: left }
-                      - { text: "+  Band\n-   30 m", cmd: BN04;, justify: left }
-                      - { text: "+  Band\n-   20 m", cmd: BN05;, justify: left }
-                      - { text: "+  Band\n-   17 m", cmd: BN06;, justify: left }
-                      - { text: "+  Band\n-   15 m", cmd: BN07;, justify: left }
-                      - { text: "+  Band\n-   12 m", cmd: BN08;, justify: left }
-                      - { text: "+  Band\n-   10 m", cmd: BN09;, justify: left }
-                      - { text: "+  Band\n-    6 m", cmd: BN10;, justify: left }
+    - item: group
+      contains:
+      #include power_cycle
 
-              - item: cyclebutton
-                wraparound: true
-                updown: true
-                selections:
-                      - { text: "+ Mode\n-   CW ", cmd: MD3;, justify: left }
-                      - { text: "+ Mode\n-  USB ", cmd: MD2;, justify: left }
-                      - { text: "+ Mode\n-  LSB ", cmd: MD1;, justify: left }
-                      - { text: "+ Mode\n-   AM ", cmd: MD5;, justify: left }
-                      - { text: "+ Mode\n-   FM ", cmd: MD4;, justify: left }
-                      - { text: "+ Mode\n-  DATA", cmd: MD6;, justify: left }
+    #include power_slider
+    #include main_volume_slider
+    #include sub_volume_slider
+    #include sidetone_slider
 
-              - item: cyclebutton
-                wraparound: true
-                updown: true
-                selections:
-                      - { text: "+    BW\n-    50 Hz", cmd: BW0005;, justify: left }
-                      - { text: "+    BW\n-   100 Hz", cmd: BW0010;, justify: left }
-                      - { text: "+    BW\n-   200 Hz", cmd: BW0020;, justify: left }
-                      - { text: "+    BW\n-   300 Hz", cmd: BW0030;, justify: left }
-                      - { text: "+    BW\n-   400 Hz", cmd: BW0040;, justify: left }
-                      - { text: "+    BW\n-   450 Hz", cmd: BW0045;, justify: left }
-                      - { text: "+    BW\n-   500 Hz", cmd: BW0050;, justify: left }
-                      - { text: "+    BW\n-  1.8 kHz", cmd: BW0180;, justify: left }
-                      - { text: "+    BW\n-  2.5 kHz", cmd: BW0250;, justify: left }
-                      - { text: "+    BW\n-  3.5 kHz", cmd: BW0350;, justify: left }
-                      - { text: "+    BW\n-  4.0 kHz", cmd: BW0400;, justify: left }
+    - item: group
+      contains:
+      #include atu_bypass_auto
+      #include atu_tune
+      #include AB_swap_buttons
 
-        - item: group
-          label: VFO B
-          columns: 1
-          contains:
-            - { item: vfo, AorB: b, font: { family: Helvetica, size: 14, weight: normal } }
-            - item: group
-              button_font: { family: Helvetica, size: 6, weight: normal }
-              columns: 1
-              contains:
-              - item: group
-                contains:
-                - item: text
-                  text: ' '
-                - item: bargraph
-                  maximum: 42
-                  length: 317
-                  cmd: SM1;
-                  responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
-              - item: text
-                text: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+    - item: group
+      contains:
+      #include k4_power_off
+      #include QUIT
 
-            - item: group
-              contains:
-              - item: cyclebutton
-                wraparound: true
-                updown: true
-                selections:
-                      - { text: "+  Band\n-  160 m", cmd: BN$00;, justify: left }
-                      - { text: "+  Band\n-   80 m", cmd: BN$01;, justify: left }
-                      - { text: "+  Band\n-   60 m", cmd: BN$02;, justify: left }
-                      - { text: "+  Band\n-   40 m", cmd: BN$03;, justify: left }
-                      - { text: "+  Band\n-   30 m", cmd: BN$04;, justify: left }
-                      - { text: "+  Band\n-   20 m", cmd: BN$05;, justify: left }
-                      - { text: "+  Band\n-   17 m", cmd: BN$06;, justify: left }
-                      - { text: "+  Band\n-   15 m", cmd: BN$07;, justify: left }
-                      - { text: "+  Band\n-   12 m", cmd: BN$08;, justify: left }
-                      - { text: "+  Band\n-   10 m", cmd: BN$09;, justify: left }
-                      - { text: "+  Band\n-    6 m", cmd: BN$10;, justify: left }
+#define VFO_A_widgets
+- item: group
+  label: VFO A
+  columns: 1
+  contains:
+  #include VFO_A
+  - item: group
+    columns: 3
+    contains:
+    #include band_A_cycle
+    #include mode_A_cycle
+    #include bw_A_cycle
+    #include preamp_A_cycle
+    #include atten_A_cycle
+    #include rfgain_A_cycle
+#end
 
-              - item: cyclebutton
-                wraparound: true
-                updown: true
-                selections:
-                      - { text: "+ Mode\n-   CW ", cmd: MD$3;, justify: left }
-                      - { text: "+ Mode\n-  USB ", cmd: MD$2;, justify: left }
-                      - { text: "+ Mode\n-  LSB ", cmd: MD$1;, justify: left }
-                      - { text: "+ Mode\n-   AM ", cmd: MD$5;, justify: left }
-                      - { text: "+ Mode\n-   FM ", cmd: MD$4;, justify: left }
-                      - { text: "+ Mode\n-  DATA", cmd: MD$6;, justify: left }
+#define VFO_A
+- { item: vfo, AorB: A, font: { family: Helvetica, size: 14, weight: normal } }
+- item: group
+  button_font: { family: Helvetica, size: 6, weight: normal }
+  columns: 1
+  contains:
+  - item: group
+    contains:
+    - item: text
+      text: ' '
+    - item: bargraph
+      maximum: 42
+      length: 317
+      cmd: SM1;
+      responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
+  - item: text
+    text: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+#end
 
-              - item: cyclebutton
-                wraparound: true
-                updown: true
-                selections:
-                      - { text: "+    BW\n-    50 Hz", cmd: BW$0005;, justify: left }
-                      - { text: "+    BW\n-   100 Hz", cmd: BW$0010;, justify: left }
-                      - { text: "+    BW\n-   200 Hz", cmd: BW$0020;, justify: left }
-                      - { text: "+    BW\n-   300 Hz", cmd: BW$0030;, justify: left }
-                      - { text: "+    BW\n-   400 Hz", cmd: BW$0040;, justify: left }
-                      - { text: "+    BW\n-   450 Hz", cmd: BW$0045;, justify: left }
-                      - { text: "+    BW\n-   500 Hz", cmd: BW$0050;, justify: left }
-                      - { text: "+    BW\n-  1.8 kHz", cmd: BW$0180;, justify: left }
-                      - { text: "+    BW\n-  2.5 kHz", cmd: BW$0250;, justify: left }
-                      - { text: "+    BW\n-  3.5 kHz", cmd: BW$0350;, justify: left }
-                      - { text: "+    BW\n-  4.0 kHz", cmd: BW$0400;, justify: left }
-      - item: group
-        contains:
+#define band_A_cycle
+- item: cyclebutton
+  wraparound: true
+  updown: true
+  selections:
+  - { text: "+  Band\n-  160 m", cmd: BN00;, justify: left }
+  - { text: "+  Band\n-   80 m", cmd: BN01;, justify: left }
+  - { text: "+  Band\n-   60 m", cmd: BN02;, justify: left }
+  - { text: "+  Band\n-   40 m", cmd: BN03;, justify: left }
+  - { text: "+  Band\n-   30 m", cmd: BN04;, justify: left }
+  - { text: "+  Band\n-   20 m", cmd: BN05;, justify: left }
+  - { text: "+  Band\n-   17 m", cmd: BN06;, justify: left }
+  - { text: "+  Band\n-   15 m", cmd: BN07;, justify: left }
+  - { text: "+  Band\n-   12 m", cmd: BN08;, justify: left }
+  - { text: "+  Band\n-   10 m", cmd: BN09;, justify: left }
+  - { text: "+  Band\n-    6 m", cmd: BN10;, justify: left }
+#end
 
-        - item: cyclebutton
-          wraparound: true
-          selections:
-               - { text: " VFOs\n LINKED",        cmd: FT0;BI0;#DPM0; }
-               - { text: " VFOs\n          INDY", cmd: FT0;BI1;#DPM2; }
+#define mode_A_cycle
+- item: cyclebutton
+  wraparound: true
+  updown: true
+  selections:
+  - { text: "+ Mode\n-   CW ", cmd: MD3;, justify: left }
+  - { text: "+ Mode\n-  USB ", cmd: MD2;, justify: left }
+  - { text: "+ Mode\n-  LSB ", cmd: MD1;, justify: left }
+  - { text: "+ Mode\n-   AM ", cmd: MD5;, justify: left }
+  - { text: "+ Mode\n-   FM ", cmd: MD4;, justify: left }
+  - { text: "+ Mode\n-  DATA", cmd: MD6;, justify: left }
+#end
 
-        - item: group
-          contains:
-          - item: cyclebutton
-            wraparound: true
-            selections:
-                - { text: "VFOs\nLOCKED",       cmd: LK1;LK$1;, }
-                - { text: " VFOs\nUNLOCKED  ", cmd: LK0;LK$0;, }
+#define bw_A_cycle
+- item: cyclebutton
+  wraparound: true
+  updown: true
+  selections:
+  - { text: "+    BW\n-    50 Hz", cmd: BW0005;, justify: left }
+  - { text: "+    BW\n-   100 Hz", cmd: BW0010;, justify: left }
+  - { text: "+    BW\n-   200 Hz", cmd: BW0020;, justify: left }
+  - { text: "+    BW\n-   300 Hz", cmd: BW0030;, justify: left }
+  - { text: "+    BW\n-   400 Hz", cmd: BW0040;, justify: left }
+  - { text: "+    BW\n-   450 Hz", cmd: BW0045;, justify: left }
+  - { text: "+    BW\n-   500 Hz", cmd: BW0050;, justify: left }
+  - { text: "+    BW\n-  1.8 kHz", cmd: BW0180;, justify: left }
+  - { text: "+    BW\n-  2.5 kHz", cmd: BW0250;, justify: left }
+  - { text: "+    BW\n-  3.5 kHz", cmd: BW0350;, justify: left }
+  - { text: "+    BW\n-  4.0 kHz", cmd: BW0400;, justify: left }
+#end
 
-        - item: group
-          contains:
-          - item: cyclebutton
-            wraparound: true
-            selections:
-               - { text: "Test mode \n    on",  cmd: TS1;, bg: red }
-               - { text: "Test mode \n   off", cmd: TS0;,  }
+#define VFO_B_widgets
+- item: group
+  label: VFO B
+  columns: 1
+  contains:
+  #include VFO_B
+  - item: group
+    columns: 3
+    contains:
+    #include band_B_cycle
+    #include mode_B_cycle
+    #include bw_B_cycle
+    #include preamp_A_cycle
+    #include atten_A_cycle
+    #include rfgain_A_cycle
+#end
 
-      - item: group
-        contains:
-        - item: cyclebutton
-          wraparound: true
-          updown: true
-          selections:
-                - { text: "+    POWER \n  -       5 W", cmd: PC050L;, justify: left }
-                - { text: "+    POWER \n  -      10 W", cmd: PC100L;, justify: left }
-                - { text: "+    POWER \n  -      25 W", cmd: PC025H;, justify: left }
-                - { text: "+    POWER \n  -      50 W", cmd: PC050H;, justify: left }
-                - { text: "+    POWER \n  -      75 W", cmd: PC075H;, justify: left }
-                - { text: "+    POWER \n  -     100 W", cmd: PC100H;, justify: left }
+#define VFO_B
+- { item: vfo, AorB: B, font: { family: Helvetica, size: 14, weight: normal } }
+- item: group
+  button_font: { family: Helvetica, size: 6, weight: normal }
+  columns: 1
+  contains:
+  - item: group
+    contains:
+    - item: text
+      text: ' '
+    - item: bargraph
+      maximum: 42
+      length: 317
+      cmd: SM1;
+      responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
+  - item: text
+    text: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+#end
 
-        - item: cyclebutton
-          wraparound: true
-          updown: true
-          selections:
-                - { text: "+ PREAMP \n   -       0", cmd: PA00;, justify: left }
-                - { text: "+ PREAMP \n   -       1", cmd: PA11;, justify: left }
-                - { text: "+ PREAMP \n   -       2", cmd: PA21;, justify: left }
-                - { text: "+ PREAMP \n   -       3", cmd: PA31;, justify: left }
-        - item: cyclebutton
-          wraparound: true
-          updown: true
-          selections:
-                - { text: "+ ATTEN   \n   -  0 dB", cmd: RA000;RA$000;, justify: left }
-                - { text: "+ ATTEN   \n   -  3 dB", cmd: RA031;RA$031;, justify: left }
-                - { text: "+ ATTEN   \n   -  6 dB", cmd: RA061;RA$061;, justify: left }
-                - { text: "+ ATTEN   \n   - 12 dB", cmd: RA121;RA$121;, justify: left }
-                - { text: "+ ATTEN   \n   - 15 dB", cmd: RA151;RA$151;, justify: left }
-                - { text: "+ ATTEM   \n   - 18 dB", cmd: RA181;RA$181;, justify: left }
+#define band_B_cycle
+- item: cyclebutton
+  wraparound: true
+  updown: true
+  selections:
+  - { text: "+  Band\n-  160 m", cmd: BN$00;, justify: left }
+  - { text: "+  Band\n-   80 m", cmd: BN$01;, justify: left }
+  - { text: "+  Band\n-   60 m", cmd: BN$02;, justify: left }
+  - { text: "+  Band\n-   40 m", cmd: BN$03;, justify: left }
+  - { text: "+  Band\n-   30 m", cmd: BN$04;, justify: left }
+  - { text: "+  Band\n-   20 m", cmd: BN$05;, justify: left }
+  - { text: "+  Band\n-   17 m", cmd: BN$06;, justify: left }
+  - { text: "+  Band\n-   15 m", cmd: BN$07;, justify: left }
+  - { text: "+  Band\n-   12 m", cmd: BN$08;, justify: left }
+  - { text: "+  Band\n-   10 m", cmd: BN$09;, justify: left }
+  - { text: "+  Band\n-    6 m", cmd: BN$10;, justify: left }
+#end
 
-        - item: cyclebutton
-          wraparound: true
-          selections:
-               - { text: "  RF GAIN\n -0     ", cmd: RG-00;RG$-00; }
-               - { text: "  RF GAIN\n-10     ", cmd: RG-10;RG$-10; }
+#define mode_B_cycle
+- item: cyclebutton
+  wraparound: true
+  updown: true
+  selections:
+  - { text: "+ Mode\n-   CW ", cmd: MD$3;, justify: left }
+  - { text: "+ Mode\n-  USB ", cmd: MD$2;, justify: left }
+  - { text: "+ Mode\n-  LSB ", cmd: MD$1;, justify: left }
+  - { text: "+ Mode\n-   BM ", cmd: MD$5;, justify: left }
+  - { text: "+ Mode\n-   FM ", cmd: MD$4;, justify: left }
+  - { text: "+ Mode\n-  DBTB", cmd: MD$6;, justify: left }
+#end
 
-      - item: group
-        label: Power (Watts)
-        contains:
-        - item: slider
-          from: 0.0
-          to: 110.0
-          length: 300
-          incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
-          cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
-          responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+#define bw_B_cycle
+- item: cyclebutton
+  wraparound: true
+  updown: true
+  selections:
+  - { text: "+    BW\n-    50 Hz", cmd: BW$0005;, justify: left }
+  - { text: "+    BW\n-   100 Hz", cmd: BW$0010;, justify: left }
+  - { text: "+    BW\n-   200 Hz", cmd: BW$0020;, justify: left }
+  - { text: "+    BW\n-   300 Hz", cmd: BW$0030;, justify: left }
+  - { text: "+    BW\n-   400 Hz", cmd: BW$0040;, justify: left }
+  - { text: "+    BW\n-   450 Hz", cmd: BW$0045;, justify: left }
+  - { text: "+    BW\n-   500 Hz", cmd: BW$0050;, justify: left }
+  - { text: "+    BW\n-  1.8 kHz", cmd: BW$0180;, justify: left }
+  - { text: "+    BW\n-  2.5 kHz", cmd: BW$0250;, justify: left }
+  - { text: "+    BW\n-  3.5 kHz", cmd: BW$0350;, justify: left }
+  - { text: "+    BW\n-  4.0 kHz", cmd: BW$0400;, justify: left }
+#end
 
-      - item: group
-        label: Main Volume
-        contains:
-        - item: slider
-          from: 0
-          to: 100
-          length: 300
-          incrementvalue: '1'
-          cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
-          responsevalue: 'float(value[2:5])/0.6'
+#define VFOs_LINKED
+- item: cyclebutton
+  wraparound: true
+  selections:
+  - { text: " VFOs\n LINKED",        cmd: FT0;BI0;#DPM0; }
+  - { text: " VFOs\n          INDY", cmd: FT0;BI1;#DPM2; }
+#end
 
-      - item: group
-        label: Sub Volume
-        contains:
-        - item: slider
-          from: 0
-          to: 100
-          length: 300
-          incrementvalue: '1'
-          cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
-          responsevalue: 'float(value[3:6])/0.6'
+#define VFOs_LOCKED
+- item: cyclebutton
+  wraparound: true
+  selections:
+  - { text: "VFOs\nLOCKED",       cmd: LK1;LK$1;, }
+  - { text: " VFOs\n UNLOCKED  ", cmd: LK0;LK$0;, }
+#end
 
-      - item: group
-        label: Sidetone
-        contains:
-        - item: slider
-          from: 0
-          to: 60
-          length: 300
-          incrementvalue: '1'
-          cmdvalue: '"ML0{:03d};".format(int(float(value)))'
-          responsevalue: 'float(value[3:6])'
+#define Test_mode
+- item: cyclebutton
+  wraparound: true
+  selections:
+     - { text: "Test mode\n    on",  cmd: TS1;, bg: red }
+     - { text: "Test mode\n   off", cmd: TS0;,  }
+#end
 
-      - item: group
-        contains:
-        - item: cyclebutton
-          wraparound: true
-          selections:
-            - { text: "ATU bypass", cmd: AT1; }
-            - { text: "ATU auto",   cmd: AT2; }
-        - { item: button, groupid: atu, text: " TUNE ", cmd: SW40; }
+#define power_cycle
+- item: cyclebutton
+  updown: true
+  selections:
+  - { text: "+ POWER\n-      5 W", cmd: PC050L;, justify: left }
+  - { text: "+ POWER\n-     10 W", cmd: PC100L;, justify: left }
+  - { text: "+ POWER\n-     25 W", cmd: PC025H;, justify: left }
+  - { text: "+ POWER\n-     50 W", cmd: PC050H;, justify: left }
+  - { text: "+ POWER\n-     75 W", cmd: PC075H;, justify: left }
+  - { text: "+ POWER\n-    100 W", cmd: PC100H;, justify: left }
+#end
 
-        - item: group
-          columns: 4
-          contains:
-            - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
-            - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
-            - { item: button,      groupid: misc, indicator: 0, text: " B->A ",    cmd:  SW147; }
+#define preamp_A_cycle
+- item: cyclebutton
+  updown: true
+  selections:
+  - { text: "+ PREAMP \n-         0", cmd: PA00;, justify: left }
+  - { text: "+ PREAMP \n-         1", cmd: PA11;, justify: left }
+  - { text: "+ PREAMP \n-         2", cmd: PA21;, justify: left }
+  - { text: "+ PREAMP \n-         3", cmd: PA31;, justify: left }
+#end
 
-      - item: group
-        contains:
-          - { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0; }
-          - { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit }
+#define preamp_B_cycle
+- item: cyclebutton
+  updown: true
+  selections:
+  - { text: "+ PREAMP \n-         0", cmd: PA$00;, justify: left }
+  - { text: "+ PREAMP \n-         1", cmd: PA$11;, justify: left }
+  - { text: "+ PREAMP \n-         2", cmd: PA$21;, justify: left }
+  - { text: "+ PREAMP \n-         3", cmd: PA$31;, justify: left }
+#end
+
+#define atten_A_cycle
+- item: cyclebutton
+  updown: true
+  selections:
+  - { text: "+ ATTEN \n-    0 dB", cmd: RA000;RA$000;, justify: left }
+  - { text: "+ ATTEN \n-    3 dB", cmd: RA031;RA$031;, justify: left }
+  - { text: "+ ATTEN \n-    6 dB", cmd: RA061;RA$061;, justify: left }
+  - { text: "+ ATTEN \n-   12 dB", cmd: RA121;RA$121;, justify: left }
+  - { text: "+ ATTEN \n-   15 dB", cmd: RA151;RA$151;, justify: left }
+  - { text: "+ ATTEM \n-   18 dB", cmd: RA181;RA$181;, justify: left }
+#end
+
+#define atten_B_cycle
+- item: cyclebutton
+  updown: true
+  selections:
+  - { text: "+ ATTEN \n-    0 dB", cmd: RA$000;RA$000;, justify: left }
+  - { text: "+ ATTEN \n-    3 dB", cmd: RA$031;RA$031;, justify: left }
+  - { text: "+ ATTEN \n-    6 dB", cmd: RA$061;RA$061;, justify: left }
+  - { text: "+ ATTEN \n-   12 dB", cmd: RA$121;RA$121;, justify: left }
+  - { text: "+ ATTEN \n-   15 dB", cmd: RA$151;RA$151;, justify: left }
+  - { text: "+ ATTEM \n-   18 dB", cmd: RA$181;RA$181;, justify: left }
+#end
+
+#define rfgain_A_cycle
+- item: cyclebutton
+  wraparound: true
+  selections:
+  - { text: " RF GAIN \n  -0 ", cmd: RG-00;RG$-00; }
+  - { text: " RF GAIN \n -10 ", cmd: RG-10;RG$-10; }
+#end
+
+#define rfgain_B_cycle
+- item: cyclebutton
+  wraparound: true
+  selections:
+  - { text: " RF GAIN \n  -0 ", cmd: RG$-00;RG$-00; }
+  - { text: " RF GAIN \n -10 ", cmd: RG$-10;RG$-10; }
+#end
+
+#define power_slider
+- item: group
+  label: Power (Watts)
+  contains:
+  - item: slider
+    from: 0.0
+    to: 110.0
+    length: 300
+    incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
+    cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
+    responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+#end
+
+#define main_volume_slider
+- item: group
+  label: Main Volume
+  contains:
+  - item: slider
+    from: 0
+    to: 100
+    length: 300
+    incrementvalue: '1'
+    cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
+    responsevalue: 'float(value[2:5])/0.6'
+#end
+
+#define sub_volume_slider
+- item: group
+  label: Sub Volume
+  contains:
+  - item: slider
+    from: 0
+    to: 100
+    length: 300
+    incrementvalue: '1'
+    cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
+    responsevalue: 'float(value[3:6])/0.6'
+#end
+
+#define sidetone_slider
+- item: group
+  label: Sidetone
+  contains:
+  - item: slider
+    from: 0
+    to: 60
+    length: 300
+    incrementvalue: '1'
+    cmdvalue: '"ML0{:03d};".format(int(float(value)))'
+    responsevalue: 'float(value[3:6])'
+#end
+
+#define atu_bypass_auto
+- item: cyclebutton
+  wraparound: true
+  selections:
+    - { text: "ATU bypass", cmd: AT1; }
+    - { text: "ATU auto",   cmd: AT2; }
+#end
+
+#define atu_tune
+- { item: button, groupid: atu, text: " TUNE ", cmd: SW40; }
+#end
+
+#define AB_swap_buttons
+- item: group
+  columns: 4
+  contains:
+    - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
+    - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
+    - { item: button,      groupid: misc, indicator: 0, text: " B->A ",    cmd:  SW147; }
+#end
+
+#define k4_power_off
+- { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0; }
+#end
+
+#define QUIT
+- { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit }
+#end
 
 # preprocessor directives:
 #   #define <block_name>
