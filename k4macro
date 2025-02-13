@@ -628,6 +628,8 @@ class Container():
 
     def show_widgets(self):
         Container.depth += 1
+        if len(self.config_info['contains']) == 0:
+            raise Exception('item: group requires a contains: option')
         for config_info in self.config_info['contains']:
             widget_type = config_info['item'].lower()
             if widget_type == 'group':
