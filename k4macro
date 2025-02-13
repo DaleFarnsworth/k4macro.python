@@ -44,7 +44,7 @@ import yaml
 
 from optparse import OptionParser
 
-version = '1.0.29'
+version = '1.0.30'
 
 class Default():
 # may be overriden by values in the config file
