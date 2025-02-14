@@ -171,7 +171,7 @@
 
 #define atten_A_dropdown
 - item: group
-  label: Atten
+  label: Attenuation
   contains:
   - item: dropdownbutton
     selections:
@@ -290,7 +290,7 @@
 
 #define atten_B_dropdown
 - item: group
-  label: Atten
+  label: Attenuation
   contains:
   - item: dropdownbutton
     selections:
