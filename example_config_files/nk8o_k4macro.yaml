@@ -1,0 +1,580 @@
+---
+
+# A description of the various items is provided at the end of this file.
+
+- item: defaults
+  # Colors
+  bg: white
+  abg: gray
+  fg: black
+  # afg: black                # non-existent means same as fg
+  selectcolor: red            # inherited by radiobutton
+
+  # Font used for labels
+  label_font: { family: Helvetica, size: 10, weight: normal }
+  # Font used for buttons and other controls
+  button_font: { family: Helvetica, size: 10, weight: normal }
+
+- item: server
+  name: k4
+  type: k4
+  address: K4-SNxxxxx.local      # match your serial number in the string
+  port: 9200
+  startup: TS1;                   # Set test mode
+
+- item: page
+  name: main
+  server: k4
+  columns: 2
+  row: 0
+  contains:
+
+  - item: group
+    columns: 1
+    contains:
+
+    - item: group
+      contains:
+      #include VFO_A_widgets
+      #include VFO_B_widgets
+
+    - item: group
+      contains:
+      #include Test_mode
+      #include VFOs_LOCKED
+      #include VFOs_LINKED
+      #include power_dropdown
+
+    - item: group
+      contains:
+      #include main_volume_slider
+      #include sub_volume_slider
+      #include sidetone_slider
+      #include keyer_speed
+      #include power_slider
+
+    - item: group
+      contains:
+      #include atu_bypass_auto
+      #include atu_tune
+      #include AB_swap_buttons
+
+    - item: group
+      contains:
+      #include k4_power_off
+      #include QUIT
+
+#define VFO_A_widgets
+- item: group
+  label: VFO A
+  columns: 1
+  contains:
+  #include VFO_A
+  - item: group
+    columns: 3
+    childwidth: 7
+    contains:
+    #include band_A_dropdown
+    #include mode_A_dropdown
+    #include bw_A_dropdown
+    #include preamp_A_dropdown
+    #include atten_A_dropdown
+    #include rfgain_A_dropdown
+#end
+
+#define VFO_A
+- { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
+- item: bargraph
+  maximum: 42
+  lengthpercent: 96
+  cmd: SM1;
+  font: { family: Helvetica, size: 6, weight: normal }
+  lefttext: ' '
+  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+  responsevalue: '0 if len(value) < 4 else value.rstrip(";")[2:]'
+#end
+
+#define band_A_dropdown
+- item: group
+  label: Band
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "  6 m", cmd: BN10; }
+    - { text: " 10 m", cmd: BN09; }
+    - { text: " 12 m", cmd: BN08; }
+    - { text: " 15 m", cmd: BN07; }
+    - { text: " 17 m", cmd: BN06; }
+    - { text: " 20 m", cmd: BN05; }
+    - { text: " 30 m", cmd: BN04; }
+    - { text: " 40 m", cmd: BN03; }
+    - { text: " 60 m", cmd: BN02; }
+    - { text: " 80 m", cmd: BN01; }
+    - { text: "160 m", cmd: BN00; }
+#end
+
+#define mode_A_dropdown
+- item: group
+  label: Mode
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "  CW", cmd: MD3; }
+    - { text: " USB", cmd: MD2; }
+    - { text: " LSB", cmd: MD1; }
+    - { text: "  AM", cmd: MD5; }
+    - { text: "  FM", cmd: MD4; }
+    - { text: "DATA", cmd: MD6; }
+#end
+
+#define bw_A_dropdown
+- item: group
+  label: BW
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "  50 Hz", cmd: BW0005; }
+    - { text: " 100 Hz", cmd: BW0010; }
+    - { text: " 200 Hz", cmd: BW0020; }
+    - { text: " 300 Hz", cmd: BW0030; }
+    - { text: " 400 Hz", cmd: BW0040; }
+    - { text: " 450 Hz", cmd: BW0045; }
+    - { text: " 500 Hz", cmd: BW0050; }
+    - { text: "1.8 kHz", cmd: BW0180; }
+    - { text: "2.5 kHz", cmd: BW0250; }
+    - { text: "3.5 kHz", cmd: BW0350; }
+    - { text: "4.0 kHz", cmd: BW0400; }
+#end
+
+#define preamp_A_dropdown
+- item: group
+  label: Preamp
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "0", cmd: PA00; }
+    - { text: "1", cmd: PA11; }
+    - { text: "2", cmd: PA21; }
+    - { text: "3", cmd: PA31; }
+#end
+
+#define atten_A_dropdown
+- item: group
+  label: Atten
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: " 0 dB", cmd: RA000; }
+    - { text: " 3 dB", cmd: RA031; }
+    - { text: " 6 dB", cmd: RA061; }
+    - { text: "12 dB", cmd: RA121; }
+    - { text: "15 dB", cmd: RA151; }
+    - { text: "18 dB", cmd: RA181; }
+#end
+
+#define rfgain_A_dropdown
+- item: group
+  label: RF Gain
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: " -0 ", cmd: RG-00; }
+    - { text: "-10 ", cmd: RG-10; }
+#end
+
+#define VFO_B_widgets
+- item: group
+  label: VFO B
+  columns: 1
+  contains:
+  #include VFO_B
+  - item: group
+    columns: 3
+    childwidth: 7
+    contains:
+    #include band_B_dropdown
+    #include mode_B_dropdown
+    #include bw_B_dropdown
+    #include preamp_B_dropdown
+    #include atten_B_dropdown
+    #include rfgain_B_dropdown
+#end
+
+#define VFO_B
+- { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
+- item: bargraph
+  maximum: 42
+  lengthpercent: 96
+  cmd: SM1;
+  font: { family: Helvetica, size: 6, weight: normal }
+  lefttext: ' '
+  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+  response: SM$;
+  responsevalue: '0 if len(value) < 5 else value.rstrip(";")[3:]'
+#end
+
+#define band_B_dropdown
+- item: group
+  label: Band
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "  6 m", cmd: BN$10; }
+    - { text: " 10 m", cmd: BN$09; }
+    - { text: " 12 m", cmd: BN$08; }
+    - { text: " 15 m", cmd: BN$07; }
+    - { text: " 17 m", cmd: BN$06; }
+    - { text: " 20 m", cmd: BN$05; }
+    - { text: " 30 m", cmd: BN$04; }
+    - { text: " 40 m", cmd: BN$03; }
+    - { text: " 60 m", cmd: BN$02; }
+    - { text: " 80 m", cmd: BN$01; }
+    - { text: "160 m", cmd: BN$00; }
+#end
+
+#define mode_B_dropdown
+- item: group
+  label: Mode
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "  CW", cmd: MD$3; }
+    - { text: " USB", cmd: MD$2; }
+    - { text: " LSB", cmd: MD$1; }
+    - { text: "  AM", cmd: MD$5; }
+    - { text: "  FM", cmd: MD$4; }
+    - { text: "DATA", cmd: MD$6; }
+#end
+
+#define bw_B_dropdown
+- item: group
+  label: BW
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "  50 Hz", cmd: BW$0005; }
+    - { text: " 100 Hz", cmd: BW$0010; }
+    - { text: " 200 Hz", cmd: BW$0020; }
+    - { text: " 300 Hz", cmd: BW$0030; }
+    - { text: " 400 Hz", cmd: BW$0040; }
+    - { text: " 450 Hz", cmd: BW$0045; }
+    - { text: " 500 Hz", cmd: BW$0050; }
+    - { text: "1.8 kHz", cmd: BW$0180; }
+    - { text: "2.5 kHz", cmd: BW$0250; }
+    - { text: "3.5 kHz", cmd: BW$0350; }
+    - { text: "4.0 kHz", cmd: BW$0400; }
+#end
+
+#define preamp_B_dropdown
+- item: group
+  label: Preamp
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: "0", cmd: PA$00; }
+    - { text: "1", cmd: PA$11; }
+    - { text: "2", cmd: PA$21; }
+    - { text: "3", cmd: PA$31; }
+#end
+
+#define atten_B_dropdown
+- item: group
+  label: Atten
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: " 0 dB", cmd: RA$000; }
+    - { text: " 3 dB", cmd: RA$031; }
+    - { text: " 6 dB", cmd: RA$061; }
+    - { text: "12 dB", cmd: RA$121; }
+    - { text: "15 dB", cmd: RA$151; }
+    - { text: "18 dB", cmd: RA$181; }
+#end
+
+#define rfgain_B_dropdown
+- item: group
+  label: RF Gain
+  contains:
+  - item: dropdownbutton
+    selections:
+    - { text: " -0 ", cmd: RG$-00; }
+    - { text: "-10 ", cmd: RG$-10; }
+#end
+
+#define VFOs_LINKED
+- item: togglebutton
+  selections:
+  - { text: " LINKED ",  cmd: FT0;BI0;#DPM0; }
+  - { text: " UNLINKED ", cmd: FT0;BI1;#DPM2; }
+#end
+
+#define VFOs_LOCKED
+- item: togglebutton
+  selections:
+  - { text: " LOCKED ",   cmd: LK1;LK$1;, bg: red }
+  - { text: " UNLOCKED ", cmd: LK0;LK$0; }
+#end
+
+#define Test_mode
+- item: togglebutton
+  selections:
+     - { text: Test mode,cmd: TS1;, bg: red }
+     - { text: Transmit, cmd: TS0;,  }
+#end
+
+## ADD KEYER SPEED HERE
+
+#define power_dropdown
+- item: group
+  label: ' Power '
+  contains:
+  - item: dropdownbutton
+    width: 6
+    bg: '#00FF00'
+    unexpectedresponse: 'str(float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])) + " W"'
+    selections:
+    - { text: "  5 W", cmd: PC050L; }
+    - { text: " 10 W", cmd: PC100L; }
+    - { text: " 25 W", cmd: PC025H; }
+    - { text: " 50 W", cmd: PC050H; }
+    - { text: " 75 W", cmd: PC075H; }
+    - { text: "100 W", cmd: PC100H; }
+#end
+
+#define power_slider
+- item: group
+  label: Power
+  contains:
+  - item: slider
+    orient: vertical
+    from: 100.0
+    to: 0.0
+    length: 150
+    incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
+    cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
+    responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+    bg: '#FF0000'
+#end
+
+#define main_volume_slider
+- item: group
+  label: Main Audio
+  contains:
+  - item: slider
+    orient: vertical
+    from: 30
+    to: 0
+    length: 150
+    incrementvalue: '1'
+    cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
+    responsevalue: 'float(value[2:5])/0.6'
+    bg: '#00FF00'
+#end
+
+#define sub_volume_slider
+- item: group
+  label: Sub Audio
+  contains:
+  - item: slider
+    orient: vertical
+    from: 30
+    to: 0
+    length: 150
+    incrementvalue: '1'
+    cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
+    responsevalue: 'float(value[3:6])/0.6'
+    bg: '#00FFFF'
+#end
+
+#define sidetone_slider
+- item: group
+  label: Sidetone
+  contains:
+  - item: slider
+    orient: vertical
+    from: 20
+    to: 00
+    length: 150
+    incrementvalue: '1'
+    cmdvalue: '"ML0{:03d};".format(int(float(value)))'
+    responsevalue: 'float(value[3:6])'
+    bg: '#1E90FF'
+#end
+
+#define keyer_speed
+- item: group
+  label: Keyer
+  contains:
+  - item: slider
+    orient: vertical
+    from: 30
+    to: 18
+    length: 150
+    incrementvalue: '1'
+    cmdvalue: '"KS{:03d};".format(int(float(value)))'
+    responsevalue: 'float(value[2:5])'
+#end
+
+#define atu_bypass_auto
+- item: togglebutton
+  selections:
+    - { text: " ATU bypass", cmd: AT1;, bg: yellow }
+    - { text: "ATU auto",  cmd: AT2; }
+#end
+
+#define atu_tune
+- { item: button, groupid: atu, text: " TUNE ", cmd: SW40; }
+#end
+
+#define AB_swap_buttons
+- item: group
+  columns: 4
+  contains:
+    - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
+    - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
+    - { item: button,      groupid: misc, indicator: 0, text: " B->A ",    cmd:  SW147; }
+#end
+
+#define k4_power_off
+- { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0;, abg: red }
+#end
+
+#define QUIT
+- { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit, abg: red }
+#end
+
+# preprocessor directives:
+#   #define <block_name>
+#     - defines a block, <block_name>,  containing all following lines until a #end directive
+#       must appear in column 1
+#
+#   #end
+#     - terminates a block definition
+#       must appear in column 1
+#
+#   #include <block_name>
+#     - is replaced by the block <block_name>
+#       indentation is preserved.
+
+# item descriptions:
+#
+# server options:
+#   name: The name of the server
+#   type: The type of the server
+#     k4 is required for k4 servers to receive responses
+#   address: The ip address of the server
+#   port: The port to connect to
+#   startup: command(s) to be sent to the server on startup.
+
+# page options:
+#   name: The page name (required).
+#     The page named 'main' is the first one displayed.
+#   server: The default server items contained in this page will use
+#   columns: The number of columns in which contained items will be displayed.
+#   contains: The list of items this page contains
+
+# group options:
+#   label: The label that will be displayed for this group.
+#   server: The default server items contained in this group will use
+#   row: The row of the container in which this group will be placed.
+#   column: The column of the container in which this group will be placed.
+#   rowspan: The number of rows this group will occupy.
+#   columnspan: The number of columns this group will occupy.
+#   columns: The number of columns in which contained items will be displayed.
+#   tabtext: Contains the name displayed on this tab of the containing notebook
+#   contains: The list of items this group contains
+
+# button options:
+#   text: button text
+#   server: The server name of the server referenced by this button
+#   cmd: Either:
+#     a text string to be sent to k4, or
+#     a python 'list' object containg server name/cmd pairs (python dict objects)
+#     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
+#     then send 's1cmd' to server s1.
+#   directive:
+#     'quit', terminates the program
+#     'show_previous_page', displays the previously-displayed page
+#     'show_page XXX', displays page with the name: XXX
+#   fg: foreground color
+#   bg: background color
+#   abg: active background color
+#   justify: 'left', 'right', 'center' to justify text within the Button
+
+# cyclebutton options:
+#   wraparound: true or false. whether the button wraps back around to the first selection
+#   updown: true or false, if true, selections cycle up if the button is clicked in its upper half
+#       and selections cycle down if the button is clicked in its lower half
+#   justify: 'left', 'right', 'center' to justify text within the Button
+#   selections: a list of selections, each of which may have the following elements
+#       text: button text
+#       server: The server name of the server referenced by this button
+#       cmd: Either:
+#         a text string to be sent to k4, or
+#         a python 'list' object containg server name/cmd pairs (python dict objects)
+#         to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
+#         then send 's1cmd' to server s1.
+#       fg: foreground color
+#       bg: background color
+#       abg: active background color
+#       blink: If set to true, the button will blink.
+
+# togglebutton
+#   Synonym for cyclebutton
+
+# radiobutton options:
+#   groupid: a string shared by all buttons in this group, unique to all groups
+#   indicator: Set to 0 if no indicator is to be displayed
+#   text: button text
+#   server: The server name of the server referenced by this button
+#   cmd: Either:
+#     a text string to be sent to k4, or
+#     a python 'list' object containg server name/cmd pairs (python dict objects)
+#     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
+#     then send 's1cmd' to server s1.
+#   fg: foreground color
+#   bg: background color
+#   abg: active background color
+#   selectcolor: button color when selected
+#   blink: If set to true, the button will blink.
+
+# slider options:
+#   from: The lowest value of the slider
+#   to: The highest value of he slider
+#   orient: Either:
+#     vertical: Specifies a vertical slider
+#     horizontal: Specifies a horizontal slider
+#   length: The length of the slider in pixels
+#   width: The width in pixels if the slider is verical, otherwise the height
+#   increment: A python expression to set the slider increment given the variable value
+#   server: The server name of the server referenced by this slider
+#   cmd: A python expression to produce the K4 command given the variable 'value'.
+#   response: A python expression to extract the slider value from the K4 response.
+#   font: The font used for the slider's text.
+#   fg: foreground color
+#   bg: background color
+
+# vfo options:
+#   AorB: 'A' for vfo A and 'B' for vfo B
+#   fg: foreground color
+#   bg: background color
+#   font: the font used for the vfo
+#   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox
+
+# notebook (tabs) option:
+# A notebook contains only groups, each selecable by a tab
+# Each group it contains must have a tabtext option
+
+# bargraph options
+#   orient: Either:
+#     vertical: Specifies a vertical bar graph
+#     horizontal: Specifies a horizontal bar graph
+#   cmd: Command(s) sent to initiate bar graph responses
+#   response: The base for requested responses for the bar graph (defaults to cmd)
+#   responsevalue: A python expression to extract the bar graph value from the K4 response.
+#   maximum: The maximum value the bar graph may be set to
+#   length: The length of the bar graph in pixels
+#   font: the font used for the bar graph texts
+#   lefttext: Value of a text label placed to the left of the bar graph
+#   bottomtext:Value of a text label placed belos the bar graph
+#   lengthpercent: Length of bar graph as a percentage of the length of bottomtext
