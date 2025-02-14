@@ -648,6 +648,8 @@ class Container():
                 child = Slider(config_info, self)
             elif widget_type == 'cyclebutton':
                 child = Cyclebutton(config_info, self)
+            elif widget_type == 'togglebutton':
+                child = Cyclebutton(config_info, self)
             elif widget_type == 'getvalue':
                 child = Getvalue(config_info, self)
             elif widget_type == 'bargraph':
@@ -658,6 +660,8 @@ class Container():
                child = Notebook(config_info, self)
             elif widget_type == 'dropdownbutton':
                child = Dropdownbutton(config_info, self)
+            else:
+                raise Exception('Error: config file: unknown item "{type}"'.format(type=widget_type))
 
             self.children.append(child)
 
