@@ -842,7 +842,7 @@ class Cyclebutton(Widget):
 
         self.selections = []
 
-        self.wraparound = true_values(config_info.get('wraparound', False))
+        self.wraparound = true_values(config_info.get('wraparound', True))
         self.updown = true_values(config_info.get('updown', False))
         self.justify = config_info.get('justify', 'left')
 
