@@ -40,18 +40,29 @@
 
     - item: group
       contains:
-      #include VFOs_LINKED
-      #include VFOs_LOCKED
+      #include VFOs_Linked_and_Locked
       #include Test_mode
 
     - item: group
       contains:
-      #include power_dropdown
+      - item: group
+        label: Volume
+        contains:
+        - item: group
+          contains:
+          #include main_volume_slider
+          #include sub_volume_slider
+          #include sidetone_slider
 
-    #include power_slider
-    #include main_volume_slider
-    #include sub_volume_slider
-    #include sidetone_slider
+      - item: group
+        label: Keyer
+        contains:
+        #include keyer_speed
+
+      - item: group
+        label: Power
+        contains:
+        #include power_slider
 
     - item: group
       contains:
@@ -86,7 +97,7 @@
 - { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
 - item: bargraph
   maximum: 42
-  lengthpercent: 95.5
+  lengthpercent: 96
   cmd: SM1;
   font: { family: Helvetica, size: 6, weight: normal }
   lefttext: ' '
@@ -100,17 +111,17 @@
   contains:
   - item: dropdownbutton
     selections:
-    - { text: "160 m", cmd: BN00; }
-    - { text: " 80 m", cmd: BN01; }
-    - { text: " 60 m", cmd: BN02; }
-    - { text: " 40 m", cmd: BN03; }
-    - { text: " 30 m", cmd: BN04; }
-    - { text: " 20 m", cmd: BN05; }
-    - { text: " 17 m", cmd: BN06; }
-    - { text: " 15 m", cmd: BN07; }
-    - { text: " 12 m", cmd: BN08; }
-    - { text: " 10 m", cmd: BN09; }
     - { text: "  6 m", cmd: BN10; }
+    - { text: " 10 m", cmd: BN09; }
+    - { text: " 12 m", cmd: BN08; }
+    - { text: " 15 m", cmd: BN07; }
+    - { text: " 17 m", cmd: BN06; }
+    - { text: " 20 m", cmd: BN05; }
+    - { text: " 30 m", cmd: BN04; }
+    - { text: " 40 m", cmd: BN03; }
+    - { text: " 60 m", cmd: BN02; }
+    - { text: " 80 m", cmd: BN01; }
+    - { text: "160 m", cmd: BN00; }
 #end
 
 #define mode_A_dropdown
@@ -152,10 +163,10 @@
   contains:
   - item: dropdownbutton
     selections:
-    - { text: "0", cmd: PA00;, justify: left }
-    - { text: "1", cmd: PA11;, justify: left }
-    - { text: "2", cmd: PA21;, justify: left }
-    - { text: "3", cmd: PA31;, justify: left }
+    - { text: "0", cmd: PA00; }
+    - { text: "1", cmd: PA11; }
+    - { text: "2", cmd: PA21; }
+    - { text: "3", cmd: PA31; }
 #end
 
 #define atten_A_dropdown
@@ -164,12 +175,12 @@
   contains:
   - item: dropdownbutton
     selections:
-    - { text: " 0 dB", cmd: RA000;, justify: left }
-    - { text: " 3 dB", cmd: RA031;, justify: left }
-    - { text: " 6 dB", cmd: RA061;, justify: left }
-    - { text: "12 dB", cmd: RA121;, justify: left }
-    - { text: "15 dB", cmd: RA151;, justify: left }
-    - { text: "18 dB", cmd: RA181;, justify: left }
+    - { text: " 0 dB", cmd: RA000; }
+    - { text: " 3 dB", cmd: RA031; }
+    - { text: " 6 dB", cmd: RA061; }
+    - { text: "12 dB", cmd: RA121; }
+    - { text: "15 dB", cmd: RA151; }
+    - { text: "18 dB", cmd: RA181; }
 #end
 
 #define rfgain_A_dropdown
@@ -204,7 +215,7 @@
 - { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
 - item: bargraph
   maximum: 42
-  lengthpercent: 95.5
+  lengthpercent: 96
   cmd: SM1;
   font: { family: Helvetica, size: 6, weight: normal }
   lefttext: ' '
@@ -219,17 +230,17 @@
   contains:
   - item: dropdownbutton
     selections:
-    - { text: "160 m", cmd: BN$00; }
-    - { text: " 80 m", cmd: BN$01; }
-    - { text: " 60 m", cmd: BN$02; }
-    - { text: " 40 m", cmd: BN$03; }
-    - { text: " 30 m", cmd: BN$04; }
-    - { text: " 20 m", cmd: BN$05; }
-    - { text: " 17 m", cmd: BN$06; }
-    - { text: " 15 m", cmd: BN$07; }
-    - { text: " 12 m", cmd: BN$08; }
-    - { text: " 10 m", cmd: BN$09; }
     - { text: "  6 m", cmd: BN$10; }
+    - { text: " 10 m", cmd: BN$09; }
+    - { text: " 12 m", cmd: BN$08; }
+    - { text: " 15 m", cmd: BN$07; }
+    - { text: " 17 m", cmd: BN$06; }
+    - { text: " 20 m", cmd: BN$05; }
+    - { text: " 30 m", cmd: BN$04; }
+    - { text: " 40 m", cmd: BN$03; }
+    - { text: " 60 m", cmd: BN$02; }
+    - { text: " 80 m", cmd: BN$01; }
+    - { text: "160 m", cmd: BN$00; }
 #end
 
 #define mode_B_dropdown
@@ -271,10 +282,10 @@
   contains:
   - item: dropdownbutton
     selections:
-    - { text: "0", cmd: PA$00;, justify: left }
-    - { text: "1", cmd: PA$11;, justify: left }
-    - { text: "2", cmd: PA$21;, justify: left }
-    - { text: "3", cmd: PA$31;, justify: left }
+    - { text: "0", cmd: PA$00; }
+    - { text: "1", cmd: PA$11; }
+    - { text: "2", cmd: PA$21; }
+    - { text: "3", cmd: PA$31; }
 #end
 
 #define atten_B_dropdown
@@ -283,12 +294,12 @@
   contains:
   - item: dropdownbutton
     selections:
-    - { text: " 0 dB", cmd: RA$000;, justify: left }
-    - { text: " 3 dB", cmd: RA$031;, justify: left }
-    - { text: " 6 dB", cmd: RA$061;, justify: left }
-    - { text: "12 dB", cmd: RA$121;, justify: left }
-    - { text: "15 dB", cmd: RA$151;, justify: left }
-    - { text: "18 dB", cmd: RA$181;, justify: left }
+    - { text: " 0 dB", cmd: RA$000; }
+    - { text: " 3 dB", cmd: RA$031; }
+    - { text: " 6 dB", cmd: RA$061; }
+    - { text: "12 dB", cmd: RA$121; }
+    - { text: "15 dB", cmd: RA$151; }
+    - { text: "18 dB", cmd: RA$181; }
 #end
 
 #define rfgain_B_dropdown
@@ -301,28 +312,36 @@
     - { text: "-10 ", cmd: RG$-10; }
 #end
 
-#define VFOs_LINKED
-- item: cyclebutton
-  wraparound: true
-  selections:
-  - { text: " VFOs\n LINKED",        cmd: FT0;BI0;#DPM0; }
-  - { text: " VFOs\n UNLINKED", cmd: FT0;BI1;#DPM2; }
+#define VFOs_Linked_and_Locked
+- item: group
+  label: VFOs
+  contains:
+  #include VFOs_Linked
+  #include VFOs_Locked
 #end
 
-#define VFOs_LOCKED
-- item: cyclebutton
-  wraparound: true
+#define VFOs_Linked
+- item: togglebutton
   selections:
-  - { text: "VFOs\nLOCKED",       cmd: LK1;LK$1;, }
-  - { text: " VFOs\n UNLOCKED  ", cmd: LK0;LK$0;, }
+  - { text: "  Linked", cmd: FT0;BI0;#DPM0; }
+  - { text: "Unlinked", cmd: FT0;BI1;#DPM2; }
+#end
+
+#define VFOs_Locked
+- item: togglebutton
+  selections:
+  - { text: "  Locked", cmd: LK1;LK$1;, }
+  - { text: "Unlocked", cmd: LK0;LK$0;, }
 #end
 
 #define Test_mode
-- item: cyclebutton
-  wraparound: true
-  selections:
-     - { text: "TX Test\n    on",  cmd: TS1;, bg: red }
-     - { text: "TX Test\n   off", cmd: TS0;,  }
+- item: group
+  label: Tx Test
+  contains:
+  - item: togglebutton
+    selections:
+    - { text: " on", cmd: TS1;, bg: red }
+    - { text: "off", cmd: TS0;,  }
 #end
 
 #define power_dropdown
@@ -333,22 +352,23 @@
     width: 6
     unexpectedresponse: 'str(float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])) + " W"'
     selections:
-    - { text: "  5 W", cmd: PC050L;, justify: left }
-    - { text: " 10 W", cmd: PC100L;, justify: left }
-    - { text: " 25 W", cmd: PC025H;, justify: left }
-    - { text: " 50 W", cmd: PC050H;, justify: left }
-    - { text: " 75 W", cmd: PC075H;, justify: left }
-    - { text: "100 W", cmd: PC100H;, justify: left }
+    - { text: "  5 W", cmd: PC050L; }
+    - { text: " 10 W", cmd: PC100L; }
+    - { text: " 25 W", cmd: PC025H; }
+    - { text: " 50 W", cmd: PC050H; }
+    - { text: " 75 W", cmd: PC075H; }
+    - { text: "100 W", cmd: PC100H; }
 #end
 
 #define power_slider
 - item: group
-  label: Power (Watts)
+  label: (Watts)
   contains:
   - item: slider
-    from: 0.0
-    to: 110.0
-    length: 300
+    orient: vertical
+    from: 110.0
+    to: 0.0
+    length: 150
     incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
     cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
     responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
@@ -356,12 +376,13 @@
 
 #define main_volume_slider
 - item: group
-  label: Main Volume
+  label: Main
   contains:
   - item: slider
-    from: 0
-    to: 100
-    length: 300
+    orient: vertical
+    from: 100
+    to: 0
+    length: 150
     incrementvalue: '1'
     cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
     responsevalue: 'float(value[2:5])/0.6'
@@ -369,12 +390,13 @@
 
 #define sub_volume_slider
 - item: group
-  label: Sub Volume
+  label: Sub
   contains:
   - item: slider
-    from: 0
-    to: 100
-    length: 300
+    orient: vertical
+    from: 100
+    to: 0
+    length: 150
     incrementvalue: '1'
     cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
     responsevalue: 'float(value[3:6])/0.6'
@@ -385,17 +407,31 @@
   label: Sidetone
   contains:
   - item: slider
-    from: 0
-    to: 60
-    length: 300
+    orient: vertical
+    from: 60
+    to: 0
+    length: 150
     incrementvalue: '1'
     cmdvalue: '"ML0{:03d};".format(int(float(value)))'
     responsevalue: 'float(value[3:6])'
 #end
 
+#define keyer_speed
+- item: group
+  label: Speed
+  contains:
+  - item: slider
+    orient: vertical
+    from: 100
+    to: 8
+    length: 150
+    incrementvalue: '1'
+    cmdvalue: '"KS{:03d};".format(int(float(value)))'
+    responsevalue: 'float(value[2:5])'
+#end
+
 #define atu_bypass_auto
-- item: cyclebutton
-  wraparound: true
+- item: togglebutton
   selections:
     - { text: "ATU bypass", cmd: AT1; }
     - { text: "ATU auto",   cmd: AT2; }
@@ -498,6 +534,9 @@
 #       justify: 'left', 'right', 'center' to justify text within the Button
 #       blink: If set to true, the button will blink.
 
+# togglebutton
+#   Synonym for cyclebutton
+
 # radiobutton options:
 #   groupid: a string shared by all buttons in this group, unique to all groups
 #   indicator: Set to 0 if no indicator is to be displayed
@@ -535,22 +574,23 @@
 #   fg: foreground color
 #   bg: background color
 #   font: the font used for the vfo
+#   width: the number of characters in the frequency spinbox
 #   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox
 
 # notebook (tabs) options:
 # A notebook contains only groups, each selecable by a tab
 # Each group it contains must have a tabtext option
 
-# bargraph optione
+# bargraph options
 #   orient: Either:
-#     vertical: Specifies a vertical slider
-#     horizontal: Specifies a horizontal slider
-#   cmd: Command(s) sent to initiate bargraph responses
-#   response: The base for requested responses for the bargraph (defaults to cmd)
-#   responsevalue: A python expression to extract the slider value from the K4 response.
-#   maximum: The maximum value the bargraph may be set to
-#   length: The length of the slider in pixels
-#   font: the font used for the bargraph texts
-#   lefttext: Value of a text label placed to the left of the bargraph
-#   bottomtext:Value of a text label placed belos the bargraph
-#   lengthpercent: Length of bargraph as a percentage of the length of bottomtext
+#     vertical: Specifies a vertical bar graph
+#     horizontal: Specifies a horizontal bar graph
+#   cmd: Command(s) sent to initiate bar graph responses
+#   response: The base for requested responses for the bar graph (defaults to cmd)
+#   responsevalue: A python expression to extract the bar graph value from the K4 response.
+#   maximum: The maximum value the bar graph may be set to
+#   length: The length of the bar graph in pixels
+#   font: the font used for the bar graph texts
+#   lefttext: Value of a text label placed to the left of the bar graph
+#   bottomtext:Value of a text label placed belos the bar graph
+#   lengthpercent: Length of bar graph as a percentage of the length of bottomtext
