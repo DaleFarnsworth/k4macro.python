@@ -844,6 +844,7 @@ class Cyclebutton(Widget):
 
         self.wraparound = true_values(config_info.get('wraparound', False))
         self.updown = true_values(config_info.get('updown', False))
+        self.justify = config_info.get('justify', 'left')
 
         conf_selections = config_info.get('selections', None)
         for conf_sel in conf_selections:
@@ -875,7 +876,6 @@ class Cyclebutton(Widget):
             selection['afg'] = conf_sel.get('afg', Default.afg)
             if selection['afg'] == None:
                 selection['afg'] = selection['fg']
-            selection['justify'] = conf_sel.get('justify', 'left')
             selection['blink'] = conf_sel.get('blink', False)
             self.selections.append(selection)
 
@@ -921,7 +921,7 @@ class Cyclebutton(Widget):
                     bg=selection['bg'],
                     activebackground=selection['abg'],
                     activeforeground=selection['afg'],
-                    justify=selection['justify'])
+                    justify=self.justify)
 
     def next_selection(self):
         self.index += 1
