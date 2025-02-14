@@ -1126,7 +1126,7 @@ class VFO(Widget):
                 command=self.on_frequency_change,
                 increment=self.step,
                 font=font,
-                width=9,
+                width=width,
                 repeatdelay=300,
                 repeatinterval=1,
                 format='%5.3f',
