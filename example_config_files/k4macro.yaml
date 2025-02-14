@@ -84,21 +84,14 @@
 
 #define VFO_A
 - { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
-- item: group
-  button_font: { family: Helvetica, size: 6, weight: normal }
-  columns: 1
-  contains:
-  - item: group
-    contains:
-    - item: text
-      text: ' '
-    - item: bargraph
-      maximum: 42
-      length: 317
-      cmd: SM1;
-      responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
-  - item: text
-    text: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+- item: bargraph
+  maximum: 42
+  lengthpercent: 95.5
+  cmd: SM1;
+  font: { family: Helvetica, size: 6, weight: normal }
+  lefttext: ' '
+  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+  responsevalue: '0 if len(value) < 4 else value.rstrip(";")[2:]'
 #end
 
 #define band_A_dropdown
@@ -209,21 +202,15 @@
 
 #define VFO_B
 - { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
-- item: group
-  button_font: { family: Helvetica, size: 6, weight: normal }
-  columns: 1
-  contains:
-  - item: group
-    contains:
-    - item: text
-      text: ' '
-    - item: bargraph
-      maximum: 42
-      length: 317
-      cmd: SM1;
-      responsevalue: 'value if len(value) < 4 else value.rstrip(";")[2:]'
-  - item: text
-    text: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+- item: bargraph
+  maximum: 42
+  lengthpercent: 95.5
+  cmd: SM1;
+  font: { family: Helvetica, size: 6, weight: normal }
+  lefttext: ' '
+  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
+  response: SM$;
+  responsevalue: '0 if len(value) < 5 else value.rstrip(";")[3:]'
 #end
 
 #define band_B_dropdown
@@ -537,8 +524,8 @@
 #   width: The width in pixels if the slider is verical, otherwise the height
 #   increment: A python expression to set the slider increment given the variable value
 #   server: The server name of the server referenced by this slider
-#   cmd: A python expression to produce the K4 command given the variable 'value'.
-#   response: A python expression to extract the slider value from the K4 response.
+#   cmdvalue: A python expression to produce the K4 command given the variable 'value'.
+#   responsevalue: A python expression to extract the slider value from the K4 response.
 #   font: The font used for the slider's text.
 #   fg: foreground color
 #   bg: background color
@@ -550,6 +537,20 @@
 #   font: the font used for the vfo
 #   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox
 
-# notebook (tabs) option:
+# notebook (tabs) options:
 # A notebook contains only groups, each selecable by a tab
 # Each group it contains must have a tabtext option
+
+# bargraph optione
+#   orient: Either:
+#     vertical: Specifies a vertical slider
+#     horizontal: Specifies a horizontal slider
+#   cmd: Command(s) sent to initiate bargraph responses
+#   response: The base for requested responses for the bargraph (defaults to cmd)
+#   responsevalue: A python expression to extract the slider value from the K4 response.
+#   maximum: The maximum value the bargraph may be set to
+#   length: The length of the slider in pixels
+#   font: the font used for the bargraph texts
+#   lefttext: Value of a text label placed to the left of the bargraph
+#   bottomtext:Value of a text label placed belos the bargraph
+#   lengthpercent: Length of bargraph as a percentage of the length of bottomtext

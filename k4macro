@@ -1380,24 +1380,89 @@ class Bargraph(Widget):
         cmd = config_info.get('cmd', None)
         response = config_info.get('response', cmd)
         self.responsevalue = config_info.get('responsevalue', cmd)
+        orient = config_info.get('orient', 'horizontal')
         maximum = config_info.get('maximum', 100)
         length = config_info.get('length', 100)
+        self.length_percent = config_info.get('lengthpercent', None)
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
+        abg = config_info.get('abg', Default.abg)
+        afg = config_info.get('afg', Default.afg)
+        if afg == None:
+            afg = fg
+
+        self.left_text = config_info.get('lefttext', '')
+        self.bottom_text = config_info.get('bottomtext', '')
+
+        label_font = config_info.get('font', config_info.get('button_font', container.button_font))
+        font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
+
+        frame = tk.Frame(container.frame)
+
+        bar_frame = tk.Frame(frame)
+
+        self.left_frame = tk.Frame(bar_frame)
+        if self.left_text != '':
+            left_label = tk.Label(self.left_frame,
+                text=self.left_text,
+                bd='4',
+                font=font,
+                justify='left',
+                fg=fg,
+                bg=bg,
+                activebackground=abg,
+                activeforeground=afg,
+                padx=0,
+                pady=2)
+
+            left_label.grid(row=0, column=0, sticky='w')
+        self.left_frame.grid(row=0, column=0, sticky='w')
+
+        self.progressvalue = tk.IntVar()
+        self.progressbar = ttk.Progressbar(bar_frame,
+                    orient=orient,
+                    variable=self.progressvalue,
+                    maximum=maximum + .001,
+                    length=length)
+
+        self.progressbar.grid(row=0, column=1, sticky='w')
+
+        bar_frame.grid(row=0, column=0, sticky='w')
+
+        self.bottom_frame = tk.Frame(frame)
+        if self.bottom_text != '':
+            bottom_label = tk.Label(self.bottom_frame,
+                text=self.bottom_text,
+                bd='4',
+                font=font,
+                justify='left',
+                fg=fg,
+                bg=bg,
+                activebackground=abg,
+                activeforeground=afg,
+                padx=0,
+                pady=2)
+
+            bottom_label.grid(row=0, column=0, sticky='w')
+        self.bottom_frame.grid(row=1, column=0, sticky='w')
+
+        frame.grid(row=container.row, column=container.column, sticky='w')
 
         self.server.expand_and_send_cmds(cmd)
 
-        self.progressvalue = tk.IntVar()
-        progressbar = ttk.Progressbar(container.frame,
-                    variable=self.progressvalue,
-                    maximum=maximum + .01,
-                    length=length)
-
-        progressbar.grid(row=container.row, column=container.column, sticky='w')
-
         self.server.subscribe_cmds(response, self.on_response_received)
+        if self.bottom_text != '' and self.length_percent != None:
+            self.progressbar.bind('<Visibility>', self.set_length)
 
     def on_response_received(self, response):
         value = int(eval_value(self.responsevalue, response))
         self.progressvalue.set(value)
+
+    def set_length(self, event):
+        bottom_width = self.bottom_frame.winfo_width()
+        left_width = self.left_frame.winfo_width()
+        length = (bottom_width - left_width) * self.length_percent / 100.0
+        self.progressbar.configure(length=length)
 
 class Text(Widget):
     def __init__(self, config_info, container):
