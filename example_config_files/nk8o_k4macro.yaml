@@ -18,7 +18,8 @@
 - item: server
   name: k4
   type: k4
-  address: K4-SNxxxxx.local      # match your serial number in the string
+#  address: K4-SNxxxxx.local      # match your serial number in the string
+  address: 192.168.1.128
   port: 9200
   startup: TS1;                   # Set test mode
 
@@ -40,6 +41,12 @@
 
     - item: group
       contains:
+      #include AB_swap_buttons
+      #include split
+      #include subrcvr
+
+    - item: group
+      contains:
       #include Test_mode
       #include VFOs_LOCKED
       #include VFOs_LINKED
@@ -55,12 +62,13 @@
 
     - item: group
       contains:
+      #include audio_mx
       #include atu_bypass_auto
       #include atu_tune
-      #include AB_swap_buttons
 
     - item: group
       contains:
+      #include tx_rx
       #include k4_power_off
       #include QUIT
 
@@ -132,18 +140,19 @@
   label: BW
   contains:
   - item: dropdownbutton
+    unexpectedresponse: 'str((float(value[2:6])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[2:6])/100)+" kHz"'
     selections:
-    - { text: "  50 Hz", cmd: BW0005; }
-    - { text: " 100 Hz", cmd: BW0010; }
-    - { text: " 200 Hz", cmd: BW0020; }
-    - { text: " 300 Hz", cmd: BW0030; }
-    - { text: " 400 Hz", cmd: BW0040; }
-    - { text: " 450 Hz", cmd: BW0045; }
-    - { text: " 500 Hz", cmd: BW0050; }
-    - { text: "1.8 kHz", cmd: BW0180; }
-    - { text: "2.5 kHz", cmd: BW0250; }
-    - { text: "3.5 kHz", cmd: BW0350; }
-    - { text: "4.0 kHz", cmd: BW0400; }
+    - { text: "   50 Hz", cmd: BW0005; }
+    - { text: "  100 Hz", cmd: BW0010; }
+    - { text: "  200 Hz", cmd: BW0020; }
+    - { text: "  300 Hz", cmd: BW0030; }
+    - { text: "  400 Hz", cmd: BW0040; }
+    - { text: "  450 Hz", cmd: BW0045; }
+    - { text: "  500 Hz", cmd: BW0050; }
+    - { text: "1.80 kHz", cmd: BW0180; }
+    - { text: "2.50 kHz", cmd: BW0250; }
+    - { text: "3.50 kHz", cmd: BW0350; }
+    - { text: "4.00 kHz", cmd: BW0400; }
 #end
 
 #define preamp_A_dropdown
@@ -251,18 +260,19 @@
   label: BW
   contains:
   - item: dropdownbutton
+    unexpectedresponse: 'str((float(value[3:7])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[3:7])/100)+" kHz"'
     selections:
-    - { text: "  50 Hz", cmd: BW$0005; }
-    - { text: " 100 Hz", cmd: BW$0010; }
-    - { text: " 200 Hz", cmd: BW$0020; }
-    - { text: " 300 Hz", cmd: BW$0030; }
-    - { text: " 400 Hz", cmd: BW$0040; }
-    - { text: " 450 Hz", cmd: BW$0045; }
-    - { text: " 500 Hz", cmd: BW$0050; }
-    - { text: "1.8 kHz", cmd: BW$0180; }
-    - { text: "2.5 kHz", cmd: BW$0250; }
-    - { text: "3.5 kHz", cmd: BW$0350; }
-    - { text: "4.0 kHz", cmd: BW$0400; }
+    - { text: "   50 Hz", cmd: BW$0005; }
+    - { text: "  100 Hz", cmd: BW$0010; }
+    - { text: "  200 Hz", cmd: BW$0020; }
+    - { text: "  300 Hz", cmd: BW$0030; }
+    - { text: "  400 Hz", cmd: BW$0040; }
+    - { text: "  450 Hz", cmd: BW$0045; }
+    - { text: "  500 Hz", cmd: BW$0050; }
+    - { text: "1.80 kHz", cmd: BW$0180; }
+    - { text: "2.50 kHz", cmd: BW$0250; }
+    - { text: "3.50 kHz", cmd: BW$0350; }
+    - { text: "4.00 kHz", cmd: BW$0400; }
 #end
 
 #define preamp_B_dropdown
@@ -304,7 +314,7 @@
 #define VFOs_LINKED
 - item: togglebutton
   selections:
-  - { text: " LINKED ",  cmd: FT0;BI0;#DPM0; }
+  - { text: " LINKED ",   cmd: FT0;BI0;#DPM0; }
   - { text: " UNLINKED ", cmd: FT0;BI1;#DPM2; }
 #end
 
@@ -392,7 +402,7 @@
   contains:
   - item: slider
     orient: vertical
-    from: 20
+    from: 25
     to: 00
     length: 150
     incrementvalue: '1'
@@ -407,7 +417,7 @@
   contains:
   - item: slider
     orient: vertical
-    from: 30
+    from: 35
     to: 18
     length: 150
     incrementvalue: '1'
@@ -419,7 +429,15 @@
 - item: togglebutton
   selections:
     - { text: " ATU bypass", cmd: AT1;, bg: yellow }
-    - { text: "ATU auto",  cmd: AT2; }
+    - { text: "ATU auto",    cmd: AT2; }
+#end
+
+#define audio_mx
+- item: togglebutton
+  selections:
+    - { text: "Audio A+B", cmd: MXA.B; }
+    - { text: "Audio A",   cmd: MXA.A; }
+    - { text: "Audio B",   cmd: MXB.B }
 #end
 
 #define atu_tune
@@ -428,7 +446,7 @@
 
 #define AB_swap_buttons
 - item: group
-  columns: 4
+  columns: 3
   contains:
     - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
     - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
@@ -441,6 +459,28 @@
 
 #define QUIT
 - { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit, abg: red }
+#end
+
+#define split
+- item: togglebutton
+  selections:
+    - { item: button, groupid: other, indicator: 0, text: 'Split on',   cmd: FT1;, bg: yellow   }
+    - { item: button, groupid: other, indicator: 0, text: 'Split off' , cmd: FT0; }
+#end
+
+#define subrcvr
+- item: togglebutton
+  selections:
+    - { item: button, groupid: other, indicator: 0, text: 'Sub on',   cmd: SB1;, bg: yellow   }
+    - { item: button, groupid: other, indicator: 0, text: 'Sub off' , cmd: SB0; }
+#end
+
+#define tx_rx
+- item: togglebutton
+  wraparound: true
+  selections:
+    - { item: button, groupid: txrx,  indicator: 0, text: 'Receive',   cmd: RX;TQ;, bg: green, abg: green, response: TQ0; }
+    - { item: button, groupid: txrx,  indicator: 0, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
 #end
 
 # preprocessor directives:
@@ -501,7 +541,7 @@
 #   abg: active background color
 #   justify: 'left', 'right', 'center' to justify text within the Button
 
-# cyclebutton options:
+# togglebutton options:
 #   wraparound: true or false. whether the button wraps back around to the first selection
 #   updown: true or false, if true, selections cycle up if the button is clicked in its upper half
 #       and selections cycle down if the button is clicked in its lower half
@@ -518,9 +558,6 @@
 #       bg: background color
 #       abg: active background color
 #       blink: If set to true, the button will blink.
-
-# togglebutton
-#   Synonym for cyclebutton
 
 # radiobutton options:
 #   groupid: a string shared by all buttons in this group, unique to all groups
