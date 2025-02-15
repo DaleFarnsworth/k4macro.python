@@ -143,18 +143,19 @@
   label: BW
   contains:
   - item: dropdownbutton
+    unexpectedresponse: 'str((float(value[2:6])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[2:6])/100)+" kHz"'
     selections:
-    - { text: "  50 Hz", cmd: BW0005; }
-    - { text: " 100 Hz", cmd: BW0010; }
-    - { text: " 200 Hz", cmd: BW0020; }
-    - { text: " 300 Hz", cmd: BW0030; }
-    - { text: " 400 Hz", cmd: BW0040; }
-    - { text: " 450 Hz", cmd: BW0045; }
-    - { text: " 500 Hz", cmd: BW0050; }
-    - { text: "1.8 kHz", cmd: BW0180; }
-    - { text: "2.5 kHz", cmd: BW0250; }
-    - { text: "3.5 kHz", cmd: BW0350; }
-    - { text: "4.0 kHz", cmd: BW0400; }
+    - { text: "   50 Hz", cmd: BW0005; }
+    - { text: "  100 Hz", cmd: BW0010; }
+    - { text: "  200 Hz", cmd: BW0020; }
+    - { text: "  300 Hz", cmd: BW0030; }
+    - { text: "  400 Hz", cmd: BW0040; }
+    - { text: "  450 Hz", cmd: BW0045; }
+    - { text: "  500 Hz", cmd: BW0050; }
+    - { text: "1.80 kHz", cmd: BW0180; }
+    - { text: "2.50 kHz", cmd: BW0250; }
+    - { text: "3.50 kHz", cmd: BW0350; }
+    - { text: "4.00 kHz", cmd: BW0400; }
 #end
 
 #define preamp_A_dropdown
@@ -178,9 +179,11 @@
     - { text: " 0 dB", cmd: RA000; }
     - { text: " 3 dB", cmd: RA031; }
     - { text: " 6 dB", cmd: RA061; }
+    - { text: " 9 dB", cmd: RA091; }
     - { text: "12 dB", cmd: RA121; }
     - { text: "15 dB", cmd: RA151; }
     - { text: "18 dB", cmd: RA181; }
+    - { text: "21 dB", cmd: RA211; }
 #end
 
 #define rfgain_A_dropdown
@@ -262,18 +265,19 @@
   label: BW
   contains:
   - item: dropdownbutton
+    unexpectedresponse: 'str((float(value[3:7])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[3:7])/100)+" kHz"'
     selections:
-    - { text: "  50 Hz", cmd: BW$0005; }
-    - { text: " 100 Hz", cmd: BW$0010; }
-    - { text: " 200 Hz", cmd: BW$0020; }
-    - { text: " 300 Hz", cmd: BW$0030; }
-    - { text: " 400 Hz", cmd: BW$0040; }
-    - { text: " 450 Hz", cmd: BW$0045; }
-    - { text: " 500 Hz", cmd: BW$0050; }
-    - { text: "1.8 kHz", cmd: BW$0180; }
-    - { text: "2.5 kHz", cmd: BW$0250; }
-    - { text: "3.5 kHz", cmd: BW$0350; }
-    - { text: "4.0 kHz", cmd: BW$0400; }
+    - { text: "   50 Hz", cmd: BW$0005; }
+    - { text: "  100 Hz", cmd: BW$0010; }
+    - { text: "  200 Hz", cmd: BW$0020; }
+    - { text: "  300 Hz", cmd: BW$0030; }
+    - { text: "  400 Hz", cmd: BW$0040; }
+    - { text: "  450 Hz", cmd: BW$0045; }
+    - { text: "  500 Hz", cmd: BW$0050; }
+    - { text: "1.80 kHz", cmd: BW$0180; }
+    - { text: "2.50 kHz", cmd: BW$0250; }
+    - { text: "3.50 kHz", cmd: BW$0350; }
+    - { text: "4.00 kHz", cmd: BW$0400; }
 #end
 
 #define preamp_B_dropdown
@@ -297,9 +301,11 @@
     - { text: " 0 dB", cmd: RA$000; }
     - { text: " 3 dB", cmd: RA$031; }
     - { text: " 6 dB", cmd: RA$061; }
+    - { text: " 9 dB", cmd: RA$091; }
     - { text: "12 dB", cmd: RA$121; }
     - { text: "15 dB", cmd: RA$151; }
     - { text: "18 dB", cmd: RA$181; }
+    - { text: "21 dB", cmd: RA$211; }
 #end
 
 #define rfgain_B_dropdown
