@@ -40,8 +40,14 @@
 
     - item: group
       contains:
-      #include VFOs_Linked_and_Locked
+      #include tx_rx
       #include Test_mode
+      #include VFOs_Linked_and_Locked
+    - item: group
+      contains:
+      #include AB_swap_buttons
+      #include split
+      #include subrcvr
 
     - item: group
       contains:
@@ -66,9 +72,9 @@
 
     - item: group
       contains:
+      #include audio_mx
       #include atu_bypass_auto
       #include atu_tune
-      #include AB_swap_buttons
 
     - item: group
       contains:
@@ -346,7 +352,7 @@
   contains:
   - item: togglebutton
     selections:
-    - { text: " on", cmd: TS1;, bg: red }
+    - { text: " on", cmd: TS1;, bg: red, abg: red }
     - { text: "off", cmd: TS0;,  }
 #end
 
@@ -443,6 +449,14 @@
     - { text: "ATU auto",   cmd: AT2; }
 #end
 
+#define audio_mx
+- item: togglebutton
+  selections:
+    - { text: "Audio A+B", cmd: MXA.B; }
+    - { text: "Audio A",   cmd: MXA.A; }
+    - { text: "Audio B",   cmd: MXB.B }
+#end
+
 #define atu_tune
 - { item: button, groupid: atu, text: " TUNE ", cmd: SW40; }
 #end
@@ -461,7 +475,32 @@
 #end
 
 #define QUIT
-- { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit }
+- { item: button, groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit }
+#end
+
+#define split
+- item: togglebutton
+  selections:
+    - { item: button, groupid: other, indicator: 0, text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
+    - { item: button, groupid: other, indicator: 0, text: 'Split off' , cmd: FT0; }
+#end
+
+#define subrcvr
+- item: togglebutton
+  selections:
+    - { item: button, groupid: other, indicator: 0, text: 'Sub on',   cmd: SB1; }
+    - { item: button, groupid: other, indicator: 0, text: 'Sub off' , cmd: SB0; }
+#end
+
+#define tx_rx
+- item: group
+  label: 'Tx/Rx '
+  contains:
+  - item: togglebutton
+    wraparound: true
+    selections:
+      - { item: button, groupid: txrx,  indicator: 0, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
+      - { item: button, groupid: txrx,  indicator: 0, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
 #end
 
 # preprocessor directives:
@@ -522,7 +561,7 @@
 #   abg: active background color
 #   justify: 'left', 'right', 'center' to justify text within the Button
 
-# cyclebutton options:
+# togglebutton options:
 #   wraparound: true or false. whether the button wraps back around to the first selection
 #   updown: true or false, if true, selections cycle up if the button is clicked in its upper half
 #       and selections cycle down if the button is clicked in its lower half
@@ -539,9 +578,6 @@
 #       abg: active background color
 #       justify: 'left', 'right', 'center' to justify text within the Button
 #       blink: If set to true, the button will blink.
-
-# togglebutton
-#   Synonym for cyclebutton
 
 # radiobutton options:
 #   groupid: a string shared by all buttons in this group, unique to all groups
