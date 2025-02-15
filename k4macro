@@ -68,7 +68,7 @@ class Default():
 class Server():
     server_dict = {}
     default_server_name = None
-    k4_get_cmd_basess = [         # For future use
+    k4_get_cmd_bases = [         # For future use
         '#A',
         'AC',
         'ACM',
@@ -862,12 +862,14 @@ class Cyclebutton(Widget):
             selection['response'] = orig_response
 
             selection['parameters'] = {}
-            for response in self.server.expand_server_cmds(orig_response):
+            cmds = self.server.expand_server_cmds(cmd)
+            responses = self.server.expand_server_cmds(orig_response)
+            for response in responses:
                 base = cmd_base(response)
-                if Server.k4_set_only_cmd(base, response):
-                    raise Exception("Set-only command: '{cmd}' not permitted in Radiobutton".format(cmd=orig_response))
-                if Server.k4_get_only_cmd(base):
-                    raise Exception("Get-only command: '{cmd}' not permitted in Radiobutton".format(cmd=orig_response))
+                if Server.k4_set_only_cmd(base, response) and len(cmds) <= 1 and len(responses) <= 1:
+                    raise Exception("Set-only command: '{cmd}' not permitted in Cyclebutton".format(cmd=orig_response))
+                if Server.k4_get_only_cmd(base) and len(cmds) <= 1 and len(responses) <= 1:
+                    raise Exception("Get-only command: '{cmd}' not permitted in Cyclebutton".format(cmd=orig_response))
                 response = response[len(base):]
                 selection['parameters'][base] = response
 
@@ -1042,11 +1044,13 @@ class Radiobutton(Widget):
 
         self.button.grid(row=container.row, column=container.column, sticky='w')
 
-        for response in self.server.expand_server_cmds(self.response):
+        cmds = self.server.expand_server_cmds(self.cmd)
+        responses = self.server.expand_server_cmds(self.response)
+        for response in responses:
             base = cmd_base(response)
-            if Server.k4_set_only_cmd(base, response):
+            if Server.k4_set_only_cmd(base, response) and len(cmds) <= 1 and len(responses) <= 1:
                 raise Exception("Set-only command: '{cmd}' not permitted in Radiobutton".format(cmd=self.response))
-            if Server.k4_get_only_cmd(base):
+            if Server.k4_get_only_cmd(base) and len(cmds) <= 1 and len(responses) <= 1:
                 raise Exception("Get-only command: '{cmd}' not permitted in Radiobutton".format(cmd=self.response))
             response = response[len(base):]
             self.parameters[base] = response
@@ -1564,11 +1568,13 @@ class Dropdownbutton(Widget):
             selection['response'] = orig_response
 
             selection['parameters'] = {}
-            for response in self.server.expand_server_cmds(orig_response):
+            cmds = self.server.expand_server_cmds(cmd)
+            responses = self.server.expand_server_cmds(orig_response)
+            for response in responses:
                 base = cmd_base(response)
-                if Server.k4_set_only_cmd(base, response):
+                if Server.k4_set_only_cmd(base, response) and len(cmds) <= 1 and len(responses) <= 1:
                     raise Exception("Set-only command: '{cmd}' not permitted in Dropdownbutton".format(cmd=orig_response))
-                if Server.k4_get_only_cmd(base):
+                if Server.k4_get_only_cmd(base) and len(cmds) <= 1 and len(responses) <= 1:
                     raise Exception("Get-only command: '{cmd}' not permitted in Dropdownbutton".format(cmd=orig_response))
                 response = response[len(base):]
                 selection['parameters'][base] = response
