@@ -1026,7 +1026,7 @@ class Radiobutton(Widget):
 
         self.button = tk.Radiobutton(container.frame,
                     bd='4',
-                    text=text,
+                    text=self.text,
                     font=font,
                     width=width,
                     relief='raised',
