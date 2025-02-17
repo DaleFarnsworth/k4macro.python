@@ -91,7 +91,7 @@
 #end
 
 #define VFO_A
-- { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
+- { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
 - item: bargraph
   maximum: 42
   lengthpercent: 96
@@ -212,7 +212,7 @@
 #end
 
 #define VFO_B
-- { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal } }
+- { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
 - item: bargraph
   maximum: 42
   lengthpercent: 96

@@ -1098,6 +1098,8 @@ class VFO(Widget):
     texts = [ '1 Hz', '10 Hz', '100 Hz', '1 kHz', '10 kHz' ]
     step_to_index = {}
     text_to_index = {}
+    low_frequency_limit=100
+    high_frequency_limit=54000
 
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
@@ -1118,6 +1120,8 @@ class VFO(Widget):
         vfo_font = config_info.get('font', container.button_font)
         step_spinbox = true_values(config_info.get('step_spinbox', 'false'))
         width = config_info.get('width', 0)
+        self.active_color = config_info.get('activecolor', self.bg)
+        self.transmit_color = config_info.get('transmitcolor', self.bg)
 
         self.step = .1
 
@@ -1128,8 +1132,8 @@ class VFO(Widget):
         self.enter_frequency_wrapper = (Page.top.register(self.enter_frequency), '%P', '%V')
         self.vfo_sb = tk.Spinbox(
                 frame,
-                from_=100,
-                to=54000,
+                from_=VFO.low_frequency_limit,
+                to=VFO.high_frequency_limit,
                 wrap=False,
                 command=self.on_frequency_change,
                 increment=self.step,
@@ -1142,11 +1146,11 @@ class VFO(Widget):
                 state='normal',
                 cursor='hand2',
                 fg=fg,
-                bg=self.bg,
                 )
         self.vfo_sb.grid(row=0, column=0, sticky='w')
         self.vfo_sb.bind('<Return>', self.set_frequency)
         self.vfo_sb.configure(validate='all', validatecommand=self.enter_frequency_wrapper)
+        self.set_vfo_bg()
 
         self.step_sb = tk.Spinbox(
                 frame,
@@ -1195,6 +1199,11 @@ class VFO(Widget):
             step_cmd += '$'
         self.server.subscribe_cmds(step_cmd, self.on_step_received)
 
+        # subscribe to split and transmit on/off changes
+        self.server.subscribe_cmds('FT', self.set_vfo_bg)
+        self.server.subscribe_cmds('TQ', self.set_vfo_bg)
+        self.vfo_sb.bind('<Visibility>', self.set_vfo_bg)
+
     def enter_frequency(self, p, v):
         try:
             float(p)
@@ -1202,19 +1211,22 @@ class VFO(Widget):
             return False
 
         if v == 'focusin' or v == 'key':
-            self.vfo_sb.configure(bg='lightgray')
             return True
         elif v == 'focusout':
             return self.set_frequency()
 
-    def set_frequency(self, arg=''):
+    def set_frequency(self, arg=None):
         Page.top.focus()                # Remove focus from vfo_sb
         freq = float(self.vfo_sb.get())
-        if freq < 100 or freq >= 54000:
+        if freq < VFO.low_frequency_limit:
+            self.set_vfo_sb(VFO.low_frequency_limit)
+            return False
+        if freq > VFO.high_frequency_limit:
+            self.set_vfo_sb(VFO.high_frequency_limit)
             return False
 
-        self.vfo_sb.configure(bg=self.bg)
         self.send_frequency()
+        self.set_vfo_bg()
         return True
 
     def on_frequency_change(self):
@@ -1222,8 +1234,7 @@ class VFO(Widget):
         mod = freq % int(self.step * 1000)
         freq -= mod
         if mod != 0:
-            self.vfo_sb.delete(0, 'end')
-            self.vfo_sb.insert(0, "{:5.3f}".format(float(freq)/1000))
+            set_freq_sb(freq)
         Poll.add_poll(50, self.send_frequency)
 
     def send_frequency(self):
@@ -1234,12 +1245,14 @@ class VFO(Widget):
         self.server.send_cmds(cmd)
 
     def on_frequency_received(self, response):
-        self.vfo_sb.configure(bg=self.bg)
-        freq_str = response_after_base(response)
-        value  = "{:5.3f}".format(float(freq_str[0:11]) / 1000)
+        freq_str = response_after_base(response)[0:11]
+        self.set_vfo_sb(float(freq_str)/1000)
+        self.set_vfo_bg()
+
+    def set_vfo_sb(self, freq):
         self.vfo_sb.configure(validate='none')
         self.vfo_sb.delete(0, 'end')
-        self.vfo_sb.insert(0, value)
+        self.vfo_sb.insert(0, "{:5.3f}".format(freq))
         self.vfo_sb.configure(validate='all')
 
     def on_step_sb_changed(self):
@@ -1284,6 +1297,17 @@ class VFO(Widget):
         if self.AorB == 'B':
             cmd += '$'
         return self.server.k4_parameter(cmd)
+
+    def set_vfo_bg(self, arg=None):
+        split = self.server.k4_parameters.get('FT') == '1'
+        transmit = self.server.k4_parameters.get('TQ') == '1'
+        if split ^ (self.AorB == 'A'):
+            if transmit:
+                self.vfo_sb.configure(bg=self.transmit_color)
+            else:
+                self.vfo_sb.configure(bg=self.active_color)
+        else:
+            self.vfo_sb.configure(bg=self.bg)
 
 class Slider(Widget):
     def __init__(self, config_info, container):
