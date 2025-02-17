@@ -43,9 +43,13 @@
       #include tx_rx
       #include Test_mode
       #include VFOs_Linked_and_Locked
+
     - item: group
       contains:
       #include AB_swap_buttons
+
+    - item: group
+      contains:
       #include split
       #include subrcvr
 
@@ -78,8 +82,12 @@
 
     - item: group
       contains:
-      #include k4_power_off
-      #include QUIT
+      - item: group
+        contains:
+        #include k4_power_off
+      - item: group
+        contains:
+        #include QUIT
 
 #define VFO_A_widgets
 - item: group
@@ -458,12 +466,11 @@
 #end
 
 #define atu_tune
-- { item: button, groupid: atu, text: " TUNE ", cmd: SW40; }
+- { item: button, groupid: atu, text: " Tune ", cmd: SW40; }
 #end
 
 #define AB_swap_buttons
 - item: group
-  columns: 4
   contains:
     - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
     - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
@@ -471,11 +478,11 @@
 #end
 
 #define k4_power_off
-- { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0; }
+- { item: button, groupid: k4, text: 'K4 Power Off', cmd:  PS0; }
 #end
 
 #define QUIT
-- { item: button, groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit }
+- { item: button, groupid: misc, indicator: 0, text: 'Exit', directive:  quit }
 #end
 
 #define split
