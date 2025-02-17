@@ -25,86 +25,98 @@
 - item: page
   name: main
   server: k4
-  columns: 2
+  columns: 1
   row: 0
-  contains:
+  contains: #{
 
   - item: group
-    columns: 1
-    contains:
+    contains: #{
+    #include VFO_A_widgets
+    #include VFO_B_widgets
+    #}
 
-    - item: group
-      contains:
-      #include VFO_A_widgets
-      #include VFO_B_widgets
+  - item: group
+    contains: #{
+    #include tx_rx
+    #include Test_mode
+    #include VFOs_Linked_and_Locked
+    #}
 
-    - item: group
-      contains:
-      #include tx_rx
-      #include Test_mode
-      #include VFOs_Linked_and_Locked
+  - item: group
+    contains: #{
+    #include AB_swap_buttons
+    #}
 
-    - item: group
-      contains:
-      #include AB_swap_buttons
+  - item: group
+    contains: #{
+    #include split
+    #include subrcvr
+    #}
 
+  - item: group
+    contains: #{
     - item: group
-      contains:
-      #include split
-      #include subrcvr
-
-    - item: group
-      contains:
+      label: Volume
+      contains: #{
       - item: group
-        label: Volume
-        contains:
-        - item: group
-          contains:
-          #include main_volume_slider
-          #include sub_volume_slider
-          #include sidetone_slider
-
-      - item: group
-        label: Keyer
-        contains:
-        #include keyer_speed
-
-      - item: group
-        label: Power
-        contains:
-        #include power_slider
+        contains: #{
+        #include main_volume_slider
+        #include sub_volume_slider
+        #include sidetone_slider
+        #}
+      #}
 
     - item: group
-      contains:
-      #include audio_mx
-      #include atu_bypass_auto
-      #include atu_tune
+      label: Keyer
+      contains: #{
+      #include keyer_speed
+      #}
 
     - item: group
-      contains:
-      - item: group
-        contains:
-        #include k4_power_off
-      - item: group
-        contains:
-        #include QUIT
+      label: Power
+      contains: #{
+      #include power_slider
+      #}
+    #}
+
+  - item: group
+    contains: #{
+    #include audio_mx
+    #include atu_bypass_auto
+    #include atu_tune
+    #}
+
+  - item: group
+    contains: #{
+    - item: group
+      contains: #{
+      #include k4_power_off
+      #}
+    - item: group
+      contains: #{
+      #include QUIT
+      #}
+    #}
+  #}
 
 #define VFO_A_widgets
 - item: group
   label: VFO A
   columns: 1
-  contains:
+  contains: #{
   #include VFO_A
   - item: group
     columns: 3
     childwidth: 7
-    contains:
+    contains: #{
     #include band_A_dropdown
     #include mode_A_dropdown
     #include bw_A_dropdown
     #include preamp_A_dropdown
     #include atten_A_dropdown
     #include rfgain_A_dropdown
+    #}
+  #}
 #end
 
 #define VFO_A
@@ -122,9 +134,9 @@
 #define band_A_dropdown
 - item: group
   label: Band
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  6 m", cmd: BN10; }
     - { text: " 10 m", cmd: BN09; }
     - { text: " 12 m", cmd: BN08; }
@@ -136,29 +148,33 @@
     - { text: " 60 m", cmd: BN02; }
     - { text: " 80 m", cmd: BN01; }
     - { text: "160 m", cmd: BN00; }
+    #}
+  #}
 #end
 
 #define mode_A_dropdown
 - item: group
   label: Mode
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  CW", cmd: MD3; }
     - { text: " USB", cmd: MD2; }
     - { text: " LSB", cmd: MD1; }
     - { text: "  AM", cmd: MD5; }
     - { text: "  FM", cmd: MD4; }
     - { text: "DATA", cmd: MD6; }
+    #}
+  #}
 #end
 
 #define bw_A_dropdown
 - item: group
   label: BW
-  contains:
+  contains: #{
   - item: dropdownbutton
     unexpectedresponse: 'str((float(value[2:6])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[2:6])/100)+" kHz"'
-    selections:
+    selections: #{
     - { text: "   50 Hz", cmd: BW0005; }
     - { text: "  100 Hz", cmd: BW0010; }
     - { text: "  200 Hz", cmd: BW0020; }
@@ -170,26 +186,30 @@
     - { text: "2.50 kHz", cmd: BW0250; }
     - { text: "3.50 kHz", cmd: BW0350; }
     - { text: "4.00 kHz", cmd: BW0400; }
+    #}
+  #}
 #end
 
 #define preamp_A_dropdown
 - item: group
   label: Preamp
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "0", cmd: PA00; }
     - { text: "1", cmd: PA11; }
     - { text: "2", cmd: PA21; }
     - { text: "3", cmd: PA31; }
+    #}
+  #}
 #end
 
 #define atten_A_dropdown
 - item: group
   label: Attenuation
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " 0 dB", cmd: RA000; }
     - { text: " 3 dB", cmd: RA031; }
     - { text: " 6 dB", cmd: RA061; }
@@ -198,34 +218,40 @@
     - { text: "15 dB", cmd: RA151; }
     - { text: "18 dB", cmd: RA181; }
     - { text: "21 dB", cmd: RA211; }
+    #}
+  #}
 #end
 
 #define rfgain_A_dropdown
 - item: group
   label: RF Gain
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " -0 ", cmd: RG-00; }
     - { text: "-10 ", cmd: RG-10; }
+    #}
+  #}
 #end
 
 #define VFO_B_widgets
 - item: group
   label: VFO B
   columns: 1
-  contains:
+  contains: #{
   #include VFO_B
   - item: group
     columns: 3
     childwidth: 7
-    contains:
+    contains: #{
     #include band_B_dropdown
     #include mode_B_dropdown
     #include bw_B_dropdown
     #include preamp_B_dropdown
     #include atten_B_dropdown
     #include rfgain_B_dropdown
+    #}
+  #}
 #end
 
 #define VFO_B
@@ -244,9 +270,9 @@
 #define band_B_dropdown
 - item: group
   label: Band
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  6 m", cmd: BN$10; }
     - { text: " 10 m", cmd: BN$09; }
     - { text: " 12 m", cmd: BN$08; }
@@ -258,29 +284,33 @@
     - { text: " 60 m", cmd: BN$02; }
     - { text: " 80 m", cmd: BN$01; }
     - { text: "160 m", cmd: BN$00; }
+    #}
+  #}
 #end
 
 #define mode_B_dropdown
 - item: group
   label: Mode
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  CW", cmd: MD$3; }
     - { text: " USB", cmd: MD$2; }
     - { text: " LSB", cmd: MD$1; }
     - { text: "  AM", cmd: MD$5; }
     - { text: "  FM", cmd: MD$4; }
     - { text: "DATA", cmd: MD$6; }
+    #}
+  #}
 #end
 
 #define bw_B_dropdown
 - item: group
   label: BW
-  contains:
+  contains: #{
   - item: dropdownbutton
     unexpectedresponse: 'str((float(value[3:7])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[3:7])/100)+" kHz"'
-    selections:
+    selections: #{
     - { text: "   50 Hz", cmd: BW$0005; }
     - { text: "  100 Hz", cmd: BW$0010; }
     - { text: "  200 Hz", cmd: BW$0020; }
@@ -292,26 +322,30 @@
     - { text: "2.50 kHz", cmd: BW$0250; }
     - { text: "3.50 kHz", cmd: BW$0350; }
     - { text: "4.00 kHz", cmd: BW$0400; }
+    #}
+  #}
 #end
 
 #define preamp_B_dropdown
 - item: group
   label: Preamp
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "0", cmd: PA$00; }
     - { text: "1", cmd: PA$11; }
     - { text: "2", cmd: PA$21; }
     - { text: "3", cmd: PA$31; }
+    #}
+  #}
 #end
 
 #define atten_B_dropdown
 - item: group
   label: Attenuation
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " 0 dB", cmd: RA$000; }
     - { text: " 3 dB", cmd: RA$031; }
     - { text: " 6 dB", cmd: RA$061; }
@@ -320,70 +354,81 @@
     - { text: "15 dB", cmd: RA$151; }
     - { text: "18 dB", cmd: RA$181; }
     - { text: "21 dB", cmd: RA$211; }
+    #}
+  #}
 #end
 
 #define rfgain_B_dropdown
 - item: group
   label: RF Gain
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " -0 ", cmd: RG$-00; }
     - { text: "-10 ", cmd: RG$-10; }
+    #}
+  #}
 #end
 
 #define VFOs_Linked_and_Locked
 - item: group
   label: VFOs
-  contains:
+  contains: #{
   #include VFOs_Linked
   #include VFOs_Locked
+  #}
 #end
 
 #define VFOs_Linked
 - item: togglebutton
-  selections:
+  selections: #{
   - { text: "  Linked", cmd: FT0;BI0;#DPM0; }
   - { text: "Unlinked", cmd: FT0;BI1;#DPM2; }
+  #}
 #end
 
 #define VFOs_Locked
 - item: togglebutton
-  selections:
+  selections: #{
   - { text: "  Locked", cmd: LK1;LK$1;, }
   - { text: "Unlocked", cmd: LK0;LK$0;, }
+  #}
 #end
 
 #define Test_mode
 - item: group
   label: Tx Test
-  contains:
+  contains: #{
   - item: togglebutton
-    selections:
+    selections: #{
     - { text: " on", cmd: TS1;, bg: red, abg: red }
     - { text: "off", cmd: TS0;,  }
+    #}
+  #}
 #end
 
 #define power_dropdown
 - item: group
   label: Power
-  contains:
+  contains: #{
   - item: dropdownbutton
     width: 6
     unexpectedresponse: 'str(float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])) + " W"'
-    selections:
+    selections: #{
     - { text: "  5 W", cmd: PC050L; }
     - { text: " 10 W", cmd: PC100L; }
     - { text: " 25 W", cmd: PC025H; }
     - { text: " 50 W", cmd: PC050H; }
     - { text: " 75 W", cmd: PC075H; }
     - { text: "100 W", cmd: PC100H; }
+    #}
+  #}
 #end
 
 #define power_slider
 - item: group
   label: (Watts)
-  contains:
+  contains: #{
   - item: slider
     orient: vertical
     from: 110.0
@@ -392,12 +437,13 @@
     incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
     cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
     responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+  #}
 #end
 
 #define main_volume_slider
 - item: group
   label: Main
-  contains:
+  contains: #{
   - item: slider
     orient: vertical
     from: 100
@@ -406,12 +452,13 @@
     incrementvalue: '1'
     cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
     responsevalue: 'float(value[2:5])/0.6'
+  #}
 #end
 
 #define sub_volume_slider
 - item: group
   label: Sub
-  contains:
+  contains: #{
   - item: slider
     orient: vertical
     from: 100
@@ -420,12 +467,13 @@
     incrementvalue: '1'
     cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
     responsevalue: 'float(value[3:6])/0.6'
+  #}
 #end
 
 #define sidetone_slider
 - item: group
   label: Sidetone
-  contains:
+  contains: #{
   - item: slider
     orient: vertical
     from: 60
@@ -434,12 +482,13 @@
     incrementvalue: '1'
     cmdvalue: '"ML0{:03d};".format(int(float(value)))'
     responsevalue: 'float(value[3:6])'
+  #}
 #end
 
 #define keyer_speed
 - item: group
   label: Speed
-  contains:
+  contains: #{
   - item: slider
     orient: vertical
     from: 100
@@ -448,21 +497,24 @@
     incrementvalue: '1'
     cmdvalue: '"KS{:03d};".format(int(float(value)))'
     responsevalue: 'float(value[2:5])'
+  #}
 #end
 
 #define atu_bypass_auto
 - item: togglebutton
-  selections:
+  selections: #{
     - { text: "ATU bypass", cmd: AT1; }
     - { text: "ATU auto",   cmd: AT2; }
+  #}
 #end
 
 #define audio_mx
 - item: togglebutton
-  selections:
+  selections: #{
     - { text: "Audio A+B", cmd: MXA.B; }
     - { text: "Audio A",   cmd: MXA.A; }
     - { text: "Audio B",   cmd: MXB.B }
+  #}
 #end
 
 #define atu_tune
@@ -471,10 +523,11 @@
 
 #define AB_swap_buttons
 - item: group
-  contains:
+  contains: #{
     - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
     - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
     - { item: button,      groupid: misc, indicator: 0, text: " B->A ",    cmd:  SW147; }
+  #}
 #end
 
 #define k4_power_off
@@ -487,27 +540,31 @@
 
 #define split
 - item: togglebutton
-  selections:
-    - { item: button, groupid: other, indicator: 0, text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
-    - { item: button, groupid: other, indicator: 0, text: 'Split off' , cmd: FT0; }
+  selections: #{
+  - { item: button, groupid: other, indicator: 0, text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
+  - { item: button, groupid: other, indicator: 0, text: 'Split off' , cmd: FT0; }
+  #}
 #end
 
 #define subrcvr
 - item: togglebutton
-  selections:
-    - { item: button, groupid: other, indicator: 0, text: 'Sub on',   cmd: SB1; }
-    - { item: button, groupid: other, indicator: 0, text: 'Sub off' , cmd: SB0; }
+  selections: #{
+  - { item: button, groupid: other, indicator: 0, text: 'Sub on',   cmd: SB1; }
+  - { item: button, groupid: other, indicator: 0, text: 'Sub off' , cmd: SB0; }
+  #}
 #end
 
 #define tx_rx
 - item: group
   label: 'Tx/Rx '
-  contains:
+  contains: #{
   - item: togglebutton
     wraparound: true
-    selections:
-      - { item: button, groupid: txrx,  indicator: 0, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
-      - { item: button, groupid: txrx,  indicator: 0, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    selections: #{
+    - { item: button, groupid: txrx,  indicator: 0, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
+    - { item: button, groupid: txrx,  indicator: 0, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    #}
+  #}
 #end
 
 # preprocessor directives:
