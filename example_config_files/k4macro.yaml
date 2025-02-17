@@ -25,76 +25,111 @@
 - item: page
   name: main
   server: k4
-  columns: 1
-  row: 0
   contains: #{
 
-  - item: group
-    contains: #{
-    #include VFO_A_widgets
-    #include VFO_B_widgets
-    #}
-
-  - item: group
-    contains: #{
-    #include tx_rx
-    #include Test_mode
-    #include VFOs_Linked_and_Locked
-    #}
-
-  - item: group
-    contains: #{
-    #include AB_swap_buttons
-    #}
-
-  - item: group
-    contains: #{
-    #include split
-    #include subrcvr
-    #}
-
-  - item: group
+  - item: group # Column 1
+    columns: 1
     contains: #{
     - item: group
-      label: Volume
+      contains: #{
+      #include VFO_A_widgets
+      #}
+
+    - item: group
       contains: #{
       - item: group
         contains: #{
-        #include main_volume_slider
-        #include sub_volume_slider
-        #include sidetone_slider
+        #include rf_out
+        #}
+      - item: group
+        contains: #{
+        #include alc
         #}
       #}
 
     - item: group
-      label: Keyer
       contains: #{
-      #include keyer_speed
+      #include tx_rx
+      #include Test_mode
+      #}
+
+    #include VFOs_group
+
+    - item: group
+      contains: #{
+      - item: group
+        label: ATU
+        contains: #{
+        #include atu_bypass_auto
+        #include atu_tune
+        #}
+
+      - item: group
+        label: Tune
+        contains: #{
+        #include tune
+        #include tunelp
+        #}
       #}
 
     - item: group
-      label: Power
       contains: #{
-      #include power_slider
+      - item: group
+        contains: #{
+        #include k4_power_off
+        #}
+      - item: group
+        contains: #{
+        #include QUIT
+        #}
       #}
     #}
-
-  - item: group
+  - item: group # Column 2
+    columns: 1
     contains: #{
-    #include audio_mx
-    #include atu_bypass_auto
-    #include atu_tune
-    #}
-
-  - item: group
-    contains: #{
+    #include VFO_B_widgets
     - item: group
       contains: #{
-      #include k4_power_off
+      - item: group
+        contains: #{
+        #include swr
+        #}
+      - item: group
+        contains: #{
+        #include cmp
+        #}
       #}
+
     - item: group
+      columns: 1
       contains: #{
-      #include QUIT
+      - item: group
+        contains: #{
+
+        - item: group
+          label: Power
+          contains: #{
+          #include power_slider
+          #}
+
+        - item: group
+          label: Volume
+          contains: #{
+          - item: group
+            contains: #{
+            #include main_volume_slider
+            #include sub_volume_slider
+            #include sidetone_slider
+            #}
+          #}
+
+        - item: group
+          label: Keyer
+          contains: #{
+          #include keyer_speed
+          #}
+        #}
+      #include audio_mx
       #}
     #}
   #}
@@ -121,14 +156,79 @@
 
 #define VFO_A
 - { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
-- item: bargraph
-  maximum: 42
-  lengthpercent: 96
-  cmd: SM1;
-  font: { family: Helvetica, size: 6, weight: normal }
-  lefttext: ' '
-  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
-  responsevalue: '0 if len(value) < 4 else value.rstrip(";")[2:]'
+- item: group
+  leading: 1
+  contains: #{
+  - item: bargraph
+    maximum: 42
+    lengthpercent: 96
+    cmd: SM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ' '
+    bottomtext: "S1 2 3 4 5 6 7 8 9  +10 +20 +30 +40 +50 +60"
+    responsevalue: '0 if len(value) < 4 else value.rstrip(";")[2:]'
+  #}
+#end
+
+#define rf_out
+- item: group
+  label: Power out
+  contains: #{
+  - item: bargraph
+    maximumvalue: "0 if len(self.k4param('PC')) < 4 else 11.7 if self.k4param('PC')[3] == 'L' else 117"
+    lengthpercent: 100
+    cmd: TM1;PC;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ''
+    bottomtextvalue: "'' if len(self.k4param('PC')) < 4 else '0    2    4    6    8   10    ' if self.k4param('PC')[3] == 'L' else '0   20   40   60   80  100    '"
+    responsevalue: "0 if len(self.k4param('TM')) < 4 else float(self.k4param('TM')[6:9])/10 if self.k4param('PC')[3] == 'L' else self.k4param('TM')[6:9]"
+  #}
+#end
+
+#define alc
+- item: group
+  label: ALC
+  contains: #{
+  - item: bargraph
+    maximum: 7
+    lengthpercent: 100
+    cmd: TM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ''
+    bottomtext: "1  3  5  7"
+    responsevalue: "0 if len(self.k4param('TM')) < 4 else float(self.k4param('TM')[0:3])"
+  #}
+#end
+
+#define cmp
+- item: group
+  label: CMP
+  contains: #{
+  - item: bargraph
+    maximum: 30
+    lengthpercent: 100
+    cmd: TM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ''
+    bottomtext: "0 10 20 30"
+    responsevalue: "0 if len(self.k4param('TM')) < 4 else float(self.k4param('TM')[3:6])"
+  #}
+#end
+
+#define swr
+- item: group
+  label: SWR
+  contains: #{
+  - item: bargraph
+    minimum: 10
+    maximum: 35
+    lengthpercent: 100
+    cmd: TM1;TQ;TU;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ' '
+    bottomtext: "1:1       2:1       3:1    "
+    responsevalue: "0 if (len(self.k4param('TM')) < 4) or (self.k4param('TU') == None) or ((self.k4param('TQ') == '0') and (self.k4param('TU') == '0')) else float(self.k4param('TM')[9:12])/10"
+  #}
 #end
 
 #define band_A_dropdown
@@ -256,15 +356,19 @@
 
 #define VFO_B
 - { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
-- item: bargraph
-  maximum: 42
-  lengthpercent: 96
-  cmd: SM1;
-  font: { family: Helvetica, size: 6, weight: normal }
-  lefttext: ' '
-  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
-  response: SM$;
-  responsevalue: '0 if len(value) < 5 else value.rstrip(";")[3:]'
+- item: group
+  leading: 1
+  contains: #{
+  - item: bargraph
+    maximum: 42
+    lengthpercent: 96
+    cmd: SM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ' '
+    bottomtext: "S1 2 3 4 5 6 7 8 9  +10 +20 +30 +40 +50 +60"
+    response: SM$;
+    responsevalue: '0 if len(value) < 5 else value.rstrip(";")[3:]'
+  #}
 #end
 
 #define band_B_dropdown
@@ -370,12 +474,15 @@
   #}
 #end
 
-#define VFOs_Linked_and_Locked
+#define VFOs_group
 - item: group
   label: VFOs
+  columns: 3
   contains: #{
   #include VFOs_Linked
-  #include VFOs_Locked
+  #include split
+  #include subrcvr
+  #include AB_swap_buttons
   #}
 #end
 
@@ -397,12 +504,12 @@
 
 #define Test_mode
 - item: group
-  label: Tx Test
+  label: Tx
   contains: #{
   - item: togglebutton
     selections: #{
-    - { text: " on", cmd: TS1;, bg: red, abg: red }
-    - { text: "off", cmd: TS0;,  }
+    - { text: "Test On",  cmd: TS1;, bg: red, abg: red }
+    - { text: "Test Off", cmd: TS0;,  }
     #}
   #}
 #end
@@ -427,6 +534,7 @@
 
 #define power_slider
 - item: group
+  leading: 0
   label: (Watts)
   contains: #{
   - item: slider
@@ -436,12 +544,13 @@
     length: 150
     incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
     cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
-    responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+    responsevalue: '0 if len(value) < 5 else float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
   #}
 #end
 
 #define main_volume_slider
 - item: group
+  leading: 0
   label: Main
   contains: #{
   - item: slider
@@ -457,6 +566,7 @@
 
 #define sub_volume_slider
 - item: group
+  leading: 0
   label: Sub
   contains: #{
   - item: slider
@@ -472,6 +582,7 @@
 
 #define sidetone_slider
 - item: group
+  leading: 0
   label: Sidetone
   contains: #{
   - item: slider
@@ -487,6 +598,7 @@
 
 #define keyer_speed
 - item: group
+  leading: 0
   label: Speed
   contains: #{
   - item: slider
@@ -503,35 +615,67 @@
 #define atu_bypass_auto
 - item: togglebutton
   selections: #{
-    - { text: "ATU bypass", cmd: AT1; }
-    - { text: "ATU auto",   cmd: AT2; }
+    - { text: "Bypass", cmd: AT1; }
+    - { text: "Auto",   cmd: AT2; }
   #}
 #end
 
 #define audio_mx
-- item: togglebutton
-  selections: #{
+- item: group
+  label: Audio Mix
+  contains: #{
+  - item: togglebutton
+    selections: #{
     - { text: "Audio A+B", cmd: MXA.B; }
     - { text: "Audio A",   cmd: MXA.A; }
     - { text: "Audio B",   cmd: MXB.B }
+    #}
   #}
 #end
 
 #define atu_tune
-- { item: button, groupid: atu, text: " Tune ", cmd: SW40; }
-#end
-
-#define AB_swap_buttons
-- item: group
-  contains: #{
-    - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
-    - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
-    - { item: button,      groupid: misc, indicator: 0, text: " B->A ",    cmd:  SW147; }
+- item: togglebutton
+  selections: #{
+  - { item: button, text: "Tune", cmd: TU3;, bg: red }
+  - { item: button, text: "Tune", cmd: TU0; }
   #}
 #end
 
+#define atu_extended_tune
+- item: togglebutton
+  selections: #{
+  - { item: button, text: "TUNE", cmd: TU4;, bg: red }
+  - { item: button, text: "TUNE", cmd: TU0; }
+  #}
+#end
+
+#define tune
+- item: togglebutton
+  selections: #{
+  - { item: button, text: "Tune", cmd: TU1;, bg: red }
+  - { item: button, text: "Tune", cmd: TU0; }
+  #}
+#end
+
+#define tunelp
+- item: togglebutton
+  selections: #{
+  - { item: button, text: "Tune LP", cmd: TU2;, bg: red }
+  - { item: button, text: "Tune LP", cmd: TU0; }
+  #}
+#end
+
+#define AB_swap_buttons
+- { item: button, text: "A/B",      cmd:  AB2; }
+- { item: button, text: "A->B",     cmd:  AB0; }
+- { item: button, text: "B->A",     cmd:  AB1; }
+- { item: button, text: "all A/B",  cmd:  AB5; }
+- { item: button, text: "all A->B", cmd:  AB3; }
+- { item: button, text: "all B->A", cmd:  AB4; }
+#end
+
 #define k4_power_off
-- { item: button, groupid: k4, text: 'K4 Power Off', cmd:  PS0; }
+- { item: button, groupid: k4, text: 'Power Off', cmd:  PS0; }
 #end
 
 #define QUIT
@@ -541,16 +685,16 @@
 #define split
 - item: togglebutton
   selections: #{
-  - { item: button, groupid: other, indicator: 0, text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
-  - { item: button, groupid: other, indicator: 0, text: 'Split off' , cmd: FT0; }
+  - { item: button, text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
+  - { item: button, text: 'Split off' , cmd: FT0; }
   #}
 #end
 
 #define subrcvr
 - item: togglebutton
   selections: #{
-  - { item: button, groupid: other, indicator: 0, text: 'Sub on',   cmd: SB1; }
-  - { item: button, groupid: other, indicator: 0, text: 'Sub off' , cmd: SB0; }
+  - { item: button, text: 'Sub on',   cmd: SB1; }
+  - { item: button, text: 'Sub off' , cmd: SB0; }
   #}
 #end
 
@@ -561,8 +705,8 @@
   - item: togglebutton
     wraparound: true
     selections: #{
-    - { item: button, groupid: txrx,  indicator: 0, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
-    - { item: button, groupid: txrx,  indicator: 0, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    - { item: button, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
+    - { item: button, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
     #}
   #}
 #end
@@ -599,6 +743,8 @@
 
 # group options:
 #   label: The label that will be displayed for this group.
+#   leading: Specifies the vertical space (in points) that will be displayed
+#     before the group. Default is 1 for groups with a label, 0 otherwise.
 #   server: The default server items contained in this group will use
 #   row: The row of the container in which this group will be placed.
 #   column: The column of the container in which this group will be placed.

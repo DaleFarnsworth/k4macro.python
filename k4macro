@@ -523,7 +523,7 @@ class Server():
                     if self.type == 'k4':
                         base = cmd_base(response)
                         if Options.debug >= 1:
-                            if base in ['SM', 'SM$', 'SMH', 'SMH$' ]:
+                            if base in ['SM', 'SM$', 'SMH', 'SMH$', 'TM' ]:
                                 dprint3('{name}: received: {response}'.format(name=self.name, response=response))
                             else:
                                 dprint1('{name}: received: {response}'.format(name=self.name, response=response))
@@ -565,7 +565,6 @@ class Server():
                     continue
             else:
                 recv_str = recv_bytes.decode()
-                dprint3('{name}: received: {str}'.format(name=self.name, str=recv_str))
                 responses = recv_str.split(';')
                 if len(responses) == 0:
                     continue
@@ -727,10 +726,12 @@ class Page(Container):
         self.frame.grid_forget()
 
 class Group(Container):
+    default_leading = 0
+    default_label_leading = 1
+
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
         container = self.container
-        frame = container.frame
 
         self.childwidth = config_info.get('childwidth', container.childwidth)
 
@@ -742,31 +743,47 @@ class Group(Container):
         else:
             column = container.column
 
-        row = config_info.get('row', container.row)
         columnspan = config_info.get('columnspan', 1)
         rowspan = config_info.get('rowspan', 1)
         self.label_font = config_info.get('label_font', container.label_font)
         self.button_font = config_info.get('button_font', container.button_font)
         self.tabtext = config_info.get('tabtext', '')
+        label = config_info.get('label', None)
 
+        if label == None:
+            default_leading = Group.default_leading
+        else:
+            default_leading = Group.default_label_leading
+        leading = config_info.get('leading', default_leading)
 
-        if 'label' in config_info:
+        outer_frame = tk.Frame(container.frame)
+
+        if leading == 0:
+            row = 0
+        else:
+            leading_font = tkFont.Font(family=self.label_font['family'], size=leading, weight=self.label_font['weight'])
+            leading_label = tk.Label(outer_frame, text=' ', font=leading_font)
+            leading_label.grid(row=0, column=0, sticky='nw')
+            row = 1
+
+        if label == None:
+            self.frame  = tk.Frame(outer_frame)
+        else:
             font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
-            label = config_info['label']
-            self.frame = tk.LabelFrame(frame,
+            self.frame = tk.LabelFrame(outer_frame,
                                        text=label,
                                        font=font,
                                        labelanchor='nw',
-                                       bd=2,
+                                       bd=4,
                                        relief='raised')
-        else:
-            self.frame  = tk.Frame(frame)
 
-        self.frame.grid(row=row,
+        self.frame.grid(row=row, column=0, sticky='nw')
+
+        outer_frame.grid(row=container.row,
                         column=column,
                         rowspan=rowspan,
                         columnspan=columnspan,
-                        sticky='w')
+                        sticky='nw')
         self.show_widgets()
 
 class Widget():
@@ -782,6 +799,21 @@ class Widget():
 
         server_name = config_info.get('server', container.server_name)
         self.server = Server.server(server_name)
+
+    def k4param(self, base):
+        if self.server.type == 'k4':
+            return self.server.k4_parameter(base)
+        else:
+            return None
+
+    def eval_value(self, s, value):
+        try:
+            ret = eval(str(s))
+        except Exception as err:
+            dprint('value: "{value}", eval("{s}")'.format(value=value, s=s))
+            dprint('exception: {err}'.format(err=err))
+            raise
+        return ret
 
 class Button(Widget):
     def __init__(self, config_info, container):
@@ -821,7 +853,7 @@ class Button(Widget):
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
         button = tk.Button(container.frame,
-                    bd='4',
+                    bd='2',
                     text=text,
                     font=font,
                     width=width,
@@ -891,7 +923,7 @@ class Cyclebutton(Widget):
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
         self.button = tk.Button(container.frame,
-                    bd='4',
+                    bd='2',
                     font=font,
                     width=width,
                     relief='raised',
@@ -1025,7 +1057,7 @@ class Radiobutton(Widget):
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
 
         self.button = tk.Radiobutton(container.frame,
-                    bd='4',
+                    bd='2',
                     text=self.text,
                     font=font,
                     width=width,
@@ -1387,7 +1419,7 @@ class Getvalue(Widget):
         font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
 
         self.label = tk.Label(container.frame,
-                    bd='4',
+                    bd='2',
                     font=font,
                     justify=justify,
                     fg=fg,
@@ -1411,10 +1443,11 @@ class Bargraph(Widget):
 
         cmd = config_info.get('cmd', None)
         response = config_info.get('response', cmd)
-        self.responsevalue = config_info.get('responsevalue', cmd)
+        self.responsevalue = config_info.get('responsevalue', response)
         orient = config_info.get('orient', 'horizontal')
-        maximum = config_info.get('maximum', 100)
-        length = config_info.get('length', 100)
+        self.maximum = config_info.get('maximum', 100)
+        self.maximumvalue = config_info.get('maximumvalue', None)
+        self.length = config_info.get('length', 100)
         self.length_percent = config_info.get('lengthpercent', None)
         bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
@@ -1424,20 +1457,21 @@ class Bargraph(Widget):
             afg = fg
 
         self.left_text = config_info.get('lefttext', '')
-        self.bottom_text = config_info.get('bottomtext', '')
+        self.bottomtext = config_info.get('bottomtext', '')
+        self.bottomtextvalue = config_info.get('bottomtextvalue', None)
 
         label_font = config_info.get('font', config_info.get('button_font', container.button_font))
         font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
 
-        frame = tk.Frame(container.frame)
+        self.frame = tk.Frame(container.frame)
 
-        bar_frame = tk.Frame(frame)
+        bar_frame = tk.Frame(self.frame)
 
         self.left_frame = tk.Frame(bar_frame)
         if self.left_text != '':
             left_label = tk.Label(self.left_frame,
                 text=self.left_text,
-                bd='4',
+                bd=0,
                 font=font,
                 justify='left',
                 fg=fg,
@@ -1454,18 +1488,18 @@ class Bargraph(Widget):
         self.progressbar = ttk.Progressbar(bar_frame,
                     orient=orient,
                     variable=self.progressvalue,
-                    maximum=maximum + .001,
-                    length=length)
+                    maximum=self.maximum + .001,
+                    length=self.length)
 
         self.progressbar.grid(row=0, column=1, sticky='w')
 
         bar_frame.grid(row=0, column=0, sticky='w')
 
-        self.bottom_frame = tk.Frame(frame)
-        if self.bottom_text != '':
-            bottom_label = tk.Label(self.bottom_frame,
-                text=self.bottom_text,
-                bd='4',
+        self.bottom_frame = tk.Frame(self.frame)
+        if self.bottomtext != None or self.bottomtextvalue != None:
+            self.bottom_label = tk.Label(self.bottom_frame,
+                text=self.bottomtext,
+                bd=0,
                 font=font,
                 justify='left',
                 fg=fg,
@@ -1475,26 +1509,37 @@ class Bargraph(Widget):
                 padx=0,
                 pady=2)
 
-            bottom_label.grid(row=0, column=0, sticky='w')
+            self.bottom_label.grid(row=0, column=0, sticky='w')
         self.bottom_frame.grid(row=1, column=0, sticky='w')
 
-        frame.grid(row=container.row, column=container.column, sticky='w')
+        self.frame.grid(row=container.row, column=container.column, sticky='w')
 
         self.server.expand_and_send_cmds(cmd)
 
         self.server.subscribe_cmds(response, self.on_response_received)
-        if self.bottom_text != '' and self.length_percent != None:
-            self.progressbar.bind('<Visibility>', self.set_length)
+        self.frame.bind('<Visibility>', self.configure)
 
     def on_response_received(self, response):
-        value = int(eval_value(self.responsevalue, response))
+        value = int(self.eval_value(self.responsevalue, response))
         self.progressvalue.set(value)
+        self.configure()
 
-    def set_length(self, event):
+    def configure(self, event=None):
+        bottomtext = self.bottomtext
+        if self.bottomtextvalue != None:
+            bottomtext = self.eval_value(self.bottomtextvalue, None)
+        self.bottom_label.configure(text=bottomtext)
+        if self.bottom_label.winfo_viewable():
+            self.bottom_frame.update()
         bottom_width = self.bottom_frame.winfo_width()
         left_width = self.left_frame.winfo_width()
-        length = (bottom_width - left_width) * self.length_percent / 100.0
-        self.progressbar.configure(length=length)
+        length = self.length
+        if self.length_percent != None:
+            length = (bottom_width - left_width) * self.length_percent / 100.0
+        maximum = self.maximum
+        if self.maximumvalue != None:
+            maximum = float(self.eval_value(self.maximumvalue, None)) + .001
+        self.progressbar.configure(length=length, maximum=maximum)
 
 class Text(Widget):
     def __init__(self, config_info, container):
@@ -1515,7 +1560,7 @@ class Text(Widget):
 
         label = tk.Label(container.frame,
                     text=text,
-                    bd='4',
+                    bd='2',
                     font=font,
                     justify=justify,
                     fg=fg,
@@ -1779,12 +1824,11 @@ class Config():
                             self.errors += 1
                             continue
                         elif in_block:
-                            pname = block_stack[-1]['name']
+                            pname = current_block['name']
                             dprint('Error ({filename}:{line_count}): #define {name}, encountered while defining {pname}'.format(filename=filename, line_count=line_count, name=block_name, pname=pname))
                             self.errors += 1
                             continue
                         elif block_name in self.blocks:
-                            pname = block_stack[-1]['name']
                             dprint('Error ({filename}:{line_count}): #define {name}, redefined. Previously defined at line {pline_count}'.format(filename=filename, line_count=line_count, name=block_name, pline_count=self.blocks[block_name]['line_count']))
                             self.errors += 1
                             continue
@@ -1846,6 +1890,7 @@ class Config():
             previous_line_count = self.writing_blocks[block_name]
             dprint('Error ({filename}:{line_count}): #include {block_name}, recursively included, previously at {previous_line_count}'.format(filename=self.filename, line_count=line_count, block_name=block_name, previous_line_count=previous_line_count))
             self.errors += 1
+            quit()
 
         self.writing_blocks[block_name] = line_count
 
@@ -1954,9 +1999,9 @@ def cleanup_and_exit():
 
 def eval_value(s, value):
     try:
-        ret = eval(s)
+        ret = eval(str(s))
     except Exception as err:
-        dprint('value: "{value}", eval("{s}"'.format(value=value, s=s))
+        dprint('value: "{value}", eval("{s}")'.format(value=value, s=s))
         dprint('exception: {err}'.format(err=err))
         raise
     return ret
@@ -1973,7 +2018,7 @@ def dprint2(*args, **kwargs):
         print(*args, file=sys.stderr, **kwargs)
 
 def dprint3(*args, **kwargs):
-    if Options.debug >= 2:
+    if Options.debug >= 3:
         print(*args, file=sys.stderr, **kwargs)
 
 def vprint1(*args, **kwargs):

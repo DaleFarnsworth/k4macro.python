@@ -27,7 +27,6 @@
   name: main
   server: k4
   columns: 2
-  row: 0
   contains:
 
   - item: group
@@ -519,6 +518,8 @@
 
 # group options:
 #   label: The label that will be displayed for this group.
+#   leading: Specifies the vertical space (in points) that will be displayed
+#     before the group. Default is 1 for groups with a label, 0 otherwise.
 #   server: The default server items contained in this group will use
 #   row: The row of the container in which this group will be placed.
 #   column: The column of the container in which this group will be placed.
