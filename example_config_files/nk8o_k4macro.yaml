@@ -98,7 +98,7 @@
   font: { family: Helvetica, size: 6, weight: normal }
   lefttext: ' '
   bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
-  responsevalue: '0 if len(value) < 4 else value.rstrip(";")[2:]'
+  evalresponse: '0 if len(value) < 4 else value.rstrip(";")[2:]'
 #end
 
 #define band_A_dropdown
@@ -220,7 +220,7 @@
   lefttext: ' '
   bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
   response: SM$;
-  responsevalue: '0 if len(value) < 5 else value.rstrip(";")[3:]'
+  evalresponse: '0 if len(value) < 5 else value.rstrip(";")[3:]'
 #end
 
 #define band_B_dropdown
@@ -363,9 +363,9 @@
     from: 100.0
     to: 0.0
     length: 150
-    incrementvalue: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
-    cmdvalue: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
-    responsevalue: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+    evalincrement: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
+    evalcmd: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
+    evalresponse: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
     bg: '#FF0000'
 #end
 
@@ -378,9 +378,9 @@
     from: 30
     to: 0
     length: 150
-    incrementvalue: '1'
-    cmdvalue: '"AG{:03d};".format(int(float(value)*0.6))'
-    responsevalue: 'float(value[2:5])/0.6'
+    evalincrement: '1'
+    evalcmd: '"AG{:03d};".format(int(float(value)*0.6))'
+    evalresponse: 'float(value[2:5])/0.6'
     bg: '#00FF00'
 #end
 
@@ -393,9 +393,9 @@
     from: 30
     to: 0
     length: 150
-    incrementvalue: '1'
-    cmdvalue: '"AG${:03d};".format(int(float(value)*0.6))'
-    responsevalue: 'float(value[3:6])/0.6'
+    evalincrement: '1'
+    evalcmd: '"AG${:03d};".format(int(float(value)*0.6))'
+    evalresponse: 'float(value[3:6])/0.6'
     bg: '#00FFFF'
 #end
 
@@ -408,9 +408,9 @@
     from: 25
     to: 00
     length: 150
-    incrementvalue: '1'
-    cmdvalue: '"ML0{:03d};".format(int(float(value)))'
-    responsevalue: 'float(value[3:6])'
+    evalincrement: '1'
+    evalcmd: '"ML0{:03d};".format(int(float(value)))'
+    evalresponse: 'float(value[3:6])'
     bg: '#1E90FF'
 #end
 
@@ -423,9 +423,9 @@
     from: 35
     to: 18
     length: 150
-    incrementvalue: '1'
-    cmdvalue: '"KS{:03d};".format(int(float(value)))'
-    responsevalue: 'float(value[2:5])'
+    evalincrement: '1'
+    evalcmd: '"KS{:03d};".format(int(float(value)))'
+    evalresponse: 'float(value[2:5])'
 #end
 
 #define atu_bypass_auto
@@ -588,10 +588,10 @@
 #     horizontal: Specifies a horizontal slider
 #   length: The length of the slider in pixels
 #   width: The width in pixels if the slider is verical, otherwise the height
-#   increment: A python expression to set the slider increment given the variable value
+#   evalincrement: A python expression to set the slider increment given the variable value
 #   server: The server name of the server referenced by this slider
-#   cmd: A python expression to produce the K4 command given the variable 'value'.
-#   response: A python expression to extract the slider value from the K4 response.
+#   evalcmd: A python expression to produce the K4 command given the variable 'value'.
+#   evalresponse: A python expression to extract the slider value from the K4 response.
 #   font: The font used for the slider's text.
 #   fg: foreground color
 #   bg: background color
@@ -613,7 +613,7 @@
 #     horizontal: Specifies a horizontal bar graph
 #   cmd: Command(s) sent to initiate bar graph responses
 #   response: The base for requested responses for the bar graph (defaults to cmd)
-#   responsevalue: A python expression to extract the bar graph value from the K4 response.
+#   evalresponse: A python expression to extract the bar graph value from the K4 response.
 #   maximum: The maximum value the bar graph may be set to
 #   length: The length of the bar graph in pixels
 #   font: the font used for the bar graph texts

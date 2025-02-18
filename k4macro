@@ -1352,9 +1352,9 @@ class Slider(Widget):
         orient = config_info.get('orient', 'horizontal')
         width = config_info.get('width', 15)
         length = config_info.get('length', 15)
-        self.incrementvalue = config_info.get('incrementvalue', 1.0)
-        self.cmdvalue = config_info['cmdvalue']
-        self.responsevalue = config_info['responsevalue']
+        self.evalincrement = config_info.get('evalincrement', 1.0)
+        self.evalcmd = config_info['evalcmd']
+        self.evalresponse = config_info['evalresponse']
         slider_font = config_info.get('font', container.button_font)
 
         font = tkFont.Font(family=slider_font['family'], size=slider_font['size'], weight=slider_font['weight'])
@@ -1363,7 +1363,7 @@ class Slider(Widget):
         self.value.set(0.0)
         self.previous_value = 0.0
 
-        resolution=eval_value(self.incrementvalue, self.value.get())
+        resolution=eval_value(self.evalincrement, self.value.get())
 
         self.scale = tk.Scale(container.frame,
                          from_=self.from_,
@@ -1379,23 +1379,23 @@ class Slider(Widget):
                          command=self.value_changed)
         self.scale.grid(row=container.row, column=container.column, sticky='nw')
 
-        cmd = eval_value(self.cmdvalue, self.value.get())
+        cmd = eval_value(self.evalcmd, self.value.get())
         self.server.subscribe_cmds(cmd, self.on_response_received)
 
     def value_changed(self, event):
         value = self.value.get()
         next_value = value
         if self.previous_value < value:
-            next_value = value + eval_value(self.incrementvalue, value)
-        self.scale.configure(resolution=eval_value(self.incrementvalue, next_value))
-        cmd = eval_value(self.cmdvalue, value)
+            next_value = value + eval_value(self.evalincrement, value)
+        self.scale.configure(resolution=eval_value(self.evalincrement, next_value))
+        cmd = eval_value(self.evalcmd, value)
         self.server.send_cmds(cmd)
         self.previous_value = value
 
     def on_response_received(self, response):
-        value = float(eval_value(self.responsevalue, response))
+        value = float(eval_value(self.evalresponse, response))
         self.value.set(value)
-        self.scale.configure(resolution=eval_value(self.incrementvalue, value))
+        self.scale.configure(resolution=eval_value(self.evalincrement, value))
         self.previous_value = value
 
 class Getvalue(Widget):
@@ -1404,7 +1404,7 @@ class Getvalue(Widget):
 
         cmd = config_info.get('cmd', None)
         response = config_info.get('response', cmd)
-        self.responsevalue = config_info.get('responsevalue', cmd)
+        self.evalresponse = config_info.get('evalresponse', cmd)
         bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
         abg = config_info.get('abg', Default.abg)
@@ -1434,7 +1434,7 @@ class Getvalue(Widget):
         self.server.subscribe_cmds(response, self.on_response_received)
 
     def on_response_received(self, response):
-        value = eval_value(self.responsevalue, response)
+        value = eval_value(self.evalresponse, response)
         self.label.configure(text=value)
 
 class Bargraph(Widget):
@@ -1443,7 +1443,7 @@ class Bargraph(Widget):
 
         cmd = config_info.get('cmd', None)
         response = config_info.get('response', cmd)
-        self.responsevalue = config_info.get('responsevalue', response)
+        self.evalresponse = config_info.get('evalresponse', response)
         orient = config_info.get('orient', 'horizontal')
         self.maximum = config_info.get('maximum', 100)
         self.maximumvalue = config_info.get('maximumvalue', None)
@@ -1458,7 +1458,7 @@ class Bargraph(Widget):
 
         self.left_text = config_info.get('lefttext', '')
         self.bottomtext = config_info.get('bottomtext', '')
-        self.bottomtextvalue = config_info.get('bottomtextvalue', None)
+        self.evalbottomtext = config_info.get('evalbottomtext', None)
 
         label_font = config_info.get('font', config_info.get('button_font', container.button_font))
         font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
@@ -1496,7 +1496,7 @@ class Bargraph(Widget):
         bar_frame.grid(row=0, column=0, sticky='w')
 
         self.bottom_frame = tk.Frame(self.frame)
-        if self.bottomtext != None or self.bottomtextvalue != None:
+        if self.bottomtext != None or self.evalbottomtext != None:
             self.bottom_label = tk.Label(self.bottom_frame,
                 text=self.bottomtext,
                 bd=0,
@@ -1520,14 +1520,14 @@ class Bargraph(Widget):
         self.frame.bind('<Visibility>', self.configure)
 
     def on_response_received(self, response):
-        value = int(self.eval_value(self.responsevalue, response))
+        value = int(self.eval_value(self.evalresponse, response))
         self.progressvalue.set(value)
         self.configure()
 
     def configure(self, event=None):
         bottomtext = self.bottomtext
-        if self.bottomtextvalue != None:
-            bottomtext = self.eval_value(self.bottomtextvalue, None)
+        if self.evalbottomtext != None:
+            bottomtext = self.eval_value(self.evalbottomtext, None)
         self.bottom_label.configure(text=bottomtext)
         if self.bottom_label.winfo_viewable():
             self.bottom_frame.update()
