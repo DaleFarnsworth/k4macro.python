@@ -1446,7 +1446,7 @@ class Bargraph(Widget):
         self.evalresponse = config_info.get('evalresponse', response)
         orient = config_info.get('orient', 'horizontal')
         self.maximum = config_info.get('maximum', 100)
-        self.maximumvalue = config_info.get('maximumvalue', None)
+        self.evalmaximum = config_info.get('evalmaximum', None)
         self.length = config_info.get('length', 100)
         self.length_percent = config_info.get('lengthpercent', None)
         bg = config_info.get('bg', Default.bg)
@@ -1537,8 +1537,8 @@ class Bargraph(Widget):
         if self.length_percent != None:
             length = (bottom_width - left_width) * self.length_percent / 100.0
         maximum = self.maximum
-        if self.maximumvalue != None:
-            maximum = float(self.eval_value(self.maximumvalue, None)) + .001
+        if self.evalmaximum != None:
+            maximum = float(self.eval_value(self.evalmaximum, None)) + .001
         self.progressbar.configure(length=length, maximum=maximum)
 
 class Text(Widget):

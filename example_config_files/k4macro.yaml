@@ -193,7 +193,7 @@
   label: ALC
   contains: #{
   - item: bargraph
-    maximum: 7
+    maximum: 8
     lengthpercent: 100
     cmd: TM1;
     font: { family: DejaVu Sans Mono, size: 6, weight: normal }
@@ -208,7 +208,7 @@
   label: CMP
   contains: #{
   - item: bargraph
-    maximum: 30
+    maximum: 32
     lengthpercent: 100
     cmd: TM1;
     font: { family: DejaVu Sans Mono, size: 6, weight: normal }
