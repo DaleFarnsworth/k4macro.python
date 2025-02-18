@@ -223,14 +223,13 @@
   label: SWR
   contains: #{
   - item: bargraph
-    minimum: 10
     maximum: 35
     lengthpercent: 100
     cmd: TM1;TQ;TU;
     font: { family: DejaVu Sans Mono, size: 6, weight: normal }
     lefttext: ' '
     bottomtext: "1:1       2:1       3:1    "
-    evalresponse: "0 if (len(self.k4param('TM')) < 4) or (self.k4param('TU') == None) or ((self.k4param('TQ') == '0') and (self.k4param('TU') == '0')) else float(self.k4param('TM')[9:12])/10"
+    evalresponse: "0 if (len(self.k4param('TM')) < 4) or (self.k4param('TU') == None) or ((self.k4param('TQ') == '0') and (self.k4param('TU') == '0')) else float(self.k4param('TM')[9:12])-10"
   #}
 #end
 
