@@ -62,8 +62,11 @@
         contains: #{
         #include atu_bypass_auto
         #include atu_tune
+        #include atu_extended_tune
         #}
 
+    - item: group
+      contains: #{
       - item: group
         label: Tune
         contains: #{
