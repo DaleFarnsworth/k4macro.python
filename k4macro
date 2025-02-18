@@ -1266,7 +1266,7 @@ class VFO(Widget):
         mod = freq % int(self.step * 1000)
         freq -= mod
         if mod != 0:
-            set_freq_sb(freq)
+            self.set_vfo_sb(freq/1000)
         Poll.add_poll(50, self.send_frequency)
 
     def send_frequency(self):
