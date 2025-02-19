@@ -369,6 +369,7 @@ class Server():
         self.address = config_info['address']
         self.port = config_info['port']
         self.startup = config_info.get('startup', None)
+        connect_on_start = config_info.get('connect_on_start', True)
         self.socket = None
         self.recv_buffer = ''
         self.send_queue = queue.Queue()
@@ -378,12 +379,20 @@ class Server():
         self.connected = False
         self.k4_subscriptions = {}
         self.k4_parameters = {}
+        self.connect_callbacks = []
 
         if Server.default_server_name == None:
             Server.default_server_name = config_info['name']
         Server.server_dict[self.name] = self
 
-        self.connect()
+        if true_values(connect_on_start):
+            self.connect()
+
+    def subscribe_connect(self, callback):
+        if self.connected:
+            callback()
+        else:
+            self.connect_callbacks.append(callback)
 
     def update_k4_parameter(self, base, parameter):
         old = self.k4_parameters.get(base, None)
@@ -401,6 +410,8 @@ class Server():
         return self.k4_parameters.get(base, None)
 
     def connect(self):
+        if self.connected:
+            return
         vprint1('Connecting to {name}, address {addr}, port {port}'.format(
               name=self.name, addr=self.address, port=self.port))
 
@@ -421,6 +432,10 @@ class Server():
                 if self.startup != None:
                     self.send_cmds(self.startup)     # send user-specified startup commands
                 Poll.add_poll(1, self.receive)
+
+            for callback in self.connect_callbacks:
+                callback()
+
         except socket.gaierror:
             print('Address not found: {addr}'.format(addr=self.address))
             if not Options.debug > 0:
@@ -836,21 +851,9 @@ class Button(Widget):
 
         width = container.items_width()
 
-        special_strings = {
-            'quit': cleanup_and_exit,
-            'show_previous_page': Page.show_previous,
-        }
-
         if directive != None:
-            if directive in special_strings:
-                command = special_strings[directive]
-            elif directive.startswith('show_page '):
-                page_name = directive[len('show_page '):]
-                command = lambda: Page.show_page(page_name)
-            else:
-               raise Exception('Unknown directive: ', directive)
-
-        if cmd != None:
+            command = directive_command(self, directive)
+        elif cmd != None:
             command = lambda: self.server.expand_and_send_cmds(cmd)
 
         font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
@@ -895,23 +898,25 @@ class Togglebutton(Widget):
             orig_response = conf_sel.get('response', cmd)
             selection['response'] = orig_response
 
-            selection['parameters'] = {}
-            cmds = self.server.expand_server_cmds(cmd)
-            responses = self.server.expand_server_cmds(orig_response)
-            for response in responses:
-                base = cmd_base(response)
-                if Server.k4_set_only_cmd(base, response):
-                    if len(cmds) <= 1 and len(responses) <= 1:
-                        raise Exception("Set-only command: '{cmd}' not permitted in togglebutton".format(cmd=orig_response))
-                    continue
-                if Server.k4_get_only_cmd(base) and len(cmds) <= 1 and len(responses) <= 1:
-                    raise Exception("Get-only command: '{cmd}' not permitted in togglebutton".format(cmd=orig_response))
-                response = response[len(base):]
-                selection['parameters'][base] = response
+            if cmd != None:
+                selection['parameters'] = {}
+                cmds = self.server.expand_server_cmds(cmd)
+                responses = self.server.expand_server_cmds(orig_response)
+                for response in responses:
+                    base = cmd_base(response)
+                    if Server.k4_set_only_cmd(base, response):
+                        if len(cmds) <= 1 and len(responses) <= 1:
+                            raise Exception("Set-only command: '{cmd}' not permitted in togglebutton".format(cmd=orig_response))
+                        continue
+                    if Server.k4_get_only_cmd(base) and len(cmds) <= 1 and len(responses) <= 1:
+                        raise Exception("Get-only command: '{cmd}' not permitted in togglebutton".format(cmd=orig_response))
+                    response = response[len(base):]
+                    selection['parameters'][base] = response
 
             selection['command'] = self.do_selection
 
             selection['cmd'] = cmd
+            selection['directive'] = conf_sel.get('directive', None)
             selection['bg'] = conf_sel.get('bg', Default.bg)
             selection['fg'] = conf_sel.get('fg', Default.fg)
             selection['abg'] = conf_sel.get('abg', Default.abg)
@@ -936,10 +941,15 @@ class Togglebutton(Widget):
                     command=selection['command'])
         self.configure()
 
-        for selection in self.selections:
-            self.server.subscribe_cmds(selection['response'], self.on_response_received)
-
         self.button.grid(row=container.row, column=container.column, sticky='w')
+
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def on_server_connect(self):
+        for selection in self.selections:
+            response = selection['response']
+            if response != None:
+                self.server.subscribe_cmds(response, self.on_response_received)
 
     def configure(self):
         selection = self.selections[self.index]
@@ -950,6 +960,10 @@ class Togglebutton(Widget):
                     activebackground=selection['abg'],
                     activeforeground=selection['afg'],
                     justify=self.justify)
+        if selection['blink']:
+            self.blinkon(selection)
+        else:
+            self.blinkoff(selection)
 
     def next_selection(self):
         self.index += 1
@@ -958,12 +972,19 @@ class Togglebutton(Widget):
                 self.index = 0
             else:
                 self.index = len(self.selections) - 1
+        self.configure()
 
     def do_selection(self):
         self.next_selection()
         selection = self.selections[self.index]
+
+        directive = selection['directive']
         cmd = selection['cmd']
-        if cmd != None:
+
+        if directive != None:
+            command = directive_command(self, directive)
+            command()
+        elif cmd != None:
             self.server.expand_and_send_cmds(cmd)
 
         self.configure()
@@ -981,11 +1002,6 @@ class Togglebutton(Widget):
             if self.compare_parameters(selection['text'], selection['parameters']):
                 self.index = index
                 self.configure()
-                if selection['blink']:
-                    self.blinkon(selection)
-            else:
-                if selection['blink']:
-                    self.blinkoff(selection)
 
     def blinkon(self, selection):
         Poll.add_poll(Widget.blink_mS, self.blink)
@@ -1070,6 +1086,9 @@ class Radiobutton(Widget):
             response = response[len(base):]
             self.parameters[base] = response
 
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def on_server_connect(self):
         self.server.subscribe_cmds(self.response, self.on_response_received)
 
     def on_clicked(self):
@@ -1165,7 +1184,6 @@ class VFO(Widget):
         self.vfo_sb.grid(row=0, column=0, sticky='w')
         self.vfo_sb.bind('<Return>', self.set_frequency)
         self.vfo_sb.configure(validate='all', validatecommand=self.enter_frequency_wrapper)
-        self.set_vfo_bg()
 
         self.step_sb = tk.Spinbox(
                 frame,
@@ -1208,6 +1226,9 @@ class VFO(Widget):
 
         frame.grid(row=container.row, column=container.column, sticky='w')
 
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def on_server_connect(self):
         self.server.subscribe_cmds('F{vfo}'.format(vfo=self.AorB), self.on_frequency_received)
         step_cmd = 'VT'
         if self.AorB == 'B':
@@ -1362,6 +1383,9 @@ class Slider(Widget):
                          command=self.value_changed)
         self.scale.grid(row=container.row, column=container.column, sticky='nw')
 
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def on_server_connect(self):
         cmd = eval_value(self.evalcmd, self.value.get())
         self.server.subscribe_cmds(cmd, self.on_response_received)
 
@@ -1414,6 +1438,9 @@ class Getvalue(Widget):
 
         self.label.grid(row=container.row, column=container.column, sticky='w')
 
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def on_server_connect(self):
         self.server.subscribe_cmds(response, self.on_response_received)
 
     def on_response_received(self, response):
@@ -1424,9 +1451,9 @@ class Bargraph(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
-        cmd = config_info.get('cmd', None)
-        response = config_info.get('response', cmd)
-        self.evalresponse = config_info.get('evalresponse', response)
+        self.cmd = config_info.get('cmd', None)
+        self.response = config_info.get('response', self.cmd)
+        self.evalresponse = config_info.get('evalresponse', self.response)
         orient = config_info.get('orient', 'horizontal')
         self.maximum = config_info.get('maximum', 100)
         self.evalmaximum = config_info.get('evalmaximum', None)
@@ -1497,10 +1524,12 @@ class Bargraph(Widget):
 
         self.frame.grid(row=container.row, column=container.column, sticky='w')
 
-        self.server.expand_and_send_cmds(cmd)
+        self.server.subscribe_connect(self.on_server_connect)
 
-        self.server.subscribe_cmds(response, self.on_response_received)
+    def on_server_connect(self):
         self.frame.bind('<Visibility>', self.configure)
+        self.server.expand_and_send_cmds(self.cmd)
+        self.server.subscribe_cmds(self.response, self.on_response_received)
 
     def on_response_received(self, response):
         value = int(self.eval_value(self.evalresponse, response))
@@ -1663,10 +1692,13 @@ class Dropdownbutton(Widget):
 
         self.val.trace('w', self.on_combobox_changed)
 
+        self.combobox.grid(row=container.row, column=container.column, sticky='e')
+
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def on_server_connect(self):
         for selection in self.selections:
             self.server.subscribe_cmds(selection['response'], self.on_response_received)
-
-        self.combobox.grid(row=container.row, column=container.column, sticky='e')
 
     def on_combobox_changed(self, var, index, mode):
         text = self.val.get()
@@ -1753,7 +1785,7 @@ def response_after_base(response):
     return response[i:]
 
 def true_values(v):
-    if v == True:
+    if v == True or v == 1:
         return True
 
     if not isinstance(v, str):
@@ -1761,6 +1793,22 @@ def true_values(v):
 
     v = v.lower()
     return v == 'true' or v == 'on' or v == '1' or v == 'yes'
+
+def directive_command(self, directive):
+    special_strings = {
+        'connect': self.server.connect,
+        'quit': cleanup_and_exit,
+        'show_previous_page': Page.show_previous,
+    }
+
+    if directive in special_strings:
+        command = special_strings[directive]
+    elif directive.startswith('show_page '):
+        page_name = directive[len('show_page '):]
+        command = lambda: Page.show_page(page_name)
+    else:
+       raise Exception('Unknown directive: ', directive)
+    return command
 
 class Config():
     main_block_name = ' main'

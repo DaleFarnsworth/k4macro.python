@@ -446,45 +446,45 @@
 #end
 
 #define atu_tune
-- { item: button, groupid: atu, text: " TUNE ", cmd: SW40; }
+- { item: button, text: " TUNE ", cmd: SW40; }
 #end
 
 #define AB_swap_buttons
 - item: group
   columns: 3
   contains:
-    - { item: button,      groupid: misc, indicator: 0, text: " A/B ",     cmd:  SW41; }
-    - { item: button,      groupid: misc, indicator: 0, text: " A->B ",    cmd:  DE0010;SW72; }
-    - { item: button,      groupid: misc, indicator: 0, text: " B->A ",    cmd:  SW147; }
+    - { item: button,      text: " A/B ",     cmd:  SW41; }
+    - { item: button,      text: " A->B ",    cmd:  DE0010;SW72; }
+    - { item: button,      text: " B->A ",    cmd:  SW147; }
 #end
 
 #define k4_power_off
-- { item: button, groupid: k4, text: '    K4 POWER OFF     ', cmd:  PS0;, abg: red }
+- { item: button, text: '    K4 POWER OFF     ', cmd:  PS0;, abg: red }
 #end
 
 #define QUIT
-- { item: button,      groupid: misc, indicator: 0, text: '   Exit    ', directive:  quit, abg: red }
+- { item: button,      text: '   Exit    ', directive:  quit, abg: red }
 #end
 
 #define split
 - item: togglebutton
   selections:
-    - { item: button, groupid: other, indicator: 0, text: 'Split on',   cmd: FT1;, bg: yellow   }
-    - { item: button, groupid: other, indicator: 0, text: 'Split off' , cmd: FT0; }
+    - { item: button, text: 'Split on',   cmd: FT1;, bg: yellow   }
+    - { item: button, text: 'Split off' , cmd: FT0; }
 #end
 
 #define subrcvr
 - item: togglebutton
   selections:
-    - { item: button, groupid: other, indicator: 0, text: 'Sub on',   cmd: SB1;, bg: yellow   }
-    - { item: button, groupid: other, indicator: 0, text: 'Sub off' , cmd: SB0; }
+    - { item: button, text: 'Sub on',   cmd: SB1;, bg: yellow   }
+    - { item: button, text: 'Sub off' , cmd: SB0; }
 #end
 
 #define tx_rx
 - item: togglebutton
   selections:
-    - { item: button, groupid: txrx,  indicator: 0, text: 'Receive',   cmd: RX;TQ;, bg: green, abg: green, response: TQ0; }
-    - { item: button, groupid: txrx,  indicator: 0, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    - { item: button, text: 'Receive',   cmd: RX;TQ;, bg: green, abg: green, response: TQ0; }
+    - { item: button, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
 #end
 
 # preprocessor directives:

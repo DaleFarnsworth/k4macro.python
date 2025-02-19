@@ -23,6 +23,7 @@
   address: K4-SNxxxxx.local      # match your serial number in the string
   port: 9200
   startup: TS1;                   # Set test mode
+  connect_on_start: False
 
 - item: page
   name: main
@@ -79,6 +80,10 @@
 
     - item: group
       contains: #{
+      - item: group
+        contains: #{
+        #include connect
+        #}
       - item: group
         contains: #{
         #include k4_power_off
@@ -679,11 +684,20 @@
 #end
 
 #define k4_power_off
-- { item: button, groupid: k4, text: 'Power Off', cmd:  PS0; }
+- { item: button, text: 'Power Off', cmd:  PS0; }
+#end
+
+#define connect
+- item: togglebutton
+  wraparound: False
+  selections: #{
+  - { item: button, text: 'Connect', bg: red, abg: red, blink: on }
+  - { item: button, text: 'Connected', directive: connect }
+  #}
 #end
 
 #define QUIT
-- { item: button, groupid: misc, indicator: 0, text: 'Exit', directive:  quit }
+- { item: button, text: 'Exit', directive:  quit }
 #end
 
 #define split
@@ -736,6 +750,7 @@
 #   address: The ip address of the server
 #   port: The port to connect to
 #   startup: command(s) to be sent to the server on startup.
+#   connect_on_start: if false, do not connect to the server automatically
 
 # page options:
 #   name: The page name (required).
@@ -766,6 +781,7 @@
 #     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
 #     then send 's1cmd' to server s1.
 #   directive:
+#     'connect', connects to the server if not previously connected
 #     'quit', terminates the program
 #     'show_previous_page', displays the previously-displayed page
 #     'show_page XXX', displays page with the name: XXX
