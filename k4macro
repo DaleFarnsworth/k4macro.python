@@ -650,10 +650,8 @@ class Container():
                 child = VFO(config_info, self)
             elif widget_type == 'slider':
                 child = Slider(config_info, self)
-            elif widget_type == 'cyclebutton':
-                child = Cyclebutton(config_info, self)
             elif widget_type == 'togglebutton':
-                child = Cyclebutton(config_info, self)
+                child = Togglebutton(config_info, self)
             elif widget_type == 'getvalue':
                 child = Getvalue(config_info, self)
             elif widget_type == 'bargraph':
@@ -874,7 +872,7 @@ class Button(Widget):
 
         button.grid(row=container.row, column=container.column, sticky='w')
 
-class Cyclebutton(Widget):
+class Togglebutton(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
@@ -884,7 +882,6 @@ class Cyclebutton(Widget):
         self.selections = []
 
         self.wraparound = true_values(config_info.get('wraparound', True))
-        self.updown = true_values(config_info.get('updown', False))
         self.justify = config_info.get('justify', 'left')
 
         conf_selections = config_info.get('selections', None)
@@ -905,10 +902,10 @@ class Cyclebutton(Widget):
                 base = cmd_base(response)
                 if Server.k4_set_only_cmd(base, response):
                     if len(cmds) <= 1 and len(responses) <= 1:
-                        raise Exception("Set-only command: '{cmd}' not permitted in Cyclebutton".format(cmd=orig_response))
+                        raise Exception("Set-only command: '{cmd}' not permitted in togglebutton".format(cmd=orig_response))
                     continue
                 if Server.k4_get_only_cmd(base) and len(cmds) <= 1 and len(responses) <= 1:
-                    raise Exception("Get-only command: '{cmd}' not permitted in Cyclebutton".format(cmd=orig_response))
+                    raise Exception("Get-only command: '{cmd}' not permitted in togglebutton".format(cmd=orig_response))
                 response = response[len(base):]
                 selection['parameters'][base] = response
 
@@ -939,24 +936,10 @@ class Cyclebutton(Widget):
                     command=selection['command'])
         self.configure()
 
-        self.button.bind('<Button-1>', self.on_click)
-
         for selection in self.selections:
             self.server.subscribe_cmds(selection['response'], self.on_response_received)
 
         self.button.grid(row=container.row, column=container.column, sticky='w')
-
-    def on_click(self, event):
-        if self.updown:
-            selection = self.selections[self.index]
-            button = self.button
-            button.update()
-            height = button.winfo_height()
-            if event.y < height / 2:
-                self.next_selection()
-            else:
-                self.previous_selection()
-            self.do_selection
 
     def configure(self):
         selection = self.selections[self.index]
@@ -976,17 +959,8 @@ class Cyclebutton(Widget):
             else:
                 self.index = len(self.selections) - 1
 
-    def previous_selection(self):
-        self.index -= 1
-        if self.index < 0:
-            if self.wraparound:
-                self.index = len(self.selections) - 1
-            else:
-                self.index = 0
-
     def do_selection(self):
-        if not self.updown:
-            self.next_selection()
+        self.next_selection()
         selection = self.selections[self.index]
         cmd = selection['cmd']
         if cmd != None:

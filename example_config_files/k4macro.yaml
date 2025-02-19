@@ -707,7 +707,6 @@
   label: 'Tx/Rx '
   contains: #{
   - item: togglebutton
-    wraparound: true
     selections: #{
     - { item: button, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
     - { item: button, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
@@ -777,8 +776,8 @@
 
 # togglebutton options:
 #   wraparound: true or false. whether the button wraps back around to the first selection
-#   updown: true or false, if true, selections cycle up if the button is clicked in its upper half
-#       and selections cycle down if the button is clicked in its lower half
+#     defaults to true
+#   justify: 'left', 'right', 'center' to justify text within the Button
 #   selections: a list of selections, each of which may have the following elements
 #       text: button text
 #       server: The server name of the server referenced by this button
