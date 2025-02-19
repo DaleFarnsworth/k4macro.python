@@ -33,22 +33,7 @@
   - item: group # Column 1
     columns: 1
     contains: #{
-    - item: group
-      contains: #{
-      #include VFO_A_widgets
-      #}
-
-    - item: group
-      contains: #{
-      - item: group
-        contains: #{
-        #include rf_out
-        #}
-      - item: group
-        contains: #{
-        #include alc
-        #}
-      #}
+    #include VFO_A_widgets
 
     - item: group
       contains: #{
@@ -98,17 +83,6 @@
     columns: 1
     contains: #{
     #include VFO_B_widgets
-    - item: group
-      contains: #{
-      - item: group
-        contains: #{
-        #include swr
-        #}
-      - item: group
-        contains: #{
-        #include cmp
-        #}
-      #}
 
     - item: group
       columns: 1
@@ -150,6 +124,18 @@
   columns: 1
   contains: #{
   #include VFO_A
+  #include S_Meter_A
+  - item: group
+    contains: #{
+    - item: group
+      contains: #{
+      #include rf_out
+      #}
+    - item: group
+      contains: #{
+      #include alc
+      #}
+    #}
   - item: group
     columns: 3
     childwidth: 7
@@ -166,6 +152,9 @@
 
 #define VFO_A
 - { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
+#end
+
+#define S_Meter_A
 - item: group
   leading: 1
   contains: #{
@@ -176,6 +165,7 @@
     font: { family: DejaVu Sans Mono, size: 6, weight: normal }
     lefttext: ' '
     bottomtext: "S1 2 3 4 5 6 7 8 9  +10 +20 +30 +40 +50 +60"
+    response: SM;
     evalresponse: '0 if len(value) < 4 else value.rstrip(";")[2:]'
   #}
 #end
@@ -349,6 +339,18 @@
   columns: 1
   contains: #{
   #include VFO_B
+  #include S_Meter_B
+  - item: group
+    contains: #{
+    - item: group
+      contains: #{
+      #include swr
+      #}
+    - item: group
+      contains: #{
+      #include cmp
+      #}
+    #}
   - item: group
     columns: 3
     childwidth: 7
@@ -365,6 +367,9 @@
 
 #define VFO_B
 - { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
+#end
+
+#define S_Meter_B
 - item: group
   leading: 1
   contains: #{
