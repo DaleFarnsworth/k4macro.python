@@ -469,22 +469,22 @@
 #define split
 - item: togglebutton
   selections:
-    - { item: button, text: 'Split on',   cmd: FT1;, bg: yellow   }
-    - { item: button, text: 'Split off' , cmd: FT0; }
+    - { text: 'Split on',   cmd: FT1;, bg: yellow   }
+    - { text: 'Split off' , cmd: FT0; }
 #end
 
 #define subrcvr
 - item: togglebutton
   selections:
-    - { item: button, text: 'Sub on',   cmd: SB1;, bg: yellow   }
-    - { item: button, text: 'Sub off' , cmd: SB0; }
+    - { text: 'Sub on',   cmd: SB1;, bg: yellow   }
+    - { text: 'Sub off' , cmd: SB0; }
 #end
 
 #define tx_rx
 - item: togglebutton
   selections:
-    - { item: button, text: 'Receive',   cmd: RX;TQ;, bg: green, abg: green, response: TQ0; }
-    - { item: button, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    - { text: 'Receive',   cmd: RX;TQ;, bg: green, abg: green, response: TQ0; }
+    - { text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
 #end
 
 # preprocessor directives:

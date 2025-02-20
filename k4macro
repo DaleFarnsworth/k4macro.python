@@ -58,6 +58,10 @@ class Default():
     button_font = { 'family': 'Helvetica', 'size': 10, 'weight': 'normal' }
 
     def __init__(self, config_info):
+        required = ['item']
+        options = ['bg', 'abg', 'fg', 'afg', 'selectcolor', 'label_font', 'button_font']
+        validate_config_options(config_info, required, options)
+
         Default.bg = config_info.get('bg', Default.bg)
         Default.abg = config_info.get('abg', Default.abg)
         Default.fg = config_info.get('fg', Default.fg)
@@ -627,6 +631,10 @@ Elecraft for possible troubleshooting instructions."""
         return cmd.split(';')
 
     def __init__(self, config_info):
+        required = ['item', 'name', 'address', 'port']
+        options = ['type', 'startup', 'connect_on_start', 'button_font']
+        validate_config_options(config_info, required, options)
+
         self.name = config_info['name']
         self.type = config_info.get('type', '').lower()
         self.address = config_info['address']
@@ -997,6 +1005,10 @@ class Page(Container):
     def __init__(self, config_info):
         super().__init__(config_info, None)
 
+        required = ['item', 'name', 'contains']
+        options = ['server', 'columns', 'childwidth', 'label_font', 'button_font']
+        validate_config_options(config_info, required, options)
+
         self.childwidth = config_info.get('childwidth', None)
 
         self.name = config_info['name']
@@ -1036,6 +1048,11 @@ class Group(Container):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
         container = self.container
+
+        required = ['item', 'contains']
+        options = ['columns', 'column', 'columnspan', 'rowspan', 'childwidth',
+                   'label_font', 'button_font', 'tabtext', 'label', 'leading']
+        validate_config_options(config_info, required, options)
 
         self.childwidth = config_info.get('childwidth', container.childwidth)
 
@@ -1123,6 +1140,10 @@ class Button(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
+        required = ['item']
+        options = ['text', 'cmd', 'directive', 'bg', 'abg', 'fg', 'afg', 'justify', 'font', 'button_font']
+        validate_config_options(config_info, required, options)
+
         text = str(config_info.get('text', ''))
         cmd = config_info.get('cmd', None)
         directive = config_info.get('directive', None)
@@ -1165,6 +1186,10 @@ class Togglebutton(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
+        required = ['item']
+        options = ['wraparound', 'justify', 'selections']
+        validate_config_options(config_info, required, options)
+
         self.index = 0
         self.blink_state = False
 
@@ -1177,6 +1202,10 @@ class Togglebutton(Widget):
         for conf_sel in conf_selections:
             index = len(self.selections)
             selection = {}
+
+            required = []
+            options = ['text', 'cmd', 'response', 'directive', 'bg', 'abg', 'fg', 'afg', 'blink', 'font', 'button_font']
+            validate_config_options(conf_sel, required, options, name='togglebutton.selection')
 
             selection['text'] = conf_sel.get('text', '')
 
@@ -1310,6 +1339,10 @@ class Radiobutton(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
+        required = ['item', 'groupid']
+        options = ['text', 'cmd', 'response', 'indicator', 'selectcolor', 'bg', 'abg', 'fg', 'afg', 'blink', 'font', 'button_font']
+        validate_config_options(config_info, required, options)
+
         Radiobutton.button_counter += 1
 
         self.text = str(config_info.get('text', ''))
@@ -1423,6 +1456,10 @@ class VFO(Widget):
 
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
+
+        required = ['item', 'AorB']
+        options = ['width', 'activecolor', 'transmitcolor', 'step_spinbox', 'bg', 'abg', 'fg', 'afg', 'blink', 'font', 'button_font']
+        validate_config_options(config_info, required, options)
 
         if len(VFO.step_to_index) == 0:
             for i, step in enumerate(VFO.steps):
@@ -1635,16 +1672,20 @@ class Slider(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
-        bg = config_info.get('bg', Default.bg)
-        fg = config_info.get('fg', Default.fg)
+        required = ['item', 'from', 'to', 'evalcmd', 'evalresponse']
+        options = ['orient', 'width', 'length', 'evalincrement', 'bg', 'abg', 'fg', 'afg', 'font']
+        validate_config_options(config_info, required, options)
+
         self.from_ = config_info['from']
         self.to = config_info['to']
+        self.evalcmd = config_info['evalcmd']
+        self.evalresponse = config_info['evalresponse']
         orient = config_info.get('orient', 'horizontal')
         width = config_info.get('width', 15)
         length = config_info.get('length', 15)
         self.evalincrement = config_info.get('evalincrement', 1.0)
-        self.evalcmd = config_info['evalcmd']
-        self.evalresponse = config_info['evalresponse']
+        bg = config_info.get('bg', Default.bg)
+        fg = config_info.get('fg', Default.fg)
         slider_font = config_info.get('font', container.button_font)
 
         font = tkFont.Font(family=slider_font['family'], size=slider_font['size'], weight=slider_font['weight'])
@@ -1695,6 +1736,10 @@ class Getvalue(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
+        required = ['item']
+        options = ['cmd', 'response', 'evalresponse', 'bg', 'abg', 'fg', 'afg', 'font', 'button_font']
+        validate_config_options(config_info, required, options)
+
         cmd = config_info.get('cmd', None)
         response = config_info.get('response', cmd)
         self.evalresponse = config_info.get('evalresponse', cmd)
@@ -1736,6 +1781,11 @@ class Getvalue(Widget):
 class Bargraph(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
+
+        required = ['item']
+        options = ['cmd', 'response', 'evalresponse', 'orient', 'maximum', 'evalmaximum',
+                   'length', 'lengthpercent', 'lefttext', 'bottomtext', 'evalbottomtext', 'bg', 'abg', 'fg', 'afg', 'font', 'button_font']
+        validate_config_options(config_info, required, options)
 
         self.cmd = config_info.get('cmd', None)
         self.response = config_info.get('response', self.cmd)
@@ -1843,6 +1893,10 @@ class Text(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
+        required = ['item']
+        options = ['text', 'length', 'bg', 'abg', 'fg', 'afg', 'justify', 'font', 'button_font']
+        validate_config_options(config_info, required, options)
+
         text = config_info.get('text', '')
         length = config_info.get('length', 100)
         bg = config_info.get('bg', Default.bg)
@@ -1874,6 +1928,10 @@ class Notebook(Container):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
 
+        required = ['items', 'contains']
+        options = []
+        validate_config_options(config_info, required, options)
+
         self.label_font = container.label_font
         self.button_font = container.button_font
 
@@ -1891,6 +1949,10 @@ class Notebook(Container):
 class Dropdownbutton(Widget):
     def __init__(self, config_info, container):
         super().__init__(config_info, container)
+
+        required = ['item', 'selections']
+        options = ['bg', 'abg', 'fg', 'afg', 'selecedbg', 'selectedfg', 'width', 'justify', 'unexpectedresponse']
+        validate_config_options(config_info, required, options)
 
         self.container = container
 
@@ -1922,6 +1984,10 @@ class Dropdownbutton(Widget):
         for index, conf_sel in enumerate(conf_selections):
             index = len(self.selections)
             selection = {}
+
+            required = []
+            options = ['text', 'cmd', 'response', 'blink']
+            validate_config_options(conf_sel, required, options, name='dropdownbutton.selection')
 
             text = conf_sel.get('text', '')
             selection['text'] = text
@@ -2340,6 +2406,27 @@ def popup(msg='', title='', timeout=None, font=None, color='yellow'):
     if timeout != None:
         popup.after(timeout, popup.destroy)
     return popup
+
+def validate_config_options(dictionary, required, options, name=None):
+    if name == None:
+        name = dictionary['item']
+
+    options.extend(required)
+    for option in dictionary.keys():
+        if option not in options:
+            if 'text' in dictionary:
+                id=" ({text})".format(text=dictionary['text'])
+            else:
+                id=''
+            raise Exception("Unrecognized option '{option}' in item '{name}'{id}.".format(option=option, name=name, id=id))
+
+    for option in required:
+        if option not in dictionary:
+            if 'text' in dictionary:
+                id=" ({text})".format(text=dictionary['text'])
+            else:
+                id=''
+            raise Exception("Required option '{option}' missing in item '{name}'{id}.".format(option=option, name=name, id=id))
 
 def dprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)

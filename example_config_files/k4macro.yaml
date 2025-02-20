@@ -650,32 +650,32 @@
 #define atu_tune
 - item: togglebutton
   selections: #{
-  - { item: button, text: "Tune", cmd: TU3;, bg: red }
-  - { item: button, text: "Tune", cmd: TU0; }
+  - { text: "Tune", cmd: TU3;, bg: red }
+  - { text: "Tune", cmd: TU0; }
   #}
 #end
 
 #define atu_extended_tune
 - item: togglebutton
   selections: #{
-  - { item: button, text: "TUNE", cmd: TU4;, bg: red }
-  - { item: button, text: "TUNE", cmd: TU0; }
+  - { text: "TUNE", cmd: TU4;, bg: red }
+  - { text: "TUNE", cmd: TU0; }
   #}
 #end
 
 #define tune
 - item: togglebutton
   selections: #{
-  - { item: button, text: "Tune", cmd: TU1;, bg: red }
-  - { item: button, text: "Tune", cmd: TU0; }
+  - { text: "Tune", cmd: TU1;, bg: red }
+  - { text: "Tune", cmd: TU0; }
   #}
 #end
 
 #define tunelp
 - item: togglebutton
   selections: #{
-  - { item: button, text: "Tune LP", cmd: TU2;, bg: red }
-  - { item: button, text: "Tune LP", cmd: TU0; }
+  - { text: "Tune LP", cmd: TU2;, bg: red }
+  - { text: "Tune LP", cmd: TU0; }
   #}
 #end
 
@@ -696,8 +696,8 @@
 - item: togglebutton
   wraparound: False
   selections: #{
-  - { item: button, text: 'Connect', bg: red, abg: red, blink: on }
-  - { item: button, text: 'Connected', directive: connect }
+  - { text: 'Connect', bg: red, abg: red, blink: on }
+  - { text: 'Connected', directive: connect }
   #}
 #end
 
@@ -708,16 +708,16 @@
 #define split
 - item: togglebutton
   selections: #{
-  - { item: button, text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
-  - { item: button, text: 'Split off' , cmd: FT0; }
+  - { text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
+  - { text: 'Split off' , cmd: FT0; }
   #}
 #end
 
 #define subrcvr
 - item: togglebutton
   selections: #{
-  - { item: button, text: 'Sub on',   cmd: SB1; }
-  - { item: button, text: 'Sub off' , cmd: SB0; }
+  - { text: 'Sub on',   cmd: SB1; }
+  - { text: 'Sub off' , cmd: SB0; }
   #}
 #end
 
@@ -727,8 +727,8 @@
   contains: #{
   - item: togglebutton
     selections: #{
-    - { item: button, text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
-    - { item: button, text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    - { text: 'Receive',   cmd: RX;TQ;, bg: white, abg: white, response: TQ0; }
+    - { text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
     #}
   #}
 #end
