@@ -512,10 +512,11 @@
 
 # page options:
 #   name: The page name (required).
-#     The page named 'main' is the first one displayed.
 #   server: The default server items contained in this page will use
 #   columns: The number of columns in which contained items will be displayed.
 #   contains: The list of items this page contains
+#
+#   The first page defined will be the initially displayed page
 
 # group options:
 #   label: The label that will be displayed for this group.
