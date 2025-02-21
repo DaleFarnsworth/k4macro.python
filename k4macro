@@ -316,268 +316,6 @@ class Server():
         'UT': True,
     }
 
-    k4_error_codes = {}
-
-    k4_error_text = """
-ER01, VFO B band would be too high for RX/TX low-pass filter: If the
-sub receiver is on and both receivers are sharing the transmit antenna:
-then both are subject to the transmit low-pass filter. Suppose VFO A is
-the transmit VFO (i.e., you're not in SPLIT). If you then selected a new
-band for VFO B that's too high in frequency, the low-pass filter would
-greatly attenuate sub receiver signals. The K4 prevents this from
-occurring. To get around this limitation, you can do any of the
-following, (1) turn the sub receiver off; (2) go into SPLIT mode first (to
-make VFO B the TX VFO), then change the VFO B band; (3) use a
-receive-only antenna for either or both receivers.
-ER02, KAT4 ATU module required for this operation: If a KAT4
-module is installed, set MENU:KAT4 ATU Option to ENABLED to allow
-use of [ATU TUNE].
-ER03, KRX4 Sub RX module required for this operation: If a KRX4
-module is installed, set MENU:KRX4 2ND RX Option to ENABLED. This
-will allow the sub receiver to use a different antenna than the main
-receiver.
-ER04, VFO B freq. would be too high for RX/TX low-pass filter: This is
-a more general case of ER01 (see above).
-ER05, Transmit gain calibration attempt failed: This error will occur if
-a TUNE is performed at 5.0 or 50 W and the transmitter drive required
-is out of range. Connect a 50 ohm dummy load, turn the ATU off, and
-retry. If it fails at 5.0 W, there could be a problem with the LPA
-module (10 W amp). If it works at 5.0 W but fails at 50 W, there could
-be a problem with the KPA4 module (100 W amp).
-ER06, Not applicable in milliwatt power range: The present
-operation only applies during normal operation, not when using
-external transverters.
-ER07, ATU is bypassed: Hold [ATU] switch to enable the KAT4 for
-auto-tuning, then retry.
-ER08, TX ALC required for this operation: Set MENU:TX ALC to On,
-then retry.
-ER09, TUNE not allowed with current configuration: This error may
-occur if a TUNE operation is attempted outside of any allowed band.
-ER10, Auto-tuning not allowed in ATU test modes: Set MENU:KAT4
-ATU Option to ENABLED to allow use of [ATU TUNE].
-ER11, Transmit is locked out: The transmitter may be disabled due to
-a persistent key-down condition at power-up, or because of a transmit
-inhibit signal (ACC jack).
-ER12, SET command incompatible with target VFO's mode: An
-external host application or macro has sent the K4 a SET remote
-control command that does not apply to the current operating mode.
-ER13, GET or SET command not implemented: An external host
-application or macro has sent the K4 a SET remote control command
-that has not been implemented.
-ER14, KPA4 module required for this operation: If a KPA4 amplifier
-module is installed, set MENU:KPA4 PA Option to ENABLED. If not,
-then power can not be set higher than 10 W.
-ER15, KPA4 set to 'Bypassed' in menu: Set MENU:KPA4 PA Option to
-ENABLED to allow power to be set higher than 10 W.
-ER16, KPA4 module 12 VDC missing: Check the fuse on the KPA4
-module. This is a standard 25 amp blade fuse available from Elecraft or
-auto parts stores. The recommend replacement is Elecraft E980427
-(Littlefuse part number 0287025.PXCN or Digikey F4195-ND).
-ER17, PA cannot be used on XVTR bands: Power levels above 10 W
-cannot be used with external transverters.
-ER18, KPA4 set to 'Not Installed' in menu: If a KPA4 amplifier module
-is installed, set MENU:KPA4 PA Option to ENABLED. If not, then power
-can not be set higher than 10 W.
-ER20, Cannot turn off AGC when NR is in use: AGC must remain on
-when noise reduction is in use in order to prevent excessive algorithm
-gain.
-ER21, Band data error: An internal check on per-band data structures
-failed. Try turning power off and back on. If the problem persists, try
-initializing parameters.
-ER22, NR not allowed in DATA modes or if AGC is off: Noise
-reduction and certain data modes cannot be used with AGC turned
-off. Turn AGC on to proceed with the desired operation.
-ER23, SPLIT would select a TX LPF too low for current RX band(s):
-Cross-band SPLIT is only possible if (1) the receivers are using receiveonly antennas, or (2) the transmit band is higher in frequency than the
-receive band.
-ER24, VFO B Different Band menu entry is set to NO: By default, the
-K4 makes sure that both VFOs are on the same band. If VFO B is to be
-placed on a different band, set MENU:VFO B Different Band to YES.
-ER25-ER40, KPA500 / KPA1500 error condition: If an Elecraft KPAseries amplifier is connected to the K4, the transceiver can display
-error conditions related to the amplifier. Please refer to the amplifier
-manual for details.
-ER41-ER50, Reserved for future use.
-ER51, High LPA reflected power; check antenna: High SWR seen at
-the 10 watt stage resulted in excessive reflected power. The antenna
-may have changed, or you may need to do [ATU TUNE]. If the ATU is
-off, hold [ATU] to turn it on.
-ER52, High PA reflected power; check antenna: High SWR seen at the
-100 watt stage resulted in excessive reflected power. The antenna
-may have changed, or you may need to do [ATU TUNE]. If the ATU is
-off, hold [ATU] to turn it on.
-ER53, High LPA temperature; check LPA heat sink screws:
-Temperature at 10 watt stage exceeded its limit. This could be caused
-by the screws on the bottom cover becoming too lose, by high
-ambient temperature, or by excessive key-down time.
-ER54, High PA temperature; check fans: Temperature at 100 watt
-stage exceeded its limit. This could be caused by inoperative rearpanel fans, by high ambient temperature, or by excessive key-down
-time.
-ER55, High LPA current; check antenna: Current drawn by the 10
-watt stage exceeded its limit. This may be caused by a sudden change
-in antenna SWR. Adjust the antenna or use the ATU to obtain a better
-match.
-ER56, High PA current; check antenna: Current drawn by the 100
-watt stage exceeded its limit. This may be caused by a sudden change
-in antenna SWR. Adjust the antenna or use the ATU to obtain a better
-match.
-ER57, Invalid FSK data input selection: FSK keying via a serial I/O port
-can only be done using the DTR control line, not RTS. Choose a
-different signal for FSK (see Serial I/O menu entries).
-ER58, Transmit TEST mode is in effect: Exit TX test mode by
-holding [TEST], then retry the operation.
-ER59, Cross-mode split not allowed in DATA modes: SPLIT is not
-presently allowed with the VFOs in two different data modes. Exit
-SPLIT or set VFO B to a different mode.
-ER60, End of Band: Transmit attempted outside the frequency range
-of the current ham band. This is only allowed when using the XVTR
-OUT jack for transmit, or if the K4 has been authorized for MARS use
-(contact Elecraft for details).
-ER61, Keyer paddle not allowed: In FSK and PSK modes, the keyer
-paddle can be used to send text (by converting CW to FSK/PSK) only if
-text decode is turned on. To access text decode settings, tap <MAIN
-RX>, then <TEXT DECODE>.
-ER62, VFO B band locked to VFO A in diversity mode: This message
-is displayed if you attempt to change the band of VFO B while in
-diversity mode. When diversity is in use, the sub receiver's filters and
-other settings must match the main receiver, which means both must
-be on the same band.
-ER63, Current antenna is based on transverter band: (1) You may
-have MENU:XVTR OUT Test set to ON. This forces the XVTR IN and
-OUT jacks to be used, regardless of the selected band. (2) When a
-transverter band is in use, the antenna jacks for RX and TX are fixed.
-With external transverters, the XVTR OUT (TX) jack is used for
-transmit, and RX ANT 1 or XVTR IN/RX ANT 2 for receive. Internal
-transverters use ANT4 (SO239) for the combined RX/TX path.
-ER64, Diversity not applicable to transverter bands: Diversity mode
-cannot be selected if VFO A is set to a transverter band. If only VFO B
-is on a transverter band, it will be switched to the same HF band as
-VFO A when diversity mode is entered.
-ER65, Invalid transverter setup or freq. request: To use a transverter
-band, it must be configured in the menu for the desired R.F. and I.F.,
-and its mode must not be OFF. The other way this error message can
-appear is if a frequency is specified that is outside the usable I.F. range
-(-1 to +4 MHz in relation to the I.F. specified in the menu).
-ER66, Turn VOX on to enable RF output when keying in CW mode: In
-CW mode, if VOX is off, you'll hear your sidetone, and the KEY OUT signal
-will be active, but there will be no RF output. This makes VOX useful for
-testing amplifier keying, etc., with zero drive. The error message serves
-as a reminder in case you turn VOX off unintentionally.
-ER67-70, Keying input held low at power-up: These alerts let you
-know if you have a persistent "stuck key" condition when the K4 is
-turned on. The four alerts cover KEY IN, DOT, DASH, and PTT
-respectively. Disconnect any connected keying devices and clear the
-message. If this corrects the problem, examine the keying device for
-shorts to ground.
-ER71, Receiver is Squelched: This alert appears as a reminder when you
-adjust AF gain while the associated receiver is squelched. Squelch can be
-disabled for non-FM modes using the RX All-Mode Squelch menu entry.
-ER100, 10 MHz REF IN signal too low; using internal TCXO: An external
-10 MHz reference input was detected that is too low in amplitude to
-ensure stability. Nominal requirement is +10 dBm.
-ER101, TX 2-Tone Generator allowed in SSB modes: The 2-tone
-generator is only applicable in SSB modes.
-ER102, Turn up Monitor Level for TX 2-Tone Generator to be
-audible, In SSB modes with the 2-tone generator turned on: if you
-tap XMIT and can't hear the tones, adjust the monitor level.
-ER103, Transverter band not configured. Use XVTR menu
-entries, The transverter band presently selected has not yet been
-configured. The menu has several XVTR menu entries for
-transverter band configuration. See transverter setup information.
-ER104, No recorded message: The selected message (M1..M4), in
-the current bank (1 or 2) has not been recorded in the current
-mode.
-ER105, Operation requires sub RX to be ON: The most recent
-control operation only applies if the sub receiver is turned on.
-ER106, Operation requires DUAL PAN to be OFF: The most recent
-control operation only applies to single-panadapter mode. Tap
-<DISPLAY> then <PAN = n> one or to times to switch to
-panadapter A.
-ER107, Operation requires K4D or K4HD: The most recent control
-operation only applies to the K4D and K4HD models.
-ER150, K4FP missing: The front panel module was not detected on
-power-up, which may result in multiple issues with basic
-functionality. This may be due to a dislodged or intermittent USB
-cable or other hardware problem. Contact Elecraft for possible
-troubleshooting instructions.
-ER151, DUC missing: The digital up-converter module was not
-detected on power-up, which may result in incorrect transmit
-behavior. This may be due to the module being unplugged or other
-hardware problem. Contact Elecraft for possible troubleshooting
-instructions.
-ER152, DDC1 missing: The main receiver's digital down-converter
-module was not detected on power-up, which may result in
-incorrect main or sub receiver behavior. This may be due to the
-module being unplugged or other hardware problem. Contact
-Elecraft for possible troubleshooting instructions.
-ER153, DDC2 missing: The sub receiver's digital up-converter
-module was not detected on power-up, which may result in
-incorrect sub receiver behavior. This may be due to the module
-being unplugged or other hardware problem. Contact Elecraft for
-possible troubleshooting instructions.
-ER154, DAP missing: The digital audio processor module was not
-detected on power-up, which may result in incorrect DVR behavior,
-loss of streaming audio during remote control, or other audio
-issues. This may be due to the DAP controller being unprogrammed or other hardware problem. Contact Elecraft for
-possible troubleshooting instructions.
-ER155, DDC/DUC missing: Both the digital up-converter and digital
-down-converter modules were not detected on power-up, which
-may result in incorrect receive and transmit behavior. This may be
-due to a problem with the DPU module (digital processing unit)
-which acts a mother board for the DUC and DDC modules. Contact
-Elecraft for possible troubleshooting instructions.
-ER170, K4FP comm failure: Contact was lost with the front panel
-module, which may result in incorrect basic functionality. This may
-be due to a dislodged or intermittent USB cable or other hardware
-problem. Contact Elecraft for possible troubleshooting
-instructions.
-ER171, DUC comm failure: Contact was lost with the digital upconverter module, which may result in incorrect transmit behavior.
-This may be due to the module being unplugged or other hardware
-problem. Contact Elecraft for possible troubleshooting
-instructions.
-ER172, DDC1 comm failure: Contact was lost with the main
-receiver's digital down-converter module, resulting in incorrect
-main or sub receiver behavior. This may be due to the module
-being unplugged or other hardware problem. Contact Elecraft for
-possible troubleshooting instructions.
-ER173, DDC2 comm failure: Contact was lost with the sub
-receiver's digital down-converter module, resulting in incorrect sub
-receiver behavior. This may be due to the module being unplugged
-or other hardware problem. Contact Elecraft for possible
-troubleshooting instructions.
-ER174, DAP comm failure: Contact was lost with the digital audio
-processor module, which may result in incorrect DVR behavior, loss
-of streaming audio during remote control, or other audio issues.
-This may be due to the module being unplugged or other hardware
-problem. Contact Elecraft for possible troubleshooting instructions.
-ER175, DDC/DUC comm failure: Contact was lost with both the
-digital up-converter and digital down-converter modules, which
-may result in incorrect receive and transmit behavior. This may be
-due to a problem with the DPU module (digital processing unit)
-which acts a mother board for the DUC and DDC modules. Contact
-Elecraft for possible troubleshooting instructions."""
-
-    @staticmethod
-    def fixup_error_codes(error_text, codes):
-        ranges = []
-        code_texts = error_text.split("\nER")
-        if code_texts[0] != '':
-            raise Exception('error_text variable should begin with a newline')
-        for code_text in code_texts[1:]:
-            code, desc = code_text.split(", ", 1)
-            codes[code] = desc
-            if "-" in code:
-                ranges.append(code)
-
-        for xrange in ranges:
-                first, last = xrange.split("-")
-                last = last.lstrip('ER')
-                for i in range(int(first), int(last)+1):
-                    code = str(i)
-                    codes[code] = codes[xrange]
-                del codes[xrange]
-
-    fixup_error_codes(k4_error_text, k4_error_codes)
-
     @staticmethod
     def server(server_name):
         return Server.server_dict[server_name]
@@ -656,8 +394,22 @@ Elecraft for possible troubleshooting instructions."""
             Server.default_server_name = config_info['name']
         Server.server_dict[self.name] = self
 
+        if self.type == 'k4':
+            self.subscribe_connect(self.on_server_connect)
+
         if true_values(connect_on_start):
             self.connect()
+
+    def on_server_connect(self):
+        self.subscribe_response('ER;', self.on_error_code, send=False)
+
+    def on_error_code(self, response):
+        response = response.rstrip(';')
+        try:
+            code, text = response.split(':', 1)
+            popup(msg=[code, text], title='Error', timeout=5000)
+        except:
+            popup(msg=response, title='Error', timeout=5000)
 
     def subscribe_connect(self, callback):
         if self.connected:
@@ -697,6 +449,7 @@ Elecraft for possible troubleshooting instructions."""
             if self.type == 'k4':
                 self.send_str('K41;')                # request K4 to respond in advanced mode
                 self.send_str('AI4;')                # request K4 to send updates immediately
+                self.send_str('ER1;')                # request long format error messages
                 self.send_cmds('MD;MD$;')            # cache the mode response for later use in setting the vfo step
                 if self.startup != None:
                     self.send_cmds(self.startup)     # send user-specified startup commands
@@ -1018,22 +771,6 @@ class Page(Container):
         self.button_font = config_info.get('button_font', Default.button_font)
         self.frame = tk.Frame(Page.top)
         self.show_widgets()
-
-        if self.server.type == 'k4':
-            self.server.subscribe_connect(self.on_server_connect)
-
-    def on_server_connect(self):
-        self.server.subscribe_response("ER;", self.on_received_error_code, send=False)
-
-    def on_received_error_code(self, code):
-        code = code.rstrip(';')
-        text = Server.k4_error_codes[code[2:]]
-        short, long = text.split(':', 1)
-        long = long.lstrip()
-        lines = long.split("\n")
-        long = ' '.join(lines)
-        long = textwrap.fill(long, 50)
-        popup(msg=[code, short, long], title='Error', timeout=5000)
 
     def show(self):
         self.frame.grid()
