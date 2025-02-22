@@ -390,12 +390,13 @@ class Server():
         self.k4_parameters = {}
         self.connect_callbacks = []
 
+        self.ignored_errors = {}
+
         if Server.default_server_name == None:
             Server.default_server_name = config_info['name']
         Server.server_dict[self.name] = self
 
-        if self.type == 'k4':
-            self.subscribe_connect(self.on_server_connect)
+        self.subscribe_connect(self.on_server_connect)
 
         if true_values(connect_on_start):
             self.connect()
@@ -561,12 +562,12 @@ class Server():
                     if self.type == 'k4':
                         base = cmd_base(response)
                         if Options.debug >= 1:
-                            if base in ['SM', 'SM$', 'SMH', 'SMH$', 'TM' ]:
+                            if base in ('SM', 'SM$', 'SMH', 'SMH$', 'TM'):
                                 dprint3('{name}: received: {response}'.format(name=self.name, response=response))
                             else:
                                 dprint1('{name}: received: {response}'.format(name=self.name, response=response))
                         response = response[len(base):]
-                        if response == '?':
+                        if response == '?' and base not in self.ignored_errors:
                             if Options.debug > 0:
                                 raise Exception('Received error response from K4: ', base + response)
                             else:
@@ -641,6 +642,9 @@ class Server():
     def clear_k4_subscriptions(self):
         self.k4_subscriptions.clear()
 
+    def add_ignored_error(self, base):
+        self.ignored_errors[base] = True
+
 class Container():
     depth = -1
 
@@ -705,6 +709,8 @@ class Container():
                child = Notebook(config_info, self)
             elif widget_type == 'dropdownbutton':
                child = Dropdownbutton(config_info, self)
+            elif widget_type == 'menu':
+               child = Menu(config_info, self)
             else:
                 raise Exception('Error: config file: unknown item "{type}"'.format(type=widget_type))
 
@@ -1298,6 +1304,7 @@ class VFO(Widget):
                 width=6,
                 justify='right',
                 state='readonly',
+                style='TCombobox',
                 )
         self.step_cb_val.trace('w', self.on_step_cb_changed)
 
@@ -1333,7 +1340,7 @@ class VFO(Widget):
         elif v == 'focusout':
             return self.set_frequency()
 
-    def set_frequency(self, arg=None):
+    def set_frequency(self, event=None):
         Page.top.focus()                # Remove focus from vfo_sb
         freq = float(self.vfo_sb.get())
         if freq < VFO.low_frequency_limit:
@@ -1711,7 +1718,7 @@ class Notebook(Container):
 class Dropdownbutton(Widget):
     def __init__(self, config_info, container):
         required = ['item', 'selections']
-        options = ['bg', 'abg', 'fg', 'afg', 'selecedbg', 'selectedfg', 'width', 'justify', 'unexpectedresponse']
+        options = ['bg', 'abg', 'fg', 'afg', 'selectbg', 'selectfg', 'width', 'justify', 'unexpectedresponse']
         validate_config_options(config_info, required, options)
 
         super().__init__(config_info, container)
@@ -1732,8 +1739,8 @@ class Dropdownbutton(Widget):
         afg = config_info.get('afg', Default.afg)
         if afg == None:
             afg = fg
-        self.selectedbg = config_info.get('selectedbg', bg)
-        self.selectedfg = config_info.get('selectedfg', fg)
+        self.selectbg = config_info.get('selectbg', bg)
+        self.selectfg = config_info.get('selectfg', fg)
         justify = config_info.get('justify', 'right')
 
         self.unexpected_response = config_info.get('unexpectedresponse', '')
@@ -1788,7 +1795,7 @@ class Dropdownbutton(Widget):
 
         # Define the style for combobox widget
         self.style = ttk.Style()
-        self.style.configure("TCombobox", background=bg, foreground=fg, selectbackground=self.selectedbg, selectforeground=self.selectedfg)
+        self.style.configure("TCombobox", background=bg, foreground=fg, selectbackground=self.selectbg, selectforeground=self.selectfg)
 
         self.val = tk.StringVar()
 
@@ -1800,7 +1807,9 @@ class Dropdownbutton(Widget):
                 height=len(texts),
                 width=width,
                 state='readonly',
-                justify=justify)
+                justify=justify,
+                style='TCombobox',
+                )
 
         self.val.trace('w', self.on_combobox_changed)
 
@@ -1865,9 +1874,9 @@ class Dropdownbutton(Widget):
     def blink(self):
         self.blink_state = not self.blink_state
         if self.blink_state:
-            self.style.configure("TCombobox", selectbackground=self.selectedfg, selectforeground=selectedbg)
+            self.style.configure("TCombobox", selectbackground=self.selectfg, selectforeground=selectbg)
         else:
-            self.style.configure("TCombobox", selectbackground=self.selectedbg, selectforeground=selectedfg)
+            self.style.configure("TCombobox", selectbackground=self.selectbg, selectforeground=selectfg)
 
 def cmd_base(cmd):
     ucmd = cmd.upper()
@@ -1921,6 +1930,575 @@ def directive_command(self, directive):
     else:
        raise Exception('Unknown directive: ', directive)
     return command
+
+class Menu_definition():
+    def __init__(self, menu, d):
+        self.menu = menu
+        self.index = int(d[0])
+        self.desc = hex_decode(d[1])
+        self.area = d[2]
+        self.type = d[3]
+        self.locked = 'Unlocked' if d[4] == '0' else 'Locked' if d[4] == '1' else 'Unmodifiable' if d[4] == '2' else ''
+        self.low = self.typed_value(d[5])
+        self.high = self.typed_value(d[6])
+        self.default = self.typed_value(d[7])
+        self.current = self.typed_value(d[8])
+        self.increment = self.typed_value(d[9])
+        self.values = []
+        for value in d[10:]:
+            self.values.append(hex_decode(value))
+        self.container = menu.container
+        self.server = menu.server
+
+        self.send_command = self.widget_send_command
+
+        self.updated_desc = self.desc
+
+        self.widget = None
+        self.changeable = ''
+
+        label_font = self.menu.label_font
+        font = tkFont.Font(family=label_font['family'], size=label_font['size'], weight=label_font['weight'])
+        self.frame = tk.LabelFrame(self.menu.frame,
+                                   text=self.desc,
+                                   font=font,
+                                   labelanchor='nw',
+                                   bd=4,
+                                   relief='raised')
+
+        if len(self.values) > 0:
+            self.listbox()
+        elif self.type == 'BIN':
+            self.range_listbox()
+        elif self.type == 'VFOCRS':
+            self.vfocrs()
+        elif self.type == 'AOFS':
+            self.aofs()
+        elif self.type == 'M50Hz':
+            self.m50hz()
+        elif self.type == 'ZMON':
+            self.zmon()
+        elif self.type == 'D10mW':
+            self.d10mw()
+        elif self.type in ('DEC', 'REF', 'ms', 'ZOFF', 'MHz', 'Hz'):
+            self.slider()
+        elif self.type in ('IP', 'SN'):
+            self.fixed_text()
+        elif self.type == 'STR':
+            self.text()
+
+        self.locked_frame = tk.Frame(self.frame)
+        self.locked_frame.grid(row=0, column=1)
+
+        self.locked_button = tk.Button(self.locked_frame,
+                    bd='2',
+                    text=self.locked,
+                    font=self.menu.font,
+                    width=12,
+                    justify='center',
+                    relief='raised',
+                    fg=self.menu.fg,
+                    bg=self.menu.bg,
+                    activebackground=self.menu.abg,
+                    activeforeground=self.menu.afg,
+                    padx=2,
+                    pady=2,
+                    command=self.on_locked_changed)
+
+        self.locked_button.grid(row=0, column=0)
+
+        self.default_button = tk.Button(self.locked_frame,
+                    bd='2',
+                    text="Set to\nNormal",
+                    font=self.menu.font,
+                    width=12,
+                    justify='center',
+                    relief='raised',
+                    fg=self.menu.fg,
+                    bg=self.menu.bg,
+                    activebackground=self.menu.abg,
+                    activeforeground=self.menu.afg,
+                    padx=2,
+                    pady=2,
+                    command=self.on_default_clicked)
+
+        self.default_button.grid(row=1, column=0)
+
+    def null_update(self, current=None):
+        pass
+
+    def on_locked_changed(self):
+        if self.locked == 'Locked':
+            if self.changeable == 'Locked':
+                self.changeable = 'Unlocked'
+            else:
+                self.changeable = 'Locked'
+
+        self.update()
+
+    def update(self, locked=None, current=None):
+        self.update_widget(current=current)
+
+        if locked != None:
+            self.changeable = locked
+
+        if self.changeable == 'Unmodifiable':
+            self.default_button.grid_forget()
+        elif self.changeable == 'Unlocked':
+            self.default_button.grid(row=1, column=0)
+            self.default_button.configure(state='normal')
+        else:
+            self.default_button.grid(row=1, column=0)
+            self.default_button.configure(state='disabled')
+
+        self.locked_button.configure(text=self.changeable)
+
+        self.update_desc()
+
+    def update_desc(self):
+        desc = self.updated_desc
+        if self.area == 'XV':
+            if self.type == 'DEC':
+                self.menu.xv_band = int(self.current)
+            else:
+                self.updated_desc = self.desc.replace('<n>', str(self.menu.xv_band))
+
+            if self.updated_desc != desc:
+                self.menu.listbox.delete(self.position)
+                self.menu.listbox.insert(self.position, self.updated_desc)
+
+        if self.type == 'ms':
+            self.updated_desc = self.desc + "\n(mS)"
+
+        if self.type == 'ZMON':
+            self.updated_desc = self.desc + "\n(-1 = OFF, 0 = MON)"
+
+        if self.type == 'ZOFF':
+            self.updated_desc = self.desc + "\n(0 = OFF)"
+
+        if self.type == 'MHz':
+            self.updated_desc = self.updated_desc + "\n(MHz)"
+
+        if self.type == 'D10mW':
+            self.updated_desc = self.updated_desc + "\n(mW)"
+
+        if self.type == 'Hz':
+            self.updated_desc = self.updated_desc + "\n(Hz)"
+
+        if self.updated_desc != desc:
+            self.frame.configure(text=self.updated_desc)
+        
+    def current_desc(self):
+        return self.updated_desc
+
+    def on_default_clicked(self):
+        if self.changeable == 'Unlocked':
+            self.update(current=self.default)
+            self.send_command()
+
+    def show(self):
+        self.update(locked=self.locked)
+        self.frame.grid(row=0, column=2)
+
+    def hide(self):
+        self.frame.grid_forget()
+
+    def listbox(self):
+        self.update_widget = self.listbox_update
+        self.widget = tk.Listbox(
+                self.frame,
+                font=self.menu.font,
+                justify='left',
+                bg=self.menu.bg,
+                fg=self.menu.fg,
+                selectbackground=self.menu.selectbg,
+                selectforeground=self.menu.selectfg,
+                exportselection=False,
+                )
+
+        if self.low != 0:
+            raise Exception('Unexpected listbox low ', self.low)
+
+        high = self.high + 1
+        if high < len(self.values):
+            self.values = self.values[:high]
+        
+        width = 0
+        for value in self.values:
+            value = str(value)
+            if len(value) > width:
+                width = len(value)
+            self.widget.insert(tk.END, value)
+
+        width = int(round(width*1.1)+1)
+        self.widget.configure(height=len(self.values), width=width)
+        self.widget.selection_clear(0, tk.END)
+        self.widget.selection_set(self.current)
+        selections = self.widget.curselection()
+        if len(selections) > 0:
+            index = selections[0]
+
+        self.widget.grid(row=0, column=0)
+        self.widget.bind('<<ListboxSelect>>', self.on_listbox_selected)
+
+    def on_listbox_selected(self, arg):
+        if self.changeable != 'Unlocked':
+            self.widget.selection_clear(0, tk.END)
+            self.widget.selection_set(self.current)
+            return
+
+        selections = self.widget.curselection()
+        index = selections[0]
+        self.current = index
+        self.send_command()
+
+    def listbox_update(self, current=None):
+        if current != None:
+            self.current = current
+        self.widget.selection_clear(0, tk.END)
+        self.widget.selection_set(self.current)
+
+    def vfocrs(self):
+        self.values = ('0.1 kHz', '0.5 kHz', '1.0 kHz', '2.5 kHz')
+        self.listbox()
+
+    def m50hz(self):
+        self.values = ('150 Hz', '200 Hz', '250 Hz', '300 Hz', '350 Hz', '400 Hz', '450 Hz', '500 Hz', '550 Hz', '600 Hz', '650 Hz', '700 Hz')
+        self.high -= self.low
+        self.low = 0
+        self.listbox()
+        self.send_command = self.m50hz_send_command
+        self.update_widget = self.m50hz_update
+
+    def m50hz_send_command(self):
+        value = int(self.current) + 3
+        self.server.send_str('ME{index:04d}.{value:04d};'.format(index=self.index, value=value))
+
+    def m50hz_update(self, current=None):
+        if current != None:
+            self.current = current - 3
+        self.listbox_update()
+
+    def aofs(self):
+        self.low -= 8
+        self.high -= 8
+        self.slider()
+        self.send_command = self.aofs_send_command
+        self.update_widget = self.aofs_update
+
+    def aofs_send_command(self):
+        value = int(self.current) + 8
+        self.server.send_str('ME{index:04d}.{value:04d};'.format(index=self.index, value=value))
+
+    def aofs_update(self, current=None):
+        if current != None:
+            self.current = current - 8
+        self.slider_update()
+
+    def zmon(self):
+        self.low -= 1
+        self.high -= 1
+        self.slider()
+        self.send_command = self.zmon_send_command
+        self.update_widget = self.zmon_update
+
+    def zmon_send_command(self):
+        value = int(self.current) + 1
+        self.server.send_str('ME{index:04d}.{value:04d};'.format(index=self.index, value=value))
+
+    def zmon_update(self, current=None):
+        if current != None:
+            self.current = current - 1
+        self.slider_update()
+
+    def d10mw(self):
+        self.low = float(self.low) / 10
+        self.high = float(self.high) / 10
+        self.increment = float(self.increment) / 10
+        self.slider()
+        self.send_command = self.d10mw_send_command
+        self.update_widget = self.d10mw_update
+
+    def d10mw_send_command(self):
+        value = int(self.current * 10)
+        self.server.send_str('ME{index:04d}.{value:04d};'.format(index=self.index, value=value))
+
+    def d10mw_update(self, current=None):
+        if current != None:
+            self.current = float(current) / 10
+        self.slider_update()
+
+    def range_listbox(self):
+        for i in range(self.low, self.high+1, self.increment):
+            self.values.append(i)
+        self.high -= self.low
+        self.low = 0
+        self.listbox()
+        self.send_command = self.range_listbox_send_command
+        self.update_widget = self.range_listbox_update
+
+    def range_listbox_update(self, current=None):
+        if current != None:
+            self.current = self.values.index(current)
+        self.widget.selection_clear(0, tk.END)
+        self.widget.selection_set(self.current)
+
+    def range_listbox_send_command(self):
+        value = int(self.values[self.current])
+        self.server.send_str('ME{index:04d}.{value:04d};'.format(index=self.index, value=value))
+
+    def slider(self):
+        self.update_widget = self.slider_update
+        self.value = tk.DoubleVar()
+        self.value.set(self.current)
+
+        self.widget = tk.Scale(self.frame,
+                         from_=self.high,
+                         to=self.low,
+                         orient='vertical',
+                         resolution=self.increment,
+                         width=20,
+                         length=font_height(self.menu.font)*9,
+                         font=self.menu.font,
+                         bg=self.menu.bg,
+                         fg=self.menu.fg,
+                         variable=self.value,
+                         command=self.slider_value_changed)
+        self.widget.grid(row=0, column=0)
+
+    def slider_value_changed(self, event):
+        if self.changeable != 'Unlocked':
+            self.value.set(self.current)
+            return
+
+        self.current = self.value.get()
+        self.send_command()
+
+    def slider_update(self, current=None):
+        if current != None:
+            if isinstance(current, str) and current.find('-') > 0:
+                current = current.lstrip('0')
+            self.current = current
+        self.value.set(self.current)
+
+    def fixed_text(self):
+        self.update_widget = self.fixed_text_update
+        self.widget = tk.Label(self.frame,
+            text=self.current,
+            bd=2,
+            font=self.menu.font,
+            justify='left',
+            fg=self.menu.fg,
+            bg=self.menu.bg,
+            activebackground=self.menu.abg,
+            activeforeground=self.menu.afg,
+            padx=2,
+            pady=2)
+        self.widget.grid(row=0, column=0)
+
+    def fixed_text_update(self, current=None):
+        if current != None:
+            self.current = current
+        self.locked = 'Unmodifiable'
+        self.widget.configure(text=self.current)
+
+    def text(self):
+        self.update_widget = self.text_update
+        self.text_var = tk.StringVar()
+        self.text_var.set(self.current)
+        self.widget = tk.Entry(self.frame,
+            textvariable=self.text_var,
+            bd=2,
+            font=self.menu.font,
+            justify='left',
+            fg=self.menu.fg,
+            bg=self.menu.bg,
+            activebackground=self.menu.abg,
+            activeforeground=self.menu.afg,
+            )
+        self.widget.grid(row=0, column=0)
+        self.widget.bind('<Return>', self.set_text)
+        self.widget.bind('<FocusOut>', self.set_text)
+
+    def set_text(self, event):
+        self.current = self.text_var.get()
+        self.send_command()
+
+    def text_update(self, current=None):
+        if current != None:
+            self.current = current
+        self.text_var.set(self.current)
+
+    def widget_send_command(self):
+        if isinstance(self.current, str) or self.type == 'REF':
+            self.server.send_str('ME{index:04d}.{value};'.format(index=self.index, value=self.current))
+        else:
+            value = int(round(self.current))
+            self.server.send_str('ME{index:04d}.{value:04d};'.format(index=self.index, value=value))
+
+    def typed_value(self, n):
+        if self.type == 'REF':
+            return n
+        try:
+            n = float(n)
+            if int(n) == n:
+                n = int(n)
+        except:
+            pass
+        return n
+
+    def print(self):
+        print('index', self.index)
+        print('desc', self.desc)
+        print('area', self.area)
+        print('type', self.type)
+        print('locked', self.locked)
+        print('low', self.low)
+        print('high', self.high)
+        print('default', self.default)
+        print('current', self.current)
+        print('increment', self.increment)
+        print('values', self.values)
+
+class Menu(Widget):
+    last_index = 114
+    entries_displayed = 15
+
+    def __init__(self, config_info, container):
+        required = ['item']
+        options = ['entries_displayed', 'bg', 'abg', 'fg', 'afg', 'selectbg', 'selectfg', 'font', 'label_font' ]
+        validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
+
+        entries_displayed = config_info.get('entries_displayed', Menu.entries_displayed)
+
+        self.font = config_info.get('font', container.button_font)
+        self.font = tkFont.Font(family=self.font['family'], size=self.font['size'], weight=self.font['weight'])
+        self.label_font = config_info.get('label_font', container.label_font)
+        self.label_font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
+        self.server = config_info.get('server', container.server)
+
+        self.current_md = None
+
+        self.bg = config_info.get('bg', Default.bg)
+        self.fg = config_info.get('fg', Default.fg)
+        self.selectbg = config_info.get('selectbg', Default.bg)
+        self.selectfg = config_info.get('selectfg', Default.fg)
+
+        self.container = container
+        self.definitions = []
+        self.lookup_definitions = {}
+
+        self.xv_band = 0
+
+        self.frame = tk.Frame(container.frame)
+        self.frame.grid(row=container.row, column=container.column)
+
+        self.listbox = tk.Listbox(
+                self.frame,
+                font=self.font,
+                height=entries_displayed,
+                justify='left',
+                bg=self.bg,
+                fg=self.fg,
+                selectbackground=self.selectbg,
+                selectforeground=self.selectfg,
+                exportselection=False,
+                )
+
+        self.scrollbar = tk.Scrollbar(self.frame)
+        self.listbox.config(yscrollcommand=self.scrollbar.set)
+        self.scrollbar.config(command=self.listbox.yview)
+
+        self.listbox.bind('<<ListboxSelect>>', self.on_listbox_selected)
+
+        self.listbox.grid(row=0, column=0, sticky='w')
+        self.scrollbar.grid(row=0, column=1, sticky='ns')
+
+        self.server.subscribe_connect(self.on_server_connect)
+
+    def update_definition_list(self):
+        self.listbox.delete(0, tk.END)
+
+        width = 0
+        for i, md in enumerate(self.definitions):
+            md.position = i
+            self.lookup_definitions[md.index] = md
+            desc = md.current_desc()
+            if len(desc) > width:
+                width = len(desc)
+            self.listbox.insert(tk.END, md.desc)
+
+        self.listbox.configure(width=width)
+
+    def received_all_definitions(self):
+        self.server.subscribe_response('ME;', self.on_received_current, send=False)
+
+        self.definitions = sorted(self.definitions, key=lambda d:d.current_desc().casefold())
+        self.update_definition_list()
+
+        if Options.debug > 0:
+            for md in self.definitions:
+                self.server.send_str('ME{index:04d};'.format(index=md.index))   # request current values
+
+        self.server.send_str('ME0043;')         # request updated IP address. We know this has changed.
+
+    def on_received_current(self, response):
+        index, current_value = response[2:].split('.', 1)
+        current_value = current_value.rstrip(';')
+        index = int(index)
+        md = self.lookup_definitions[index]
+        current_value = md.typed_value(current_value)
+        md.update(current=current_value)
+
+    def on_listbox_selected(self, arg):
+        selections = self.listbox.curselection()
+        if len(selections) == 0:
+            return
+
+        index = selections[0]
+
+        if self.current_md != None and self.current_md.widget != None:
+            self.current_md.hide()
+
+        md = self.definitions[index]
+        self.current_md = md
+
+        if md.widget != None:
+            md.show()
+        else:
+            md.print() # tprint
+
+    def print_definitions(self):
+        for definition in self.definitions:
+            tprint(definition)
+
+    def on_server_connect(self):
+        self.request_definitions()
+
+    def request_definitions(self):
+        self.server.add_ignored_error('MEDF')
+        self.server.subscribe_response('MEDF;', self.on_received_definition, send=False)
+        for i in range(1, Menu.last_index+10):
+            self.server.send_str('MEDF{:04d};'.format(i))
+
+    def on_received_definition(self, response):
+        if response[4] == '?':
+            return                                 # some errors are expected
+
+        definition_values = response[4:].rstrip(';').split(',')
+        if definition_values[3] == 'NULL':                      # md.type
+            return
+
+        md = Menu_definition(self, definition_values)
+
+        self.definitions.append(md)
+
+        if md.index >= Menu.last_index:
+            self.received_all_definitions()
+        if md.index > Menu.last_index:
+            dprint1('received menu with higher index: {index:04d} {desc}'.format(index=md.index, desc=md.desc))
 
 class Config():
     main_block_name = ' main'
@@ -2075,6 +2653,8 @@ def read_config(config_file_name):
             else:
                 raise Exception("Unexpected top level item '{item}' in '{filename}'.".format(item=item, filename=config_file_name))
 
+def font_height(font):
+    return font.metrics("linespace")
 
 class Poll:
     poll_callbacks = {}
@@ -2105,6 +2685,9 @@ class Poll:
             Poll.poll_callbacks[interval].remove(callback)
         except:
             pass
+
+    def delayed_call(delay, callback):
+        Poll.top.after(delay, callback)
 
 class Options():
     config_file = None
@@ -2187,6 +2770,9 @@ def validate_config_options(dictionary, required, options, name=None):
             else:
                 id=''
             raise Exception("Required option '{option}' missing in item '{name}'{id}.".format(option=option, name=name, id=id))
+
+def hex_decode(string):
+    return re.sub('%(..)', lambda m: chr(int(m[1], 16)), string)
 
 def dprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)

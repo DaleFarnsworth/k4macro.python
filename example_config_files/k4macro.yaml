@@ -29,7 +29,15 @@
   name: main
   server: k4
   contains: #{
+  #include maintab
+  #include menutab
+  #}
+#}
 
+#define maintab
+- item: group
+  tabname: Main
+  contains: #{
   - item: group # Column 1
     columns: 1
     contains: #{
@@ -52,6 +60,7 @@
         #include atu_tune
         #include atu_extended_tune
         #}
+      #}
 
     - item: group
       contains: #{
@@ -65,10 +74,6 @@
 
     - item: group
       contains: #{
-      - item: group
-        contains: #{
-        #include connect
-        #}
       - item: group
         contains: #{
         #include k4_power_off
@@ -117,6 +122,17 @@
       #}
     #}
   #}
+#end
+
+#define menutab
+- item: group
+  tabname: Menu
+  contains: #{
+  - item: menu
+    entries_displayed: 18
+    selectbg: pink
+  #}
+#end
 
 #define VFO_A_widgets
 - item: group
@@ -775,7 +791,7 @@
 #   rowspan: The number of rows this group will occupy.
 #   columnspan: The number of columns this group will occupy.
 #   columns: The number of columns in which contained items will be displayed.
-#   tabtext: Contains the name displayed on this tab of the containing notebook
+#   tabname: Contains the name displayed on this tab of the containing notebook
 #   contains: The list of items this group contains
 
 # button options:
@@ -856,7 +872,7 @@
 
 # notebook (tabs) options:
 # A notebook contains only groups, each selecable by a tab
-# Each group it contains must have a tabtext option
+# Each group it contains must have a tabname option
 
 # bargraph options
 #   orient: Either:
@@ -873,3 +889,14 @@
 #   bottomtext: Value of a text label placed below the bar graph
 #   evalbottomtext: A python expression to generate a text label placed below the bar graph
 #   lengthpercent: Length of bar graph as a percentage of the length of bottomtext
+
+# menu options:
+#   entries_displayed: The number of menu items to display at a time
+#   fg: foreground color
+#   bg: background color
+#   abg: active background color
+#   afg; active foreround color
+#   selectbg: selected background color
+#   selectfg: selected foreground color
+#   font: the font used for the menu
+#   label_font: the font used for the menu's labels

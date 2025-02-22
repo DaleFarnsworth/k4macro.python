@@ -783,7 +783,7 @@
 #   rowspan: The number of rows this group will occupy.
 #   columnspan: The number of columns this group will occupy.
 #   columns: The number of columns in which contained items will be displayed.
-#   tabtext: Contains the name displayed on this tab of the containing notebook
+#   tabname: Contains the name displayed on this tab of the containing notebook
 #   contains: The list of items this group contains
 
 # button options:
@@ -864,7 +864,7 @@
 
 # notebook (tabs) options:
 # A notebook contains only groups, each selecable by a tab
-# Each group it contains must have a tabtext option
+# Each group it contains must have a tabname option
 
 # bargraph options
 #   orient: Either:
