@@ -648,17 +648,20 @@ class Container():
         self.config_info = config_info
         self.container = container
         if isinstance(self, Page):
-            inherited_server_name = Server.default_server_name
+            self.server_name = config_info.get('server', Server.default_server_name)
+            self.label_font = config_info.get('label_font', Default.label_font)
+            self.button_font = config_info.get('button_font', Default.button_font)
+            self.childwidth = config_info.get('childwidth', None)
         else:
-            inherited_server_name = container.server_name
-        self.server_name = config_info.get('server', inherited_server_name)
+            self.server_name = config_info.get('server', container.server_name)
+            self.label_font = config_info.get('label_font', container.label_font)
+            self.button_font = config_info.get('button_font', container.button_font)
+            self.childwidth = config_info.get('childwidth', container.childwidth)
         self.server = Server.server(self.server_name)
         self.columns = config_info.get('columns', len(self.config_info['contains']))
         self.row = 0
         self.column = 0
 
-        self.label_font = None
-        self.button_font = None
         self.children = []
 
     def next_column(self):
@@ -724,6 +727,18 @@ class Container():
                         width = len(line)
         return width
 
+    def has_tabnames(self):
+        children = self.config_info['contains']
+        tabcount = 0
+        for child in children:
+            if child.get('item', None) == 'group' and child.get('tabname', None) != None:
+                tabcount += 1
+        if tabcount > 0 and tabcount != len(children):
+            raise Exception('Error: Some, but not all contained items specify a tabname')
+
+        return tabcount > 0
+        
+
 class Page(Container):
     pages = {}
     name_stack = []
@@ -756,21 +771,30 @@ class Page(Container):
         return Page.pages[first_page_name]
 
     def __init__(self, config_info):
-        super().__init__(config_info, None)
-
         required = ['item', 'name', 'contains']
         options = ['server', 'columns', 'childwidth', 'label_font', 'button_font']
         validate_config_options(config_info, required, options)
 
-        self.childwidth = config_info.get('childwidth', None)
+        super().__init__(config_info, None)
 
         self.name = config_info['name']
         Page.pages[self.name] = self
 
-        self.label_font = config_info.get('label_font', Default.label_font)
-        self.button_font = config_info.get('button_font', Default.button_font)
-        self.frame = tk.Frame(Page.top)
-        self.show_widgets()
+        frame = tk.Frame(Page.top)
+        if self.has_tabnames():
+            notebook = ttk.Notebook(frame)
+            notebook.grid()
+            self.frame = notebook
+            self.show_widgets()
+            self.frame = frame
+
+            for child in self.children:
+                if not isinstance(child, Group):
+                    raise Exception('Page with tabnames contains an item that is not a group', child)
+                notebook.add(child.frame, text=child.tabname)
+        else:
+            self.frame = frame
+            self.show_widgets()
 
     def show(self):
         self.frame.grid()
@@ -783,15 +807,13 @@ class Group(Container):
     default_label_leading = 1
 
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-        container = self.container
-
         required = ['item', 'contains']
         options = ['columns', 'column', 'columnspan', 'rowspan', 'childwidth',
-                   'label_font', 'button_font', 'tabtext', 'label', 'leading']
+                   'label_font', 'button_font', 'tabname', 'label', 'leading']
         validate_config_options(config_info, required, options)
 
-        self.childwidth = config_info.get('childwidth', container.childwidth)
+        super().__init__(config_info, container)
+        container = self.container
 
         if 'column' in config_info:
             column = config_info['column']
@@ -803,9 +825,7 @@ class Group(Container):
 
         columnspan = config_info.get('columnspan', 1)
         rowspan = config_info.get('rowspan', 1)
-        self.label_font = config_info.get('label_font', container.label_font)
-        self.button_font = config_info.get('button_font', container.button_font)
-        self.tabtext = config_info.get('tabtext', '')
+        self.tabname = config_info.get('tabname', '')
         label = config_info.get('label', None)
 
         if label == None:
@@ -842,6 +862,7 @@ class Group(Container):
                         rowspan=rowspan,
                         columnspan=columnspan,
                         sticky='nw')
+        self.frame = outer_frame
         self.show_widgets()
 
 class Widget():
@@ -875,11 +896,11 @@ class Widget():
 
 class Button(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item']
         options = ['text', 'cmd', 'directive', 'bg', 'abg', 'fg', 'afg', 'justify', 'font', 'button_font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         text = str(config_info.get('text', ''))
         cmd = config_info.get('cmd', None)
@@ -921,11 +942,11 @@ class Button(Widget):
 
 class Togglebutton(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item']
         options = ['wraparound', 'justify', 'selections']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         self.index = 0
         self.blink_state = False
@@ -1075,11 +1096,11 @@ class Radiobutton(Widget):
     button_counter = 0
 
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item', 'groupid']
         options = ['text', 'cmd', 'response', 'indicator', 'selectcolor', 'bg', 'abg', 'fg', 'afg', 'blink', 'font', 'button_font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         Radiobutton.button_counter += 1
 
@@ -1193,11 +1214,11 @@ class VFO(Widget):
     high_frequency_limit=54000
 
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item', 'AorB']
         options = ['width', 'activecolor', 'transmitcolor', 'step_spinbox', 'bg', 'abg', 'fg', 'afg', 'blink', 'font', 'button_font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         if len(VFO.step_to_index) == 0:
             for i, step in enumerate(VFO.steps):
@@ -1408,11 +1429,11 @@ class VFO(Widget):
 
 class Slider(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item', 'from', 'to', 'evalcmd', 'evalresponse']
         options = ['orient', 'width', 'length', 'evalincrement', 'bg', 'abg', 'fg', 'afg', 'font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         self.from_ = config_info['from']
         self.to = config_info['to']
@@ -1474,11 +1495,11 @@ class Slider(Widget):
 
 class Getvalue(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item']
         options = ['cmd', 'response', 'evalresponse', 'bg', 'abg', 'fg', 'afg', 'font', 'button_font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         cmd = config_info.get('cmd', None)
         response = config_info.get('response', cmd)
@@ -1520,12 +1541,12 @@ class Getvalue(Widget):
 
 class Bargraph(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item']
         options = ['cmd', 'response', 'evalresponse', 'orient', 'maximum', 'evalmaximum',
                    'length', 'lengthpercent', 'lefttext', 'bottomtext', 'evalbottomtext', 'bg', 'abg', 'fg', 'afg', 'font', 'button_font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         self.cmd = config_info.get('cmd', None)
         self.response = config_info.get('response', self.cmd)
@@ -1631,11 +1652,11 @@ class Bargraph(Widget):
 
 class Text(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item']
         options = ['text', 'length', 'bg', 'abg', 'fg', 'afg', 'justify', 'font', 'button_font']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         text = config_info.get('text', '')
         length = config_info.get('length', 100)
@@ -1666,14 +1687,15 @@ class Text(Widget):
 
 class Notebook(Container):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
+        required = ['item', 'contains']
+        options = ['server', 'childwidth', 'label_font', 'button_font']
 
-        required = ['items', 'contains']
-        options = []
         validate_config_options(config_info, required, options)
 
-        self.label_font = container.label_font
-        self.button_font = container.button_font
+        super().__init__(config_info, container)
+
+        if not has_tabnames():
+            raise Exception('notebook contains items without tabnames')
 
         self.frame = None
         self.show_widgets()
@@ -1684,15 +1706,15 @@ class Notebook(Container):
         for child in self.children:
             if not isinstance(child, Group):
                 raise Exception('Notebook contains an item that is not a group', child)
-            notebook.add(child.frame, text=child.tabtext)
+            notebook.add(child.frame, text=child.tabname)
 
 class Dropdownbutton(Widget):
     def __init__(self, config_info, container):
-        super().__init__(config_info, container)
-
         required = ['item', 'selections']
         options = ['bg', 'abg', 'fg', 'afg', 'selecedbg', 'selectedfg', 'width', 'justify', 'unexpectedresponse']
         validate_config_options(config_info, required, options)
+
+        super().__init__(config_info, container)
 
         self.container = container
 
