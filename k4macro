@@ -1456,12 +1456,14 @@ class Slider(Widget):
     def value_changed(self, event):
         value = self.value.get()
         next_value = value
+        if self.previous_value == value:
+            return
         if self.previous_value < value:
             next_value = value + eval_value(self.evalincrement, value)
         self.scale.configure(resolution=eval_value(self.evalincrement, next_value))
         cmd = eval_value(self.evalcmd, value)
-        self.server.send_cmds(cmd)
         self.previous_value = value
+        self.server.send_cmds(cmd)
 
     def on_response_received(self, response):
         value = float(eval_value(self.evalresponse, response))
