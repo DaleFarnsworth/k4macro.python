@@ -569,12 +569,12 @@
   contains: #{
   - item: slider
     orient: vertical
-    from: 100
+    from: 60
     to: 0
     length: 150
     evalincrement: '1'
-    evalcmd: '"AG{:03d};".format(int(float(value)*0.6))'
-    evalresponse: 'float(value[2:5])/0.6'
+    evalcmd: '"AG{:03d};".format(int(value))'
+    evalresponse: 'float(value[2:5])'
   #}
 #end
 
@@ -585,12 +585,12 @@
   contains: #{
   - item: slider
     orient: vertical
-    from: 100
+    from: 60
     to: 0
     length: 150
     evalincrement: '1'
-    evalcmd: '"AG${:03d};".format(int(float(value)*0.6))'
-    evalresponse: 'float(value[3:6])/0.6'
+    evalcmd: '"AG${:03d};".format(int(value))'
+    evalresponse: 'float(value[3:6])'
   #}
 #end
 
