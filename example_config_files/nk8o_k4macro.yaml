@@ -39,6 +39,7 @@
       contains: #{
       #include tx_rx
       #include Test_mode
+      #include power_dropdown
       #}
 
     #include VFOs_group
