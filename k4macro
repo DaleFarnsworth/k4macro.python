@@ -1703,8 +1703,6 @@ class Dropdownbutton(Widget):
 
         self.selections = []
 
-        dropdown_font = config_info.get('font', container.button_font)
-
         bg = config_info.get('bg', Default.bg)
         fg = config_info.get('fg', Default.fg)
         abg = config_info.get('abg', Default.abg)
@@ -1762,8 +1760,8 @@ class Dropdownbutton(Widget):
         elif self.container.childwidth != None:
             width = self.container.childwidth
 
-        button_font = config_info.get('font', config_info.get('button_font', container.button_font))
-        font = tkFont.Font(family=button_font['family'], size=button_font['size'], weight=button_font['weight'])
+        font = config_info.get('font', config_info.get('button_font', container.button_font))
+        font = tkFont.Font(family=font['family'], size=font['size'], weight=font['weight'])
 
         # Define the style for combobox widget
         self.style = ttk.Style()
@@ -1774,7 +1772,7 @@ class Dropdownbutton(Widget):
         self.combobox = ttk.Combobox(
                 container.frame,
                 textvar=self.val,
-                font=(dropdown_font['family'], dropdown_font['size']),
+                font=font,
                 values=texts,
                 height=len(texts),
                 width=width,
