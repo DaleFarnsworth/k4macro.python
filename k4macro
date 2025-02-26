@@ -950,8 +950,9 @@ class Togglebutton(Widget):
             orig_response = conf_sel.get('response', cmd)
             selection['response'] = orig_response
 
+            selection['parameters'] = {}
+
             if cmd != None:
-                selection['parameters'] = {}
                 cmds = self.server.expand_server_cmds(cmd)
                 responses = self.server.expand_server_cmds(orig_response)
                 for response in responses:
