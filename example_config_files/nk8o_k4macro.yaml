@@ -20,95 +20,229 @@
 - item: server
   name: k4
   type: k4
-#  address: K4-SNxxxxx.local      # match your serial number in the string
-  address: 192.168.1.128
+  address: K4-SNxxxxx.local      # match your serial number in the string
   port: 9200
   startup: TS1;                   # Set test mode
+  connect_on_start: True
 
 - item: page
   name: main
   server: k4
-  columns: 2
-  contains:
+  contains: #{
 
-  - item: group
+  - item: group # Column 1
     columns: 1
-    contains:
+    contains: #{
+    #include VFO_A_widgets
 
     - item: group
-      contains:
-      #include VFO_A_widgets
-      #include VFO_B_widgets
-
-    - item: group
-      contains:
-      #include AB_swap_buttons
-      #include split
-      #include subrcvr
-
-    - item: group
-      contains:
-      #include Test_mode
-      #include VFOs_LOCKED
-      #include VFOs_LINKED
-      #include power_dropdown
-
-    - item: group
-      contains:
-      #include main_volume_slider
-      #include sub_volume_slider
-      #include sidetone_slider
-      #include keyer_speed
-      #include power_slider
-
-    - item: group
-      contains:
-      #include audio_mx
-      #include atu_bypass_auto
-      #include atu_tune
-
-    - item: group
-      contains:
+      contains: #{
       #include tx_rx
-      #include k4_power_off
-      #include QUIT
+      #include Test_mode
+      #}
+
+    #include VFOs_group
+
+    - item: group
+      contains: #{
+      - item: group
+        label: ATU
+        contains: #{
+        #include atu_bypass_auto
+        #include atu_tune
+        #include atu_extended_tune
+        #}
+
+    - item: group
+      contains: #{
+      - item: group
+        label: Tune
+        contains: #{
+        #include tune
+        #include tunelp
+        #}
+      #}
+
+    - item: group
+      contains: #{
+      - item: group
+        contains: #{
+        #include connect
+        #}
+      - item: group
+        contains: #{
+        #include k4_power_off
+        #}
+      - item: group
+        contains: #{
+        #include QUIT
+        #}
+      #}
+    #}
+  - item: group # Column 2
+    columns: 1
+    contains: #{
+    #include VFO_B_widgets
+
+    - item: group
+      columns: 1
+      contains: #{
+      - item: group
+        contains: #{
+#
+#        - item: group
+#          label: Power
+#          contains: #{
+#          #include power_slider
+#          #}
+#
+        - item: group
+          label: Volume
+          contains: #{
+          - item: group
+            contains: #{
+            #include main_volume_slider
+            #include sub_volume_slider
+            #include sidetone_slider
+            #}
+          #}
+
+        - item: group
+          label: Keyer
+          contains: #{
+          #include keyer_speed
+          #}
+        #}
+        - item: group
+          label: Power
+          contains: #{
+          #include power_slider
+          #}
+
+
+      #include audio_mx
+      #}
+    #}
+  #}
 
 #define VFO_A_widgets
 - item: group
   label: VFO A
   columns: 1
-  contains:
+  contains: #{
   #include VFO_A
+  #include S_Meter_A
+  - item: group
+    contains: #{
+    - item: group
+      contains: #{
+      #include rf_out
+      #}
+    - item: group
+      contains: #{
+      #include alc
+      #}
+    #}
   - item: group
     columns: 3
     childwidth: 7
-    contains:
+    contains: #{
     #include band_A_dropdown
     #include mode_A_dropdown
     #include bw_A_dropdown
     #include preamp_A_dropdown
     #include atten_A_dropdown
     #include rfgain_A_dropdown
+    #}
+  #}
 #end
 
 #define VFO_A
 - { item: vfo, AorB: A, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
-- item: bargraph
-  maximum: 42
-  lengthpercent: 96
-  cmd: SM1;
-  font: { family: Helvetica, size: 6, weight: normal }
-  lefttext: ' '
-  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
-  evalresponse: '0 if len(value) < 4 else value.rstrip(";")[2:]'
+#end
+
+#define S_Meter_A
+- item: group
+  leading: 1
+  contains: #{
+  - item: bargraph
+    maximum: 42
+    lengthpercent: 96
+    cmd: SM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ' '
+    bottomtext: "S1 2 3 4 5 6 7 8 9  +10 +20 +30 +40 +50 +60"
+    response: SM;
+    evalresponse: '0 if len(value) < 4 else value.rstrip(";")[2:]'
+  #}
+#end
+
+#define rf_out
+- item: group
+  label: Power out
+  contains: #{
+  - item: bargraph
+    evalmaximum: "0 if len(self.k4param('PC')) < 4 else 11.7 if self.k4param('PC')[3] == 'L' else 117"
+    lengthpercent: 100
+    cmd: TM1;PC;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ''
+    evalbottomtext: "'' if len(self.k4param('PC')) < 4 else '0    2    4    6    8   10    ' if self.k4param('PC')[3] == 'L' else '0   20   40   60   80  100    '"
+    evalresponse: "0 if len(self.k4param('TM')) < 4 else float(self.k4param('TM')[6:9])/10 if self.k4param('PC')[3] == 'L' else self.k4param('TM')[6:9]"
+  #}
+#end
+
+#define alc
+- item: group
+  label: ALC
+  contains: #{
+  - item: bargraph
+    maximum: 8
+    lengthpercent: 100
+    cmd: TM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ''
+    bottomtext: "1  3  5  7"
+    evalresponse: "0 if len(self.k4param('TM')) < 4 else float(self.k4param('TM')[0:3])"
+  #}
+#end
+
+#define cmp
+- item: group
+  label: CMP
+  contains: #{
+  - item: bargraph
+    maximum: 32
+    lengthpercent: 100
+    cmd: TM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ''
+    bottomtext: "0 10 20 30"
+    evalresponse: "0 if len(self.k4param('TM')) < 4 else float(self.k4param('TM')[3:6])"
+  #}
+#end
+
+#define swr
+- item: group
+  label: SWR
+  contains: #{
+  - item: bargraph
+    maximum: 35
+    lengthpercent: 100
+    cmd: TM1;TQ;TU;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ' '
+    bottomtext: "1:1       2:1       3:1    "
+    evalresponse: "0 if (len(self.k4param('TM')) < 4) or (self.k4param('TU') == None) or ((self.k4param('TQ') == '0') and (self.k4param('TU') == '0')) else float(self.k4param('TM')[9:12])-10"
+  #}
 #end
 
 #define band_A_dropdown
 - item: group
   label: Band
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  6 m", cmd: BN10; }
     - { text: " 10 m", cmd: BN09; }
     - { text: " 12 m", cmd: BN08; }
@@ -120,29 +254,33 @@
     - { text: " 60 m", cmd: BN02; }
     - { text: " 80 m", cmd: BN01; }
     - { text: "160 m", cmd: BN00; }
+    #}
+  #}
 #end
 
 #define mode_A_dropdown
 - item: group
   label: Mode
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  CW", cmd: MD3; }
     - { text: " USB", cmd: MD2; }
     - { text: " LSB", cmd: MD1; }
     - { text: "  AM", cmd: MD5; }
     - { text: "  FM", cmd: MD4; }
     - { text: "DATA", cmd: MD6; }
+    #}
+  #}
 #end
 
 #define bw_A_dropdown
 - item: group
   label: BW
-  contains:
+  contains: #{
   - item: dropdownbutton
     unexpectedresponse: 'str((float(value[2:6])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[2:6])/100)+" kHz"'
-    selections:
+    selections: #{
     - { text: "   50 Hz", cmd: BW0005; }
     - { text: "  100 Hz", cmd: BW0010; }
     - { text: "  200 Hz", cmd: BW0020; }
@@ -154,26 +292,30 @@
     - { text: "2.50 kHz", cmd: BW0250; }
     - { text: "3.50 kHz", cmd: BW0350; }
     - { text: "4.00 kHz", cmd: BW0400; }
+    #}
+  #}
 #end
 
 #define preamp_A_dropdown
 - item: group
   label: Preamp
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "0", cmd: PA00; }
     - { text: "1", cmd: PA11; }
     - { text: "2", cmd: PA21; }
     - { text: "3", cmd: PA31; }
+    #}
+  #}
 #end
 
 #define atten_A_dropdown
 - item: group
-  label: Atten
-  contains:
+  label: Attenuation
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " 0 dB", cmd: RA000; }
     - { text: " 3 dB", cmd: RA031; }
     - { text: " 6 dB", cmd: RA061; }
@@ -182,55 +324,80 @@
     - { text: "15 dB", cmd: RA151; }
     - { text: "18 dB", cmd: RA181; }
     - { text: "21 dB", cmd: RA211; }
+    #}
+  #}
 #end
 
 #define rfgain_A_dropdown
 - item: group
   label: RF Gain
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " -0 ", cmd: RG-00; }
     - { text: "-10 ", cmd: RG-10; }
+    #}
+  #}
 #end
 
 #define VFO_B_widgets
 - item: group
   label: VFO B
   columns: 1
-  contains:
+  contains: #{
   #include VFO_B
+  #include S_Meter_B
+  - item: group
+    contains: #{
+    - item: group
+      contains: #{
+      #include swr
+      #}
+    - item: group
+      contains: #{
+      #include cmp
+      #}
+    #}
   - item: group
     columns: 3
     childwidth: 7
-    contains:
+    contains: #{
     #include band_B_dropdown
     #include mode_B_dropdown
     #include bw_B_dropdown
     #include preamp_B_dropdown
     #include atten_B_dropdown
     #include rfgain_B_dropdown
+    #}
+  #}
 #end
 
 #define VFO_B
 - { item: vfo, AorB: B, width: 9, font: { family: Helvetica, size: 19, weight: normal }, activecolor: pink, transmitcolor: red }
-- item: bargraph
-  maximum: 42
-  lengthpercent: 96
-  cmd: SM1;
-  font: { family: Helvetica, size: 6, weight: normal }
-  lefttext: ' '
-  bottomtext: "S1  2  3  4  5  6  7  8  9    +10   +20   +30  +40   +50  +60"
-  response: SM$;
-  evalresponse: '0 if len(value) < 5 else value.rstrip(";")[3:]'
+#end
+
+#define S_Meter_B
+- item: group
+  leading: 1
+  contains: #{
+  - item: bargraph
+    maximum: 42
+    lengthpercent: 96
+    cmd: SM1;
+    font: { family: DejaVu Sans Mono, size: 6, weight: normal }
+    lefttext: ' '
+    bottomtext: "S1 2 3 4 5 6 7 8 9  +10 +20 +30 +40 +50 +60"
+    response: SM$;
+    evalresponse: '0 if len(value) < 5 else value.rstrip(";")[3:]'
+  #}
 #end
 
 #define band_B_dropdown
 - item: group
   label: Band
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  6 m", cmd: BN$10; }
     - { text: " 10 m", cmd: BN$09; }
     - { text: " 12 m", cmd: BN$08; }
@@ -242,29 +409,33 @@
     - { text: " 60 m", cmd: BN$02; }
     - { text: " 80 m", cmd: BN$01; }
     - { text: "160 m", cmd: BN$00; }
+    #}
+  #}
 #end
 
 #define mode_B_dropdown
 - item: group
   label: Mode
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "  CW", cmd: MD$3; }
     - { text: " USB", cmd: MD$2; }
     - { text: " LSB", cmd: MD$1; }
     - { text: "  AM", cmd: MD$5; }
     - { text: "  FM", cmd: MD$4; }
     - { text: "DATA", cmd: MD$6; }
+    #}
+  #}
 #end
 
 #define bw_B_dropdown
 - item: group
   label: BW
-  contains:
+  contains: #{
   - item: dropdownbutton
     unexpectedresponse: 'str((float(value[3:7])*10))[0:3]+" Hz" if value[2:4]=="00" else "{a:.2f}".format(a=float(value[3:7])/100)+" kHz"'
-    selections:
+    selections: #{
     - { text: "   50 Hz", cmd: BW$0005; }
     - { text: "  100 Hz", cmd: BW$0010; }
     - { text: "  200 Hz", cmd: BW$0020; }
@@ -276,26 +447,30 @@
     - { text: "2.50 kHz", cmd: BW$0250; }
     - { text: "3.50 kHz", cmd: BW$0350; }
     - { text: "4.00 kHz", cmd: BW$0400; }
+    #}
+  #}
 #end
 
 #define preamp_B_dropdown
 - item: group
   label: Preamp
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: "0", cmd: PA$00; }
     - { text: "1", cmd: PA$11; }
     - { text: "2", cmd: PA$21; }
     - { text: "3", cmd: PA$31; }
+    #}
+  #}
 #end
 
 #define atten_B_dropdown
 - item: group
-  label: Atten
-  contains:
+  label: Attenuation
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " 0 dB", cmd: RA$000; }
     - { text: " 3 dB", cmd: RA$031; }
     - { text: " 6 dB", cmd: RA$061; }
@@ -304,62 +479,85 @@
     - { text: "15 dB", cmd: RA$151; }
     - { text: "18 dB", cmd: RA$181; }
     - { text: "21 dB", cmd: RA$211; }
+    #}
+  #}
 #end
 
 #define rfgain_B_dropdown
 - item: group
   label: RF Gain
-  contains:
+  contains: #{
   - item: dropdownbutton
-    selections:
+    selections: #{
     - { text: " -0 ", cmd: RG$-00; }
     - { text: "-10 ", cmd: RG$-10; }
+    #}
+  #}
 #end
 
-#define VFOs_LINKED
-- item: togglebutton
-  selections:
-  - { text: " LINKED ",   cmd: FT0;BI0;#DPM0; }
-  - { text: " UNLINKED ", cmd: FT0;BI1;#DPM2; }
+#define VFOs_group
+- item: group
+  label: VFOs
+  columns: 3
+  contains: #{
+  #include VFOs_Linked
+  #include split
+  #include subrcvr
+  #include AB_swap_buttons
+  #}
 #end
 
-#define VFOs_LOCKED
+#define VFOs_Linked
 - item: togglebutton
-  selections:
-  - { text: " LOCKED ",   cmd: LK1;LK$1;, bg: red }
-  - { text: " UNLOCKED ", cmd: LK0;LK$0; }
+  selections: #{
+  - { text: "  Linked", cmd: FT0;BI0;#DPM0; }
+  - { text: "Unlinked", cmd: FT0;BI1;#DPM2; }
+  #}
+#end
+
+#define VFOs_Locked
+- item: togglebutton
+  selections: #{
+  - { text: "  Locked", cmd: LK1;LK$1;, }
+  - { text: "Unlocked", cmd: LK0;LK$0;, }
+  #}
 #end
 
 #define Test_mode
-- item: togglebutton
-  selections:
-     - { text: Test mode,cmd: TS1;, bg: red }
-     - { text: Transmit, cmd: TS0;,  }
+- item: group
+  label: Tx
+  contains: #{
+  - item: togglebutton
+    selections: #{
+    - { text: "Test On",  cmd: TS1;, bg: red, abg: red }
+    - { text: "Test Off", cmd: TS0;,  }
+    #}
+  #}
 #end
-
-## ADD KEYER SPEED HERE
 
 #define power_dropdown
 - item: group
-  label: ' Power '
-  contains:
+  label: Power
+  contains: #{
   - item: dropdownbutton
     width: 6
-    bg: '#00FF00'
     unexpectedresponse: 'str("" if len(value) < 5 else float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])) + " W"'
-    selections:
+    selections: #{
     - { text: "  5 W", cmd: PC050L; }
     - { text: " 10 W", cmd: PC100L; }
     - { text: " 25 W", cmd: PC025H; }
     - { text: " 50 W", cmd: PC050H; }
     - { text: " 75 W", cmd: PC075H; }
     - { text: "100 W", cmd: PC100H; }
+    #}
+  #}
 #end
 
 #define power_slider
 - item: group
-  label: Power
-  contains:
+  leading: 0
+  label: (Watts)
+  contains: #{
   - item: slider
     orient: vertical
     from: 100.0
@@ -367,59 +565,63 @@
     length: 150
     evalincrement: '.0001 if value > 0.0 and value <= .01 else .1 if value <= 10.0 else 1.0'
     evalcmd: '"PC{:03d}L;".format(int(float(value)*10)) if float(value) <= 10.0 else "PC{:03d}H;".format(int(value))'
-    evalresponse: 'float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
-    bg: '#FF0000'
+    evalresponse: '0 if len(value) < 5 else float(value[2:5])/10 if value[5] == "L" else float(value[2:5])/10000 if value[5] == "X" else float(value[2:5])'
+  #}
 #end
 
 #define main_volume_slider
 - item: group
-  label: Main Audio
-  contains:
+  leading: 0
+  label: Main
+  contains: #{
   - item: slider
     orient: vertical
     from: 30
     to: 0
     length: 150
     evalincrement: '1'
-    evalcmd: '"AG{:03d};".format(int(float(value)*0.6))'
-    evalresponse: 'float(value[2:5])/0.6'
-    bg: '#00FF00'
+    evalcmd: '"AG{:03d};".format(int(value))'
+    evalresponse: 'float(value[2:5])'
+  #}
 #end
 
 #define sub_volume_slider
 - item: group
-  label: Sub Audio
-  contains:
+  leading: 0
+  label: Sub
+  contains: #{
   - item: slider
     orient: vertical
     from: 30
     to: 0
     length: 150
     evalincrement: '1'
-    evalcmd: '"AG${:03d};".format(int(float(value)*0.6))'
-    evalresponse: 'float(value[3:6])/0.6'
-    bg: '#00FFFF'
+    evalcmd: '"AG${:03d};".format(int(value))'
+    evalresponse: 'float(value[3:6])'
+  #}
 #end
 
 #define sidetone_slider
 - item: group
+  leading: 0
   label: Sidetone
-  contains:
+  contains: #{
   - item: slider
     orient: vertical
-    from: 25
-    to: 00
+    from: 30
+    to: 0
     length: 150
     evalincrement: '1'
     evalcmd: '"ML0{:03d};".format(int(float(value)))'
     evalresponse: 'float(value[3:6])'
-    bg: '#1E90FF'
+  #}
 #end
 
 #define keyer_speed
 - item: group
-  label: Keyer
-  contains:
+  leading: 0
+  label: Speed
+  contains: #{
   - item: slider
     orient: vertical
     from: 35
@@ -428,63 +630,114 @@
     evalincrement: '1'
     evalcmd: '"KS{:03d};".format(int(float(value)))'
     evalresponse: 'float(value[2:5])'
+  #}
 #end
 
 #define atu_bypass_auto
 - item: togglebutton
-  selections:
-    - { text: " ATU bypass", cmd: AT1;, bg: yellow }
-    - { text: "ATU auto",    cmd: AT2; }
+  selections: #{
+    - { text: "Bypass", cmd: AT1;, bg: yellow }
+    - { text: "Auto",   cmd: AT2;, bg: '#00FF00' }
+  #}
 #end
 
 #define audio_mx
-- item: togglebutton
-  selections:
+- item: group
+  label: Audio Mix
+  contains: #{
+  - item: togglebutton
+    selections: #{
     - { text: "Audio A+B", cmd: MXA.B; }
     - { text: "Audio A",   cmd: MXA.A; }
     - { text: "Audio B",   cmd: MXB.B }
+    #}
+  #}
 #end
 
 #define atu_tune
-- { item: button, text: " TUNE ", cmd: SW40; }
+- item: togglebutton
+  selections: #{
+  - { text: "Tune", cmd: TU3;, bg: red }
+  - { text: "Tune", cmd: TU0; }
+  #}
+#end
+
+#define atu_extended_tune
+- item: togglebutton
+  selections: #{
+  - { text: "TUNE", cmd: TU4;, bg: red }
+  - { text: "TUNE", cmd: TU0; }
+  #}
+#end
+
+#define tune
+- item: togglebutton
+  selections: #{
+  - { text: "Tune", cmd: TU1;, bg: red }
+  - { text: "Tune", cmd: TU0; }
+  #}
+#end
+
+#define tunelp
+- item: togglebutton
+  selections: #{
+  - { text: "Tune LP", cmd: TU2;, bg: red }
+  - { text: "Tune LP", cmd: TU0; }
+  #}
 #end
 
 #define AB_swap_buttons
-- item: group
-  columns: 3
-  contains:
-    - { item: button,      text: " A/B ",     cmd:  SW41; }
-    - { item: button,      text: " A->B ",    cmd:  DE0010;SW72; }
-    - { item: button,      text: " B->A ",    cmd:  SW147; }
+- { item: button, text: "A/B",      cmd:  AB2; }
+- { item: button, text: "A->B",     cmd:  AB0; }
+- { item: button, text: "B->A",     cmd:  AB1; }
+- { item: button, text: "all A/B",  cmd:  AB5; }
+- { item: button, text: "all A->B", cmd:  AB3; }
+- { item: button, text: "all B->A", cmd:  AB4; }
 #end
 
 #define k4_power_off
-- { item: button, text: '    K4 POWER OFF     ', cmd:  PS0;, abg: red }
+- { item: button, text: 'Power Off', cmd:  PS0; }
+#end
+
+#define connect
+- item: togglebutton
+  wraparound: False
+  selections: #{
+  - { text: 'Connect', bg: red, abg: red, blink: on }
+  - { text: 'Connected', directive: connect }
+  #}
 #end
 
 #define QUIT
-- { item: button,      text: '   Exit    ', directive:  quit, abg: red }
+- { item: button, text: 'Exit', directive:  quit }
 #end
 
 #define split
 - item: togglebutton
-  selections:
-    - { text: 'Split on',   cmd: FT1;, bg: yellow   }
-    - { text: 'Split off' , cmd: FT0; }
+  selections: #{
+  - { text: 'Split on',   cmd: FT1;, bg: yellow, abg: yellow }
+  - { text: 'Split off' , cmd: FT0; }
+  #}
 #end
 
 #define subrcvr
 - item: togglebutton
-  selections:
-    - { text: 'Sub on',   cmd: SB1;, bg: yellow   }
-    - { text: 'Sub off' , cmd: SB0; }
+  selections: #{
+  - { text: 'Sub on',   cmd: SB1;, bg: yellow, abg: yellow }
+  - { text: 'Sub off' , cmd: SB0; }
+  #}
 #end
 
 #define tx_rx
-- item: togglebutton
-  selections:
-    - { text: 'Receive',   cmd: RX;TQ;, bg: green, abg: green, response: TQ0; }
+- item: group
+  label: 'Tx/Rx '
+  contains: #{
+  - item: togglebutton
+    selections: #{
+    - { text: 'Receive',   cmd: RX;TQ;, bg: '#00FF00', abg: white, response: TQ0; }
     - { text: 'Transmit',  cmd: TX;TQ;, bg: red,   abg: red,   response: TQ1; }
+    #}
+  #}
 #end
 
 # preprocessor directives:
@@ -509,6 +762,7 @@
 #   address: The ip address of the server
 #   port: The port to connect to
 #   startup: command(s) to be sent to the server on startup.
+#   connect_on_start: if false, do not connect to the server automatically
 
 # page options:
 #   name: The page name (required).
@@ -540,6 +794,7 @@
 #     to be sent, i.e. [ k4: k4cmd, s1: s1cmd ] would send 'k4cmd' to server k4, and
 #     then send 's1cmd' to server s1.
 #   directive:
+#     'connect', connects to the server if not previously connected
 #     'quit', terminates the program
 #     'show_previous_page', displays the previously-displayed page
 #     'show_page XXX', displays page with the name: XXX
@@ -563,6 +818,7 @@
 #       fg: foreground color
 #       bg: background color
 #       abg: active background color
+#       justify: 'left', 'right', 'center' to justify text within the Button
 #       blink: If set to true, the button will blink.
 
 # radiobutton options:
@@ -589,9 +845,9 @@
 #     horizontal: Specifies a horizontal slider
 #   length: The length of the slider in pixels
 #   width: The width in pixels if the slider is verical, otherwise the height
-#   evalincrement: A python expression to set the slider increment given the variable value
+#   increment: A python expression to set the slider increment given the variable value
 #   server: The server name of the server referenced by this slider
-#   evalcmd: A python expression to produce the K4 command given the variable 'value'.
+#   cmdvalue: A python expression to produce the K4 command given the variable 'value'.
 #   evalresponse: A python expression to extract the slider value from the K4 response.
 #   font: The font used for the slider's text.
 #   fg: foreground color
@@ -602,9 +858,10 @@
 #   fg: foreground color
 #   bg: background color
 #   font: the font used for the vfo
+#   width: the number of characters in the frequency spinbox
 #   step_spinbox: When set to 'true', the vfo step will be selected by a spinbox
 
-# notebook (tabs) option:
+# notebook (tabs) options:
 # A notebook contains only groups, each selecable by a tab
 # Each group it contains must have a tabtext option
 
@@ -616,8 +873,10 @@
 #   response: The base for requested responses for the bar graph (defaults to cmd)
 #   evalresponse: A python expression to extract the bar graph value from the K4 response.
 #   maximum: The maximum value the bar graph may be set to
+#   evalmaximum: A python expression to generate the maximum value
 #   length: The length of the bar graph in pixels
 #   font: the font used for the bar graph texts
 #   lefttext: Value of a text label placed to the left of the bar graph
-#   bottomtext:Value of a text label placed belos the bar graph
+#   bottomtext: Value of a text label placed below the bar graph
+#   evalbottomtext: A python expression to generate a text label placed below the bar graph
 #   lengthpercent: Length of bar graph as a percentage of the length of bottomtext
