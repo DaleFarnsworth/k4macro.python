@@ -717,6 +717,7 @@ class Container():
             self.children.append(child)
 
             self.next_column()
+
         Container.depth -= 1
 
     def items_width(self):
@@ -786,21 +787,12 @@ class Page(Container):
         self.name = config_info['name']
         Page.pages[self.name] = self
 
-        frame = tk.Frame(Page.top)
         if self.has_tabnames():
-            notebook = ttk.Notebook(frame)
-            notebook.grid()
-            self.frame = notebook
-            self.show_widgets()
-            self.frame = frame
-
-            for child in self.children:
-                if not isinstance(child, Group):
-                    raise Exception('Page with tabnames contains an item that is not a group', child)
-                notebook.add(child.frame, text=child.tabname)
+            self.frame = ttk.Notebook(Page.top)
         else:
-            self.frame = frame
-            self.show_widgets()
+            self.frame = tk.Frame(Page.top)
+
+        self.show_widgets()
 
     def show(self):
         self.frame.grid()
@@ -819,7 +811,6 @@ class Group(Container):
         validate_config_options(config_info, required, options)
 
         super().__init__(config_info, container)
-        container = self.container
 
         if 'column' in config_info:
             column = config_info['column']
@@ -840,21 +831,21 @@ class Group(Container):
             default_leading = Group.default_label_leading
         leading = config_info.get('leading', default_leading)
 
-        outer_frame = tk.Frame(container.frame)
+        self.outer_frame = tk.Frame(container.frame)
 
         if leading == 0:
             row = 0
         else:
             leading_font = tkFont.Font(family=self.label_font['family'], size=leading, weight=self.label_font['weight'])
-            leading_label = tk.Label(outer_frame, text=' ', font=leading_font)
+            leading_label = tk.Label(self.outer_frame, text=' ', font=leading_font)
             leading_label.grid(row=0, column=0, sticky='nw')
             row = 1
 
         if label == None:
-            self.frame  = tk.Frame(outer_frame)
+            self.frame  = tk.Frame(self.outer_frame)
         else:
             font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
-            self.frame = tk.LabelFrame(outer_frame,
+            self.frame = tk.LabelFrame(self.outer_frame,
                                        text=label,
                                        font=font,
                                        labelanchor='nw',
@@ -863,13 +854,18 @@ class Group(Container):
 
         self.frame.grid(row=row, column=0, sticky='nw')
 
-        outer_frame.grid(row=container.row,
+        self.outer_frame.grid(row=container.row,
                         column=column,
                         rowspan=rowspan,
                         columnspan=columnspan,
                         sticky='nw')
-        self.frame = outer_frame
         self.show_widgets()
+
+    def show_widgets(self):
+        super().show_widgets()
+
+        if isinstance(self.container.frame, ttk.Notebook):
+            self.container.frame.add(self.outer_frame, text=self.tabname)
 
 class Widget():
     blink_mS = 500
