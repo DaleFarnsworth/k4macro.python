@@ -2389,6 +2389,7 @@ class Menu(Widget):
         self.container = container
         self.definitions = []
         self.lookup_definitions = {}
+        self.definitions_requested = False
 
         self.xv_band = 0
 
@@ -2413,10 +2414,7 @@ class Menu(Widget):
 
         self.listbox.bind('<<ListboxSelect>>', self.on_listbox_selected)
 
-        self.listbox.grid(row=0, column=0, sticky='w')
-        self.scrollbar.grid(row=0, column=1, sticky='ns')
-
-        self.server.subscribe_connect(self.on_server_connect)
+        self.frame.bind('<Visibility>', self.request_definitions)
 
     def update_definition_list(self):
         self.listbox.delete(0, tk.END)
@@ -2424,7 +2422,6 @@ class Menu(Widget):
         width = 0
         for i, md in enumerate(self.definitions):
             md.position = i
-            self.lookup_definitions[md.index] = md
             desc = md.current_desc()
             if len(desc) > width:
                 width = len(desc)
@@ -2443,6 +2440,9 @@ class Menu(Widget):
                 self.server.send_str('ME{index:04d};'.format(index=md.index))   # request current values
 
         self.server.send_str('ME0043;')         # request updated IP address. We know this has changed.
+
+        self.listbox.grid(row=0, column=0, sticky='w')
+        self.scrollbar.grid(row=0, column=1, sticky='ns')
 
     def on_received_current(self, response):
         index, current_value = response[2:].split('.', 1)
@@ -2474,10 +2474,11 @@ class Menu(Widget):
         for definition in self.definitions:
             tprint(definition)
 
-    def on_server_connect(self):
-        self.request_definitions()
+    def request_definitions(self, event=None):
+        if self.definitions_requested:
+            return
+        self.definitions_requested = True
 
-    def request_definitions(self):
         self.server.add_ignored_error('MEDF')
         self.server.subscribe_response('MEDF;', self.on_received_definition, send=False)
         for i in range(1, Menu.last_index+10):
@@ -2492,7 +2493,11 @@ class Menu(Widget):
             return
 
         md = Menu_definition(self, definition_values)
+        found = self.lookup_definitions.get(md.index, None)
+        if found != None:
+            return
 
+        self.lookup_definitions[md.index] = md
         self.definitions.append(md)
 
         if md.index >= Menu.last_index:
