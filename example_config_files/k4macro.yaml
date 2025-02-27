@@ -96,12 +96,6 @@
         contains: #{
 
         - item: group
-          label: Power
-          contains: #{
-          #include power_slider
-          #}
-
-        - item: group
           label: Volume
           contains: #{
           - item: group
@@ -118,6 +112,12 @@
           #include keyer_speed
           #}
         #}
+
+        - item: group
+          label: Power
+          contains: #{
+          #include power_slider
+          #}
       #include audio_mx
       #}
     #}
