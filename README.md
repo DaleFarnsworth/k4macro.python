@@ -1,13 +1,14 @@
 ## Program designed to remotely control an Elecraft K4 transceiver
 
-K4macro provides a set of buttons, each of which when clicked will
-send a macro string to the Elecraft K4 via TCP/IP.  It is capable
-of sending string commands to multiple servers, one or more of which
-may be transceivers. These macros can be simple or complex. K4macro
-was inspired by K4 Macromaster, but in no way duplicates all of its
-functions. K4 Macro was initially created by Charles W. Powell, NK8O,
-but has been heavily modified. Charles has graciously allowed others
-to continue development under the GPL.
+K4-Companion is an application written in python3 that can remotely
+control and Elecraft K4 tranceiver via TCP/IP.  It currently controls
+the main K4 features and is very useable as is, but new features are
+being added all the time.  K4-Companion is very configurable.
+
+K4-Companion began life as a simple macro-sending program called
+K4Macro-Python, created by Charles Powell, NK8O. It has now grown far
+beyond a simple macro-sending program into a full-fledged remote control
+program for the K4.
 
 Please send problem reports either: by sending an email, by entering
 an issue on github, or by making a pull request. Problem reports and
