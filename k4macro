@@ -744,7 +744,6 @@ class Container():
             raise Exception('Error: Some, but not all contained items specify a tabname')
 
         return tabcount > 0
-        
 
 class Page(Container):
     pages = {}
@@ -831,21 +830,21 @@ class Group(Container):
             default_leading = Group.default_label_leading
         leading = config_info.get('leading', default_leading)
 
-        self.outer_frame = tk.Frame(container.frame)
+        outer_frame = tk.Frame(container.frame)
 
         if leading == 0:
             row = 0
         else:
             leading_font = tkFont.Font(family=self.label_font['family'], size=leading, weight=self.label_font['weight'])
-            leading_label = tk.Label(self.outer_frame, text=' ', font=leading_font)
+            leading_label = tk.Label(outer_frame, text=' ', font=leading_font)
             leading_label.grid(row=0, column=0, sticky='nw')
             row = 1
 
         if label == None:
-            self.frame  = tk.Frame(self.outer_frame)
+            self.frame  = tk.Frame(outer_frame)
         else:
             font = tkFont.Font(family=self.label_font['family'], size=self.label_font['size'], weight=self.label_font['weight'])
-            self.frame = tk.LabelFrame(self.outer_frame,
+            self.frame = tk.LabelFrame(outer_frame,
                                        text=label,
                                        font=font,
                                        labelanchor='nw',
@@ -854,18 +853,16 @@ class Group(Container):
 
         self.frame.grid(row=row, column=0, sticky='nw')
 
-        self.outer_frame.grid(row=container.row,
+        outer_frame.grid(row=container.row,
                         column=column,
                         rowspan=rowspan,
                         columnspan=columnspan,
                         sticky='nw')
+
         self.show_widgets()
 
-    def show_widgets(self):
-        super().show_widgets()
-
-        if isinstance(self.container.frame, ttk.Notebook):
-            self.container.frame.add(self.outer_frame, text=self.tabname)
+        if isinstance(container.frame, ttk.Notebook):
+            container.frame.add(outer_frame, text=self.tabname)
 
 class Widget():
     blink_mS = 500
