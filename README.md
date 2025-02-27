@@ -1,5 +1,11 @@
 ## Program designed to remotely control an Elecraft K4 transceiver
 
+This program has been renamed and moved to a new repository:
+https://github.com/DaleFarnsworth/K4-Companion where further
+development will continue
+
+I apologize for the inconvenience.
+
 K4-Companion is an application written in python3 that can remotely
 control and Elecraft K4 tranceiver via TCP/IP.  It currently controls
 the main K4 features and is very useable as is, but new features are
